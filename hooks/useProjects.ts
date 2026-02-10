@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { MOCK_PROJECTS, MOCK_USERS, deleteProject, updateProject, removeProjectMember, getUser, updateUser } from '../services/mockData';
-import { Project, User, ProjectRole } from '../types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Project, User, ProjectRole, ProjectId } from '../types';
+import { supabase } from '../lib/supabase';
 
 const PROJECTS_PER_PAGE = 12;
 
 interface UseProjectsProps {
     currentUser: User;
-    onUpdateUser?: (user: User) => void;
+    onUpdateUser?: (data: Partial<User>, sync?: boolean) => void;
     onNavigate: (page: string) => void;
 }
 
 export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjectsProps) => {
-    const [projects, setProjects] = useState<Project[]>([]);
-
+    const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -28,26 +28,154 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
     const [projectToLeave, setProjectToLeave] = useState<Project | null>(null);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
+    // Fetch Projects via Supabase
+    const { data: projects = [], isLoading } = useQuery({
+        queryKey: ['projects', currentUser.id],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('projects')
+                .select(`
+                    *,
+                    members:project_members(
+                        *,
+                        user:profiles(*)
+                    )
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            return data.map((p: any) => ({
+                id: p.id,
+                title: p.title,
+                description: p.description || '',
+                ownerId: p.owner_id,
+                createdAt: p.created_at,
+                status: p.status,
+                settings: p.settings || {},
+                investmentBalance: p.investment_balance || 0,
+                totalInvested: p.total_invested || 0,
+                fileCount: 0, // Injected by a separate count or view if needed
+                memberCount: p.members?.length || 0,
+                members: p.members.map((m: any) => ({
+                    userId: m.user_id,
+                    role: m.role as ProjectRole,
+                    permissions: m.permissions || [],
+                    scansUsed: m.scans_used || 0,
+                    scanQuota: m.scan_quota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scan_quota),
+                    joinedAt: m.joined_at,
+                    user: m.user ? {
+                        id: m.user.id,
+                        email: m.user.email,
+                        displayName: m.user.display_name || m.user.email.split('@')[0],
+                        avatarUrl: m.user.avatar_url
+                    } : undefined
+                }))
+            } as Project));
+        },
+        enabled: !!currentUser.id
+    });
+
+    // Real-time Subscription
     useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 300);
+        const channel = supabase
+            .channel('projects_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+                queryClient.invalidateQueries({ queryKey: ['projects'] });
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'project_members' }, () => {
+                queryClient.invalidateQueries({ queryKey: ['projects'] });
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [queryClient]);
+
+    // Search Debounce
+    useEffect(() => {
+        const handler = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
         return () => clearTimeout(handler);
     }, [searchTerm]);
 
-    useEffect(() => {
-        setProjects([...MOCK_PROJECTS]);
-    }, []);
-
+    // Handle Clicks Outside Menus
     useEffect(() => {
         const handleClickOutside = () => setActiveMenuId(null);
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
 
+    // Reset display count on filter change
     useEffect(() => {
         setDisplayCount(PROJECTS_PER_PAGE);
     }, [debouncedSearchTerm, statusFilter, dateFilter, ownerFilter]);
+
+    // Mutations
+    const createMutation = useMutation({
+        mutationFn: async (newProj: any) => {
+            const { data, error } = await supabase
+                .from('projects')
+                .insert(newProj)
+                .select()
+                .single();
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            setIsProjectModalOpen(false);
+        },
+        onError: (error: any) => {
+            console.error('Project creation failed:', error);
+            alert(`Failed to create project: ${error.message || 'Unknown error'}`);
+        }
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: string, data: any }) => {
+            const { error } = await supabase
+                .from('projects')
+                .update(data)
+                .eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            setEditingProject(null);
+            setIsProjectModalOpen(false);
+        },
+        onError: (error: any) => {
+            console.error('Project update failed:', error);
+            alert(`Failed to update project: ${error.message || 'Unknown error'}`);
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from('projects').delete().eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            setProjectToDelete(null);
+        }
+    });
+
+    const leaveMutation = useMutation({
+        mutationFn: async (projectId: string) => {
+            const { error } = await supabase
+                .from('project_members')
+                .delete()
+                .eq('project_id', projectId)
+                .eq('user_id', currentUser.id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            setProjectToLeave(null);
+        }
+    });
 
     const activeFiltersCount = [
         statusFilter !== 'ALL',
@@ -64,26 +192,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
     };
 
     const filteredProjects = useMemo(() => {
-        let result = projects.filter(project => {
-            const memberRecord = project.members.find(m => m.userId === currentUser.id);
-            const isMember = !!memberRecord;
-            const isOwner = project.ownerId === currentUser.id;
-
-            if (!isMember && !isOwner) return false;
-
-            const isAdmin = memberRecord?.role === ProjectRole.ADMIN;
-
-            if (project.status === 'ARCHIVED') {
-                if (!isOwner && !isAdmin) return false;
-            }
-
-            if (project.status === 'COMPLETED' && project.settings.analystAccessOnlyForCompleted) {
-                const hasAnalyzePerm = memberRecord?.permissions.includes('ANALYZE');
-                if (!isOwner && !isAdmin && !hasAnalyzePerm) return false;
-            }
-
-            return true;
-        });
+        let result = Array.isArray(projects) ? [...projects] : [];
 
         if (debouncedSearchTerm) {
             const lowerQuery = debouncedSearchTerm.toLowerCase();
@@ -107,7 +216,6 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                 const projDate = new Date(project.createdAt);
                 const diffTime = Math.abs(now.getTime() - projDate.getTime());
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
                 if (dateFilter === 'LAST_7') return diffDays <= 7;
                 if (dateFilter === 'LAST_30') return diffDays <= 30;
                 if (dateFilter === 'LAST_90') return diffDays <= 90;
@@ -116,7 +224,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         }
 
         return result;
-    }, [projects, debouncedSearchTerm, statusFilter, dateFilter, ownerFilter, currentUser.id]);
+    }, [projects, debouncedSearchTerm, statusFilter, dateFilter, ownerFilter]);
 
     const visibleProjects = useMemo(() => {
         return filteredProjects.slice(0, displayCount);
@@ -145,12 +253,12 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         e.stopPropagation();
         e.preventDefault();
         setActiveMenuId(null);
-        setEditingProject(project); // Set the project to edit
+        setEditingProject(project);
         setIsProjectModalOpen(true);
     }, []);
 
     const handleCreateClick = () => {
-        setEditingProject(undefined); // Clear for create mode
+        setEditingProject(undefined);
         setIsProjectModalOpen(true);
     };
 
@@ -158,92 +266,79 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         e.stopPropagation();
         e.preventDefault();
         setActiveMenuId(null);
-        updateProject(project.id, { status: newStatus });
-        setProjects(prev => prev.map(p => p.id === project.id ? { ...p, status: newStatus } as Project : p));
-    }, []);
+        updateMutation.mutate({ id: project.id, data: { status: newStatus } });
+    }, [updateMutation]);
 
     const confirmDeleteProject = () => {
         if (projectToDelete) {
-            const updatedOwner = deleteProject(projectToDelete.id);
-            if (updatedOwner && updatedOwner.id === currentUser.id && onUpdateUser) {
-                onUpdateUser(updatedOwner);
-            }
-            setProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
-            setProjectToDelete(null);
+            deleteMutation.mutate(projectToDelete.id);
         }
     };
 
     const confirmLeaveProject = () => {
         if (projectToLeave) {
-            removeProjectMember(projectToLeave.id, currentUser.id);
-            setProjects(prev => prev.filter(p => p.id !== projectToLeave.id));
-            setProjectToLeave(null);
+            leaveMutation.mutate(projectToLeave.id);
         }
     };
 
     const handleProjectModalSave = (e: React.FormEvent, projectData: Partial<Project>) => {
         e.preventDefault();
 
-        if (projectData.id) {
-            // EDIT MODE
-            updateProject(projectData.id, projectData);
-            setProjects(prev => prev.map(p => p.id === projectData.id ? { ...p, ...projectData } as Project : p));
-        } else {
-            // CREATE MODE
-            let investmentBalance = projectData.investmentBalance || 0;
-            let ownerUpdated = false;
-            let newOwnerState = { ...currentUser };
-
-            if (investmentBalance > 0 && projectData.settings?.billingMode === 'PROJECT_INVESTMENT') {
-                const owner = getUser(currentUser.id);
-                if (owner && owner.scansBalance >= investmentBalance) {
-                    owner.scansBalance -= investmentBalance;
-                    updateUser(currentUser.id, { scansBalance: owner.scansBalance });
-                    newOwnerState = { ...owner };
-                    ownerUpdated = true;
-                } else {
-                    alert("Insufficient funds for initial project budget. Creating with 0 budget.");
-                    investmentBalance = 0;
+        if (editingProject) {
+            updateMutation.mutate({
+                id: editingProject.id,
+                data: {
+                    title: projectData.title,
+                    description: projectData.description,
+                    status: projectData.status,
+                    settings: projectData.settings,
+                    investment_balance: projectData.investmentBalance
                 }
-            } else {
-                investmentBalance = 0;
+            });
+        } else {
+            // Check budget
+            const targetBudget = projectData.investmentBalance || 0;
+            if (projectData.settings?.billingMode === 'PROJECT_INVESTMENT' && targetBudget > 0) {
+                if (currentUser.scansBalance < targetBudget) {
+                    alert("Insufficient balance for this project budget.");
+                    return;
+                }
+                // Deduct balance (handled in App/Context usually, but here we sync)
+                if (onUpdateUser) {
+                    onUpdateUser({ scansBalance: currentUser.scansBalance - targetBudget }, true);
+                }
             }
 
-            if (ownerUpdated && onUpdateUser) {
-                onUpdateUser(newOwnerState);
-            }
-
-            const newProject: Project = {
-                id: `proj-${Date.now()}` as any,
+            createMutation.mutate({
                 title: projectData.title || 'Untitled Project',
                 description: projectData.description || '',
-                ownerId: currentUser.id,
-                createdAt: new Date().toISOString().split('T')[0],
-                fileCount: 0,
-                memberCount: 1,
+                owner_id: currentUser.id,
                 status: projectData.status || 'ACTIVE',
-                settings: projectData.settings as any,
-                members: [{
-                    userId: currentUser.id,
-                    role: ProjectRole.OWNER,
-                    permissions: ['SCAN', 'ANALYZE'],
-                    scansUsed: 0,
-                    scanQuota: 'UNLIMITED',
-                    joinedAt: new Date().toISOString().split('T')[0]
-                }],
-                investmentBalance: investmentBalance,
-                totalInvested: investmentBalance
-            };
+                settings: projectData.settings,
+                investment_balance: 0, // Start at 0, transfer after creation
+                total_invested: 0
+            }, {
+                onSuccess: async (newProj) => {
+                    if (targetBudget > 0) {
+                        const { data, error } = await supabase.rpc('transfer_project_funds', {
+                            p_project_id: newProj.id,
+                            p_amount: targetBudget,
+                            p_action: 'DEPOSIT'
+                        });
 
-            setProjects(prev => [newProject, ...prev]);
-            MOCK_PROJECTS.unshift(newProject);
+                        if (error) {
+                            console.error('Initial deposit failed:', error);
+                            alert("Project created but initial budget transfer failed: " + error.message);
+                        } else if (data && !data.success) {
+                            alert("Project created but initial budget transfer failed: " + data.error);
+                        }
+                    }
+                }
+            });
         }
-        setIsProjectModalOpen(false);
     };
 
-    const handleLoadMore = () => {
-        setDisplayCount(prev => prev + PROJECTS_PER_PAGE);
-    };
+    const handleLoadMore = () => setDisplayCount(prev => prev + PROJECTS_PER_PAGE);
 
     return {
         projects,
@@ -280,6 +375,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         confirmDeleteProject,
         confirmLeaveProject,
         handleProjectModalSave,
-        handleLoadMore
+        handleLoadMore,
+        loading: isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || leaveMutation.isPending
     };
 };

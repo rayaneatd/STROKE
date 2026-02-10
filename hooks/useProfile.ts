@@ -1,44 +1,113 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { User, SubscriptionPlan } from '../types';
-import { updateUser as updateUserMock } from '../services/mockData';
+import React, { useState, useEffect, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { User, Role, SubscriptionPlan, BillingType } from '../types';
 
-interface UseProfileProps {
-    user: User;
-    onUpdateUser: (updatedUser: User) => void;
-    onNavigate: (page: string) => void;
-}
-
-export const useProfile = ({ user, onUpdateUser, onNavigate }: UseProfileProps) => {
-    const [formData, setFormData] = useState({
-        displayName: user.displayName,
-        email: user.email,
-        phoneNumber: user.phoneNumber || '',
-        avatarUrl: user.avatarUrl || '',
-        company: user.company || '',
-        industry: user.industry || ''
-    });
-    const [isNylasConnecting, setIsNylasConnecting] = useState(false);
-
-    const [isLoading, setIsLoading] = useState(false);
+export const useProfile = () => {
+    const queryClient = useQueryClient();
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isNylasConnecting, setIsNylasConnecting] = useState(false);
 
-    const objectUrlRef = useRef<string | null>(null);
+    // 1. Fetch Profile Data
+    const { data: user, isLoading: loading, error } = useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) return null;
 
-    // Theme Logic
-    const isLight = user.preferences?.uiConfig?.theme === 'LIGHT';
-    const accentColor = user.preferences?.uiConfig?.accentColor || 'blue';
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', authUser.id)
+                .maybeSingle();
 
-    const isTeamPlan = user.subscriptionPlan === SubscriptionPlan.TEAM || user.subscriptionPlan === SubscriptionPlan.ELITE;
-
-    useEffect(() => {
-        return () => {
-            if (objectUrlRef.current) {
-                URL.revokeObjectURL(objectUrlRef.current);
+            if (error) {
+                console.warn('Profile query error, using skeleton:', error);
             }
-        };
-    }, []);
 
+            // Map data or use fallback
+            const profile = data || {};
+
+            return {
+                id: authUser.id,
+                email: authUser.email || '',
+                displayName: profile.display_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'Member',
+                phoneNumber: profile.phone_number || authUser.user_metadata?.phone_number || '',
+                avatarUrl: profile.avatar_url || authUser.user_metadata?.avatar_url || '',
+                role: profile.role as Role || Role.USER,
+                subscriptionPlan: profile.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
+                scansBalance: profile.scans_balance || 0,
+                purchasedScans: profile.purchased_scans || 0,
+                billingType: profile.billing_type as BillingType || BillingType.PREPAID,
+                overageCap: 0,
+                preferences: profile.preferences as any || {},
+                emailIntegrations: [],
+                signupDate: profile.signup_date,
+                company: (profile.preferences as any)?.company || '',
+                industry: (profile.preferences as any)?.industry || ''
+            } as User & { company?: string, industry?: string };
+        },
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        retry: 1
+    });
+
+    // 2. Form State
+    const [formData, setFormData] = useState({
+        displayName: '',
+        email: '',
+        phoneNumber: '',
+        avatarUrl: '',
+        company: '',
+        industry: ''
+    });
+
+    // Sync form with user data when loaded
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                displayName: user.displayName,
+                email: user.email,
+                phoneNumber: user.phoneNumber || '',
+                avatarUrl: user.avatarUrl || '',
+                company: user.company || '',
+                industry: user.industry || ''
+            });
+        }
+    }, [user]);
+
+    // 3. Mutation for Updates
+    const updateMutation = useMutation({
+        mutationFn: async (newData: typeof formData) => {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) throw new Error('Not authenticated');
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    display_name: newData.displayName,
+                    avatar_url: newData.avatarUrl,
+                    // Store extra fields in preferences for now if no specific columns
+                    preferences: {
+                        ...(user?.preferences || {}),
+                        company: newData.company,
+                        industry: newData.industry
+                    }
+                })
+                .eq('id', authUser.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            setMessage({ type: 'success', text: 'Profile updated successfully' });
+        },
+        onError: () => {
+            setMessage({ type: 'error', text: 'Failed to update profile' });
+        }
+    });
+
+    // Handlers
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -54,81 +123,24 @@ export const useProfile = ({ user, onUpdateUser, onNavigate }: UseProfileProps) 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-            const imageUrl = URL.createObjectURL(file);
-            objectUrlRef.current = imageUrl;
-            setFormData({ ...formData, avatarUrl: imageUrl });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData(prev => ({ ...prev, avatarUrl: reader.result as string }));
+            };
+            reader.readAsDataURL(file);
         }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
         setMessage(null);
-
-        setTimeout(() => {
-            try {
-                // Strictly update only profile fields, not subscription plan
-                const updated = updateUserMock(user.id, {
-                    displayName: formData.displayName,
-                    phoneNumber: formData.phoneNumber,
-                    avatarUrl: formData.avatarUrl,
-                    company: formData.company,
-                    industry: formData.industry,
-                    preferences: user.preferences
-                });
-                onUpdateUser(updated);
-                setMessage({ type: 'success', text: 'Profile updated successfully' });
-            } catch (err) {
-                setMessage({ type: 'error', text: 'Failed to update profile' });
-            } finally {
-                setIsLoading(false);
-            }
-        }, 800);
+        updateMutation.mutate(formData);
     };
 
-    // Nylas Simulation
-    const handleConnectNylas = () => {
-        // Check Plan Limit for multiple accounts
-        if (!isTeamPlan && user.emailIntegrations.length > 0) {
-            alert("Upgrade to Team Plan to connect multiple accounts.");
-            return;
-        }
-
-        setIsNylasConnecting(true);
-
-        // Capture current plan to ensure NO changes occur during async operation
-        const currentPlan = user.subscriptionPlan;
-
-        setTimeout(() => {
-            // Generate a mock new integration
-            const newIntegration = {
-                id: `email-${Date.now()}`,
-                provider: 'GMAIL' as const,
-                emailAddress: user.emailIntegrations.length === 0 ? formData.email : `secondary.${Date.now()}@gmail.com`,
-                isConnected: true,
-                addedAt: new Date().toISOString()
-            };
-
-            // Explicitly ONLY update emailIntegrations
-            // We defensively pass `subscriptionPlan: currentPlan` to guarantee no changes
-            const updated = updateUserMock(user.id, {
-                emailIntegrations: [...user.emailIntegrations, newIntegration],
-                preferences: user.preferences,
-                subscriptionPlan: currentPlan
-            });
-            onUpdateUser(updated);
-            setIsNylasConnecting(false);
-        }, 1500);
-    };
-
-    const handleDisconnectAccount = (integrationId: string) => {
-        const updated = updateUserMock(user.id, {
-            emailIntegrations: user.emailIntegrations.filter(i => i.id !== integrationId),
-            preferences: user.preferences
-        });
-        onUpdateUser(updated);
-    };
+    // UI/Theme Helpers (same as before)
+    const isLight = user?.preferences?.uiConfig?.theme === 'LIGHT';
+    const accentColor = user?.preferences?.uiConfig?.accentColor || 'blue';
+    const isTeamPlan = user?.subscriptionPlan === SubscriptionPlan.TEAM || user?.subscriptionPlan === SubscriptionPlan.ELITE;
 
     const getPlanColor = (plan: SubscriptionPlan) => {
         if (plan === SubscriptionPlan.ELITE || plan === SubscriptionPlan.TEAM) return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
@@ -137,9 +149,10 @@ export const useProfile = ({ user, onUpdateUser, onNavigate }: UseProfileProps) 
     };
 
     return {
+        user,
         formData,
         isNylasConnecting,
-        isLoading,
+        isLoading: loading || updateMutation.isPending,
         message,
         fileInputRef,
         isLight,
@@ -150,8 +163,8 @@ export const useProfile = ({ user, onUpdateUser, onNavigate }: UseProfileProps) 
         handleAvatarClick,
         handleFileChange,
         handleSubmit,
-        handleConnectNylas,
-        handleDisconnectAccount,
+        handleConnectNylas: () => alert("Nylas is simulated"),
+        handleDisconnectAccount: () => alert("Nylas is simulated"),
         getPlanColor
     };
 };

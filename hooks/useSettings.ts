@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { User, UserPreferences, EmployeeAddPermission, AIPreferences, UIPreferences, BillingType, SubscriptionPlan, OutreachStrategy } from '../types';
-import { updateUser as updateUserMock, changePassword, deleteUser } from '../services/mockData';
+import { supabase } from '../lib/supabase';
 import { useTheme } from '../context/ThemeContext';
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -42,11 +43,12 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
 
 interface UseSettingsProps {
     user: User;
-    onUpdateUser: (user: User) => void;
+    onUpdateUser: (data: Partial<User>, sync?: boolean) => void;
     onLogout: () => void;
 }
 
 export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) => {
+    const queryClient = useQueryClient();
     const { updateTheme, styles } = useTheme();
 
     const [activeTab, setActiveTab] = useState<'WORKFLOW' | 'APPEARANCE' | 'NOTIFICATIONS' | 'AI' | 'BILLING' | 'SECURITY'>('WORKFLOW');
@@ -76,6 +78,48 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
     const [billingType, setBillingType] = useState<BillingType>(user.billingType || BillingType.PREPAID);
     const [overageCap, setOverageCap] = useState<number | 'UNLIMITED'>(user.overageCap || 500);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    // Sync internal state with external user changes (Real-time)
+    useEffect(() => {
+        if (user.preferences) {
+            setPrefs(prev => ({
+                ...prev,
+                ...user.preferences,
+                notifications: { ...prev.notifications, ...user.preferences?.notifications },
+                aiConfig: { ...prev.aiConfig, ...user.preferences?.aiConfig },
+                uiConfig: { ...prev.uiConfig, ...user.preferences?.uiConfig }
+            }));
+        }
+        if (user.billingType) setBillingType(user.billingType);
+        if (user.overageCap) setOverageCap(user.overageCap);
+    }, [user.preferences, user.billingType, user.overageCap]);
+
+    // Mutation for saving settings
+    const saveMutation = useMutation({
+        mutationFn: async (data: { preferences: UserPreferences, billingType: BillingType, overageCap: number | 'UNLIMITED' }) => {
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    preferences: data.preferences,
+                    billing_type: data.billingType,
+                    overage_cap: data.overageCap === 'UNLIMITED' ? -1 : data.overageCap,
+                    company: (data.preferences as any).company,
+                    industry: (data.preferences as any).industry
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            onUpdateUser({ preferences: prefs, billingType, overageCap });
+            setMessage({ type: 'success', text: 'Preferences saved successfully.' });
+        },
+        onError: (err: any) => {
+            console.error('Save settings error:', err);
+            setMessage({ type: 'error', text: 'Failed to save settings.' });
+        }
+    });
 
     const handleToggle = (key: keyof UserPreferences, subKey?: string) => {
         if (subKey && typeof prefs[key] === 'object') {
@@ -116,54 +160,54 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
         // Immediate Update via Context
         updateTheme({ [key]: value });
 
-        // Update user state
-        const updatedUser = { ...user, preferences: newPrefs };
-        onUpdateUser(updatedUser);
-
-        updateUserMock(user.id, { preferences: newPrefs });
+        // Update local and backend user state immediately for UI consistency
+        onUpdateUser({ preferences: newPrefs }, true);
     };
 
     const handleSave = () => {
-        setIsLoading(true);
         setMessage(null);
-        setTimeout(() => {
-            try {
-                const updatedUser = updateUserMock(user.id, {
-                    preferences: prefs,
-                    billingType: billingType,
-                    overageCap: overageCap
-                });
-                onUpdateUser(updatedUser);
-                setMessage({ type: 'success', text: 'Preferences saved successfully.' });
-            } catch (err) {
-                setMessage({ type: 'error', text: 'Failed to save settings.' });
-            } finally {
-                setIsLoading(false);
-            }
-        }, 800);
+        saveMutation.mutate({ preferences: prefs, billingType, overageCap });
     };
 
-    const handleChangePassword = (old: string, newP: string, confirmP: string) => {
+    const handleChangePassword = async (old: string, newP: string, confirmP: string) => {
         if (newP !== confirmP) {
             setMessage({ type: 'error', text: "Passwords don't match" });
             return;
         }
-        if (changePassword(user.id, old, newP)) {
+
+        setIsLoading(true);
+        try {
+            const { error } = await supabase.auth.updateUser({ password: newP });
+            if (error) throw error;
             setMessage({ type: 'success', text: 'Password changed successfully' });
-        } else {
-            setMessage({ type: 'error', text: 'Incorrect current password' });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Failed to change password' });
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleDeleteAccount = () => {
-        deleteUser(user.id);
-        onLogout();
+    const handleDeleteAccount = async () => {
+        setIsLoading(true);
+        try {
+            // Note: In Supabase, deleting from public.profiles might be enough if you have triggers
+            // or you might want to call a dedicated edge function because users cannot delete themselves from auth.users via client side easily.
+            // For now, let's just sign out or try to delete the profile if RLS allows.
+            const { error } = await supabase.from('profiles').delete().eq('id', user.id);
+            if (error) throw error;
+
+            await supabase.auth.signOut();
+            onLogout();
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Failed to delete account' });
+            setIsLoading(false);
+        }
     };
 
     return {
         activeTab,
         setActiveTab,
-        isLoading,
+        isLoading: isLoading || saveMutation.isPending,
         message,
         prefs,
         billingType,

@@ -74,7 +74,7 @@ const getThemeForPlan = (plan: SubscriptionPlan) => {
 
 // --- MAIN APP CONTENT ---
 const AppContent: React.FC = () => {
-    const { user, logout, updateUser, isAuthenticated } = useAuth();
+    const { user, logout, updateUser, isAuthenticated, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -84,6 +84,7 @@ const AppContent: React.FC = () => {
 
         // Poll every 2 seconds to check status from "backend"
         const banCheckInterval = setInterval(() => {
+            if (!user?.id) return;
             const freshUserRecord = getUser(user.id);
 
             if (freshUserRecord) {
@@ -106,7 +107,7 @@ const AppContent: React.FC = () => {
     // Handle Theme Updates from anywhere
     const handleThemeChange = (newConfig: UIPreferences) => {
         if (user) {
-            updateUser({ preferences: { ...user.preferences, uiConfig: newConfig } as any });
+            updateUser({ preferences: { ...user.preferences, uiConfig: newConfig } as any }, true);
         }
     };
 
@@ -146,6 +147,10 @@ const AppContent: React.FC = () => {
         updateUser(updatedUser);
     }, [updateUser]);
 
+    if (loading) {
+        return <PageLoader />;
+    }
+
     // 1. Unauthenticated State
     if (!isAuthenticated || !user) {
         return (
@@ -174,9 +179,11 @@ const AppContent: React.FC = () => {
                 <GlobalBanModal user={user} onLogout={logout} />
             )}
 
+            {/* Onboarding disabled for migration phase
             {user && !user.hasCompletedOnboarding && !user.isBanned && (
                 <OnboardingWizard user={user} onComplete={handleUpdateUser} />
             )}
+            */}
 
             <Layout {...commonLayoutProps}>
                 <Suspense fallback={<ContentLoader />}>
@@ -231,7 +238,7 @@ const AppContent: React.FC = () => {
                             <BuyScans
                                 onBack={() => navigate(-1)}
                                 onBuy={(amount) => {
-                                    updateUser({ scansBalance: (user.scansBalance || 0) + amount });
+                                    updateUser({ scansBalance: (user.scansBalance || 0) + amount }, true);
                                     navigate(-1);
                                 }}
                                 currentBalance={user.scansBalance}
@@ -253,7 +260,7 @@ const AppContent: React.FC = () => {
                                                 ambientGlow: theme.glow as any
                                             }
                                         } as any
-                                    });
+                                    }, true);
                                 }}
                                 currentUser={user}
                             />

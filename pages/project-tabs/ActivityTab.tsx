@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ProjectFile, User, Project } from '../../types';
-import { MOCK_USERS, markFileViewed, markFileExported, generateAIEmailDraft, generateReport, saveCandidateDraft, markCandidateContacted } from '../../services/mockData';
-import { 
-    Activity, Calendar, Clock, Download, FileText, Filter, Ghost, 
+import { ProjectFile, User, Project, ProjectRole } from '../../types';
+import { generateAIEmailDraft, generateReport, saveCandidateDraft, markCandidateContacted } from '../../services/mockData';
+import {
+    Activity, Calendar, Clock, Download, FileText, Filter, Ghost,
     Loader2, Search, Send, User as UserIcon, Wand2, MailCheck,
     SortAsc, SortDesc, Check, X,
     Crown, Medal, Award, Trophy, // Rank Icons
@@ -16,7 +16,9 @@ interface ActivityTabProps {
     project: Project;
     canUseAntiGhosting: boolean;
     onMarkContacted?: (fileId: string) => void;
-    onBatchUpdate?: (updates: {id: string, changes: Partial<ProjectFile>}[]) => void;
+    onMarkViewed?: (fileId: string) => void;
+    onMarkExported?: (fileId: string) => void;
+    onBatchUpdate?: (updates: { id: string, changes: Partial<ProjectFile> }[]) => void;
     currentUser: User;
 }
 
@@ -25,21 +27,23 @@ type ScoreFilter = 'HIGH' | 'MID' | 'LOW';
 type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED' | 'HAS_DRAFT';
 type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME';
 
-const ITEM_HEIGHT = 72; 
-const CONTAINER_HEIGHT = 600; 
+const ITEM_HEIGHT = 72;
+const CONTAINER_HEIGHT = 600;
 
-const ActivityTab: React.FC<ActivityTabProps> = ({ 
-    files, 
-    project, 
-    canUseAntiGhosting, 
+const ActivityTab: React.FC<ActivityTabProps> = ({
+    files,
+    project,
+    canUseAntiGhosting,
     onMarkContacted,
-    onBatchUpdate, 
-    currentUser 
+    onMarkViewed,
+    onMarkExported,
+    onBatchUpdate,
+    currentUser
 }) => {
     const [search, setSearch] = useState('');
     const [isDraftingAll, setIsDraftingAll] = useState(false);
     const [isSendingAll, setIsSendingAll] = useState(false);
-    
+
     // --- Filter & Sort State (Multi-Select) ---
     const [sortOption, setSortOption] = useState<SortOption>('DATE_DESC');
     const [filterScanners, setFilterScanners] = useState<string[]>([]);
@@ -67,17 +71,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const borderClass = isLight ? 'border-slate-100' : 'border-white/5';
     const itemHoverClass = isLight ? 'hover:bg-slate-50' : 'hover:bg-white/5';
     const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:bg-white' : 'bg-black/20 border-white/5 text-white placeholder:text-zinc-600';
-    
-    const selectBg = isLight 
+
+    const selectBg = isLight
         ? 'bg-white border-slate-200 text-slate-700 focus:ring-2 focus:ring-slate-100'
         : 'bg-[#18181b] border-white/10 text-zinc-300 focus:ring-2 focus:ring-white/5';
 
     // Map user IDs to User objects for quick lookup
     const userMap = useMemo(() => {
         const map = new Map<string, User>();
-        MOCK_USERS.forEach(u => map.set(u.id, u));
+        project.members.forEach(m => {
+            if (m.user) map.set(m.userId, m.user);
+        });
         return map;
-    }, []);
+    }, [project.members]);
 
     // Get unique scanners for filter dropdown
     const availableScanners = useMemo(() => {
@@ -93,7 +99,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         const scoredFiles = files
             .filter(f => f.status === 'COMPLETED' && typeof f.score === 'number')
             .sort((a, b) => (b.score || 0) - (a.score || 0));
-        
+
         const map = new Map<string, number>();
         scoredFiles.forEach((f, index) => {
             map.set(f.id, index + 1);
@@ -103,11 +109,11 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
     const filteredFiles = useMemo(() => {
         let result = [...files];
-        
+
         // 1. Search
         if (search) {
             const lower = search.toLowerCase();
-            result = result.filter(f => 
+            result = result.filter(f =>
                 f.candidateName?.toLowerCase().includes(lower) ||
                 f.name.toLowerCase().includes(lower) ||
                 userMap.get(f.uploadedByUserId || '')?.displayName.toLowerCase().includes(lower)
@@ -172,7 +178,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     // STRICT At Risk Logic:
     // Defined as any candidate who has NOT been emailed.
     const riskCandidates = useMemo(() => files.filter(f => !f.emailSentAt && f.status !== 'FAILED'), [files]);
-    
+
     // FILTERED Risk Logic:
     // Uncontacted candidates strictly within the CURRENT filtered view
     const filteredRiskCandidates = useMemo(() => filteredFiles.filter(f => !f.emailSentAt && f.status !== 'FAILED'), [filteredFiles]);
@@ -206,21 +212,20 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const handleGhostingKiller = () => {
         if (candidatesNoDrafts.length === 0) return;
         setIsDraftingAll(true);
-        
+
         setTimeout(() => {
-            const updates: {id: string, changes: Partial<ProjectFile>}[] = [];
+            const updates: { id: string, changes: Partial<ProjectFile> }[] = [];
 
             // Iterate only candidates needing drafts
             candidatesNoDrafts.forEach(f => {
                 const draft = generateAIEmailDraft(f.candidateName || 'Candidate', f.score || 0);
-                saveCandidateDraft(f.id, draft); // Mock Backend Save
                 updates.push({ id: f.id, changes: { emailDraft: draft } });
             });
-            
+
             if (updates.length > 0 && onBatchUpdate) {
                 onBatchUpdate(updates);
             }
-            
+
             setIsDraftingAll(false);
         }, 1500);
     };
@@ -231,21 +236,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         setIsSendingAll(true);
 
         setTimeout(() => {
-            const updates: {id: string, changes: Partial<ProjectFile>}[] = [];
+            const updates: { id: string, changes: Partial<ProjectFile> }[] = [];
 
+            const now = new Date().toISOString();
             candidatesWithDrafts.forEach(f => {
-                const updatedFile = markCandidateContacted(f.id, currentUser.id);
-                if (updatedFile) {
-                    updates.push({ 
-                        id: f.id, 
-                        changes: { 
-                            emailSentAt: updatedFile.emailSentAt,
-                            emailSentBy: updatedFile.emailSentBy,
-                            lastContactedAt: updatedFile.lastContactedAt,
-                            emailDraft: undefined // Clear draft locally too
-                        } 
-                    });
-                }
+                updates.push({
+                    id: f.id,
+                    changes: {
+                        emailSentAt: now,
+                        emailSentBy: currentUser.id,
+                        lastContactedAt: now,
+                        emailDraft: '' // Clear draft in DB
+                    }
+                });
             });
 
             if (updates.length > 0 && onBatchUpdate) {
@@ -267,8 +270,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         const val = e.target.value;
         setGeneratedEmail(val);
         if (selectedFile) {
-            saveCandidateDraft(selectedFile.id, val);
-            selectedFile.emailDraft = val; 
+            selectedFile.emailDraft = val;
             if (onBatchUpdate) {
                 onBatchUpdate([{ id: selectedFile.id, changes: { emailDraft: val } }]);
             }
@@ -282,9 +284,8 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         setTimeout(() => {
             const draft = generateAIEmailDraft(selectedFile.candidateName || 'Candidate', selectedFile.score || 0);
             setGeneratedEmail(draft);
-            saveCandidateDraft(selectedFile.id, draft);
             selectedFile.emailDraft = draft;
-            
+
             if (onBatchUpdate) {
                 onBatchUpdate([{ id: selectedFile.id, changes: { emailDraft: draft } }]);
             }
@@ -297,16 +298,16 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         if (onMarkContacted && selectedFile && !isEmailSent) {
             onMarkContacted(selectedFile.id);
             const now = new Date().toISOString();
-            
+
             const update = {
-                emailSentAt: now, 
+                emailSentAt: now,
                 emailDraft: undefined
             };
 
-            setSelectedFile(prev => prev ? {...prev, ...update} : null);
+            setSelectedFile(prev => prev ? { ...prev, ...update } : null);
             setIsEmailSent(true);
             setGeneratedEmail(`[Email sent on ${new Date(now).toLocaleDateString()}]`);
-            
+
             if (onBatchUpdate) {
                 onBatchUpdate([{ id: selectedFile.id, changes: update }]);
             }
@@ -329,19 +330,22 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            candidatesToExport.forEach(f => markFileExported(f.id, currentUser.id));
+
+            if (onMarkExported) {
+                candidatesToExport.forEach(f => onMarkExported(f.id));
+            }
             setIsExporting(false);
         }, 1500);
     };
 
     const handleCandidateClick = (file: ProjectFile) => {
-        markFileViewed(file.id, currentUser.id);
+        if (onMarkViewed) onMarkViewed(file.id);
         setSelectedFile(file);
         setDrawerTab('ANALYSIS');
-        
+
         const alreadySent = !!file.emailSentAt;
         setIsEmailSent(alreadySent);
-        
+
         if (alreadySent) {
             setGeneratedEmail(`[Email sent on ${new Date(file.emailSentAt!).toLocaleDateString()}]`);
         } else {
@@ -374,8 +378,8 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const totalScans = files.length;
     const uniqueScanners = new Set(files.map(f => f.uploadedByUserId)).size;
 
-    const filteredScanners = availableScanners.filter(u => 
-        u.displayName.toLowerCase().includes(scannerSearch.toLowerCase()) || 
+    const filteredScanners = availableScanners.filter(u =>
+        u.displayName.toLowerCase().includes(scannerSearch.toLowerCase()) ||
         u.email.toLowerCase().includes(scannerSearch.toLowerCase())
     );
 
@@ -421,24 +425,24 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
             {/* Main List Container */}
             <div className={`${cardBg} rounded-2xl border shadow-sm flex-1 flex flex-col overflow-hidden`}>
-                
+
                 {/* Toolbar */}
                 <div className={`p-4 border-b flex flex-col md:flex-row justify-between items-center gap-4 ${borderClass} ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}>
                     <div className="flex flex-1 gap-2 w-full">
                         <div className="relative flex-1">
                             <Search className={`absolute left-3 top-1/2 -translate-y-1/2 ${textSecondary}`} size={16} />
-                            <input 
-                                type="text" 
-                                placeholder="Search by candidate or scanner..." 
+                            <input
+                                type="text"
+                                placeholder="Search by candidate or scanner..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:outline-none focus:ring-1 focus:ring-${accentColor}-500 text-sm ${inputBg}`}
                             />
                         </div>
-                        
+
                         {/* Sort Dropdown */}
                         <div className="relative group min-w-[140px]">
-                            <select 
+                            <select
                                 value={sortOption}
                                 onChange={(e) => setSortOption(e.target.value as SortOption)}
                                 className={`w-full pl-3 pr-8 py-2 rounded-xl border text-sm font-medium focus:outline-none focus:ring-1 focus:ring-${accentColor}-500 appearance-none cursor-pointer ${selectBg}`}
@@ -449,20 +453,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                 <option value="SCORE_ASC" className={isLight ? "bg-white" : "bg-[#18181b]"}>Score (Low)</option>
                             </select>
                             <div className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${textSecondary}`}>
-                                {sortOption.includes('ASC') ? <SortAsc size={14}/> : <SortDesc size={14}/>}
+                                {sortOption.includes('ASC') ? <SortAsc size={14} /> : <SortDesc size={14} />}
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 w-full md:w-auto">
                         <div className="relative">
-                            <button 
+                            <button
                                 onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); }}
-                                className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors ${
-                                    activeFiltersCount > 0 
-                                    ? `bg-${accentColor}-500/10 border-${accentColor}-500/20 text-${accentColor}-500` 
+                                className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors ${activeFiltersCount > 0
+                                    ? `bg-${accentColor}-500/10 border-${accentColor}-500/20 text-${accentColor}-500`
                                     : isLight ? 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100' : 'bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10'
-                                }`}
+                                    }`}
                             >
                                 <Filter size={14} /> Filter
                                 {activeFiltersCount > 0 && (
@@ -474,7 +477,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
                             {/* Filter Dropdown Menu */}
                             {isFilterOpen && (
-                                <div 
+                                <div
                                     onClick={(e) => e.stopPropagation()}
                                     className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-xl border z-30 animate-fade-in-up p-4 ${isLight ? 'bg-white border-slate-200 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}
                                 >
@@ -487,12 +490,12 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                                     <span className={`text-[10px] bg-${accentColor}-500/10 text-${accentColor}-400 px-1.5 rounded-md font-bold`}>{filterScanners.length}</span>
                                                 )}
                                             </div>
-                                            
+
                                             <div className="relative mb-2">
                                                 <Search size={12} className={`absolute left-2.5 top-1/2 -translate-y-1/2 ${textSecondary}`} />
-                                                <input 
-                                                    type="text" 
-                                                    placeholder="Find user..." 
+                                                <input
+                                                    type="text"
+                                                    placeholder="Find user..."
                                                     value={scannerSearch}
                                                     onChange={(e) => setScannerSearch(e.target.value)}
                                                     onClick={(e) => e.stopPropagation()}
@@ -511,7 +514,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                                             <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${filterScanners.includes(u.id) ? `bg-${accentColor}-500 border-${accentColor}-500` : isLight ? 'border-slate-300 group-hover:border-slate-400' : 'border-zinc-700 group-hover:border-zinc-500'}`}>
                                                                 {filterScanners.includes(u.id) && <Check size={10} className="text-white" />}
                                                             </div>
-                                                            <img src={u.avatarUrl} className={`w-5 h-5 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`} alt=""/>
+                                                            <img src={u.avatarUrl} className={`w-5 h-5 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`} alt="" />
                                                             <span className={`truncate ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{u.displayName}</span>
                                                         </div>
                                                     </button>
@@ -530,11 +533,10 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                                     <button
                                                         key={opt}
                                                         onClick={(e) => { e.stopPropagation(); toggleFilter(opt as ScoreFilter, filterScores, setFilterScores); }}
-                                                        className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-colors ${
-                                                            filterScores.includes(opt as ScoreFilter)
-                                                            ? `bg-${accentColor}-600 text-white border-${accentColor}-600` 
+                                                        className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-colors ${filterScores.includes(opt as ScoreFilter)
+                                                            ? `bg-${accentColor}-600 text-white border-${accentColor}-600`
                                                             : isLight ? 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-100' : 'bg-white/5 text-zinc-400 border-white/5 hover:bg-white/10'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {opt}
                                                     </button>
@@ -574,7 +576,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         {(activeFiltersCount > 0 || search) && (
                                             <div className={`pt-2 border-t ${borderClass}`}>
                                                 <button onClick={clearFilters} className="w-full py-2 text-xs font-bold text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center gap-1">
-                                                    <X size={12}/> Clear Filters
+                                                    <X size={12} /> Clear Filters
                                                 </button>
                                             </div>
                                         )}
@@ -583,12 +585,12 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                             )}
                         </div>
 
-                        <button 
+                        <button
                             onClick={handleExport}
                             disabled={isExporting}
                             className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'}`}
                         >
-                            {isExporting ? <Loader2 size={14} className="animate-spin"/> : <Download size={14} />} 
+                            {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                             Export
                         </button>
                     </div>
@@ -604,7 +606,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                 </div>
 
                 {/* List Content with Virtualization */}
-                <div 
+                <div
                     className={`flex-1 overflow-y-auto custom-scrollbar min-h-[500px] ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}
                     onScroll={onScroll}
                     style={{ height: CONTAINER_HEIGHT, position: 'relative' }}
@@ -626,7 +628,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                 const scanner = userMap.get(file.uploadedByUserId || '');
                                 const score = file.score || 0;
                                 const rank = rankMap.get(file.id);
-                                
+
                                 const isExported = file.exportedBy?.includes(currentUser.id);
                                 const isViewed = file.viewedBy?.includes(currentUser.id);
                                 const isEmailed = !!file.emailSentAt;
@@ -665,8 +667,8 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                 }
 
                                 return (
-                                    <div 
-                                        key={file.id} 
+                                    <div
+                                        key={file.id}
                                         onClick={() => handleCandidateClick(file)}
                                         style={{
                                             position: 'absolute',
@@ -715,8 +717,8 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         <div className="col-span-3 flex items-center gap-2">
                                             {scanner ? (
                                                 <>
-                                                    <img 
-                                                        src={scanner.avatarUrl || `https://ui-avatars.com/api/?name=${scanner.displayName}`} 
+                                                    <img
+                                                        src={scanner.avatarUrl || `https://ui-avatars.com/api/?name=${scanner.displayName}`}
                                                         className={`w-6 h-6 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`}
                                                         alt={scanner.displayName}
                                                     />
@@ -728,21 +730,20 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         </div>
                                         <div className={`col-span-2 text-xs ${textSecondary}`}>
                                             <div className="flex items-center gap-1.5">
-                                                <Calendar size={12}/>
+                                                <Calendar size={12} />
                                                 {new Date(file.uploadedAt).toLocaleDateString()}
                                             </div>
                                             <div className="flex items-center gap-1.5 mt-0.5 opacity-70">
-                                                <Clock size={12}/>
-                                                {new Date(file.uploadedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                <Clock size={12} />
+                                                {new Date(file.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
                                         </div>
                                         <div className="col-span-2 text-right">
                                             {file.status === 'COMPLETED' ? (
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${
-                                                    score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                                     score >= 50 ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                                    isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700'
-                                                }`}>
+                                                        isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700'
+                                                    }`}>
                                                     {score}%
                                                 </span>
                                             ) : (
@@ -785,24 +786,23 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <button 
+                        <button
                             onClick={handleGhostingKiller}
                             disabled={isDraftingAll || candidatesNoDrafts.length === 0}
                             className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-colors border disabled:opacity-50 flex items-center gap-2 ${isLight ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-600' : 'bg-white/5 hover:bg-white/10 border-white/5 text-white'}`}
                         >
-                            {isDraftingAll ? <Loader2 size={14} className="animate-spin"/> : <Wand2 size={14}/>}
+                            {isDraftingAll ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
                             {isDraftingAll ? 'Drafting...' : `Draft (${candidatesNoDrafts.length})`}
                         </button>
-                        <button 
+                        <button
                             onClick={handleSendBulk}
                             disabled={candidatesWithDrafts.length === 0 || isSendingAll}
-                            className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg ${
-                                candidatesWithDrafts.length > 0
-                                ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-900/40' 
+                            className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-lg ${candidatesWithDrafts.length > 0
+                                ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-900/40'
                                 : isLight ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                            }`}
+                                }`}
                         >
-                            {isSendingAll ? <Loader2 size={14} className="animate-spin"/> : <Send size={14}/>} 
+                            {isSendingAll ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                             {isSendingAll ? 'Sending...' : `Send (${candidatesWithDrafts.length})`}
                         </button>
                     </div>
@@ -830,7 +830,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         )}
                                     </div>
                                     <p className={`text-xs flex items-center gap-1.5 mt-1 ${textSecondary}`}>
-                                        <FileText size={12}/> {selectedFile.name} • Added {new Date(selectedFile.uploadedAt).toLocaleDateString()}
+                                        <FileText size={12} /> {selectedFile.name} • Added {new Date(selectedFile.uploadedAt).toLocaleDateString()}
                                     </p>
                                 </div>
                             </div>
@@ -877,23 +877,23 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                             {/* Right: Rich AI Drawer */}
                             <div className={`w-full lg:w-[450px] flex flex-col h-full ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}>
                                 <div className={`flex p-4 border-b gap-2 ${borderClass} ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}>
-                                    <button 
+                                    <button
                                         onClick={() => setDrawerTab('ANALYSIS')}
                                         className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${drawerTab === 'ANALYSIS' ? (isLight ? `bg-slate-100 text-slate-900 shadow-sm border border-slate-200` : 'bg-white/10 text-white shadow-sm border border-white/5') : (isLight ? 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}`}
                                     >
-                                        <BrainCircuit size={14}/> Analysis
+                                        <BrainCircuit size={14} /> Analysis
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setDrawerTab('COMMUNICATION')}
                                         className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${drawerTab === 'COMMUNICATION' ? 'bg-purple-500/10 text-purple-500 shadow-sm border border-purple-500/20' : (isLight ? 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}`}
                                     >
-                                        <Mail size={14}/> Email
+                                        <Mail size={14} /> Email
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setDrawerTab('RESUME')}
                                         className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${drawerTab === 'RESUME' ? `bg-${accentColor}-500/10 text-${accentColor}-500 shadow-sm border border-${accentColor}-500/20` : (isLight ? 'text-slate-500 hover:text-slate-700 hover:bg-slate-50' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5')}`}
                                     >
-                                        <FileText size={14}/> Profile
+                                        <FileText size={14} /> Profile
                                     </button>
                                 </div>
 
@@ -930,7 +930,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10">
-                                                    <h5 className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase mb-2"><ThumbsUp size={12}/> Key Strengths</h5>
+                                                    <h5 className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase mb-2"><ThumbsUp size={12} /> Key Strengths</h5>
                                                     <ul className={`text-xs space-y-1 list-disc pl-3 ${isLight ? 'text-emerald-700' : 'text-zinc-400'}`}>
                                                         <li>Advanced React Patterns</li>
                                                         <li>Team Leadership (5+ yrs)</li>
@@ -938,7 +938,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                                     </ul>
                                                 </div>
                                                 <div className="bg-rose-500/5 p-4 rounded-xl border border-rose-500/10">
-                                                    <h5 className="flex items-center gap-2 text-xs font-bold text-rose-500 uppercase mb-2"><ThumbsDown size={12}/> Potential Risks</h5>
+                                                    <h5 className="flex items-center gap-2 text-xs font-bold text-rose-500 uppercase mb-2"><ThumbsDown size={12} /> Potential Risks</h5>
                                                     <ul className={`text-xs space-y-1 list-disc pl-3 ${isLight ? 'text-rose-700' : 'text-zinc-400'}`}>
                                                         <li>Short tenure in 2021</li>
                                                         <li>Salary expectations</li>
@@ -954,18 +954,18 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                             <div className={`bg-purple-500/10 border border-purple-500/20 rounded-2xl p-4 transition-opacity ${isEmailSent ? 'opacity-50 pointer-events-none' : ''}`}>
                                                 <div className="flex justify-between items-center mb-3">
                                                     <label className="text-xs font-bold text-purple-500 uppercase tracking-wider block flex items-center gap-2">
-                                                        <Sparkles size={14} className="text-purple-500"/> AI Composer
+                                                        <Sparkles size={14} className="text-purple-500" /> AI Composer
                                                     </label>
-                                                    <button 
+                                                    <button
                                                         onClick={handleGenerateSingleEmail}
                                                         disabled={isGeneratingEmail || isEmailSent}
                                                         className="text-[10px] font-bold bg-purple-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-purple-500 transition-colors disabled:opacity-50"
                                                     >
-                                                        {isGeneratingEmail ? <Loader2 size={12} className="animate-spin"/> : <Wand2 size={12}/>}
+                                                        {isGeneratingEmail ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
                                                         Generate Response
                                                     </button>
                                                 </div>
-                                                <textarea 
+                                                <textarea
                                                     className={`w-full p-3 text-sm rounded-xl border border-white/10 focus:ring-1 focus:ring-purple-500 focus:outline-none min-h-[80px] resize-none disabled:opacity-50 ${isLight ? 'bg-white text-slate-800 placeholder:text-slate-400 border-purple-200' : 'bg-black/20 text-white placeholder:text-zinc-600'}`}
                                                     placeholder="Any specific context? e.g. Mention salary range..."
                                                     value={aiPrompt}
@@ -992,23 +992,22 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
                                             <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
                                                 {!isEmailSent && (
-                                                    <button 
-                                                        onClick={() => {setGeneratedEmail(''); if(selectedFile) saveCandidateDraft(selectedFile.id, ''); if(onBatchUpdate) onBatchUpdate([{id: selectedFile.id, changes: {emailDraft: ''}}])}}
+                                                    <button
+                                                        onClick={() => { setGeneratedEmail(''); if (selectedFile && onBatchUpdate) onBatchUpdate([{ id: selectedFile.id, changes: { emailDraft: '' } }]) }}
                                                         className={`flex-1 py-3 rounded-xl border font-bold text-xs transition-colors ${isLight ? 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50' : 'border-white/10 text-zinc-400 hover:bg-white/5 hover:text-white'}`}
                                                     >
                                                         Clear
                                                     </button>
                                                 )}
-                                                <button 
+                                                <button
                                                     onClick={handleSendSingleEmail}
                                                     disabled={!generatedEmail || isEmailSent}
-                                                    className={`flex-[2] py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${
-                                                        isEmailSent 
-                                                        ? 'bg-emerald-600 text-white cursor-default shadow-none' 
+                                                    className={`flex-[2] py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${isEmailSent
+                                                        ? 'bg-emerald-600 text-white cursor-default shadow-none'
                                                         : isLight ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-white text-black hover:bg-zinc-200'
-                                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                                                 >
-                                                    {isEmailSent ? <MailCheck size={14}/> : <Send size={14}/>} 
+                                                    {isEmailSent ? <MailCheck size={14} /> : <Send size={14} />}
                                                     {isEmailSent ? 'Email Sent' : 'Send Email'}
                                                 </button>
                                             </div>
@@ -1021,19 +1020,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                                 <h4 className={`text-xs font-extrabold uppercase tracking-widest mb-4 ${textSecondary}`}>Key Details</h4>
                                                 <div className="space-y-4">
                                                     <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Mail size={18}/></div>
+                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Mail size={18} /></div>
                                                         <span className="truncate font-medium">{getMockCandidateDetails(selectedFile).email}</span>
                                                     </div>
                                                     <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Phone size={18}/></div>
+                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Phone size={18} /></div>
                                                         <span className="font-medium">{getMockCandidateDetails(selectedFile).phone}</span>
                                                     </div>
                                                     <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><MapPin size={18}/></div>
+                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><MapPin size={18} /></div>
                                                         <span className="font-medium">{getMockCandidateDetails(selectedFile).location}</span>
                                                     </div>
                                                     <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><GraduationCap size={18}/></div>
+                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><GraduationCap size={18} /></div>
                                                         <span className="font-medium">Bachelor's Degree</span>
                                                     </div>
                                                 </div>

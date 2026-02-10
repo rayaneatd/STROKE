@@ -22,8 +22,8 @@ export enum SubscriptionPlan {
 }
 
 export enum BillingType {
-    PREPAID = 'PREPAID',
-    POSTPAID = 'POSTPAID'
+  PREPAID = 'PREPAID',
+  POSTPAID = 'POSTPAID'
 }
 
 // --- BULK UPLOAD TYPES ---
@@ -56,43 +56,43 @@ export type AsyncState<T> =
   | { status: 'error'; data: T | null; error: string };
 
 export interface AIPreferences {
-    strictness: 'LOW' | 'MEDIUM' | 'HIGH';
-    tone: 'PROFESSIONAL' | 'CASUAL' | 'DIRECT';
-    emailPersona: 'EMPATHETIC' | 'DIRECT' | 'ENTHUSIASTIC';
-    antiGhosting: boolean;
-    rejectionContext: boolean;
+  strictness: 'LOW' | 'MEDIUM' | 'HIGH';
+  tone: 'PROFESSIONAL' | 'CASUAL' | 'DIRECT';
+  emailPersona: 'EMPATHETIC' | 'DIRECT' | 'ENTHUSIASTIC';
+  antiGhosting: boolean;
+  rejectionContext: boolean;
 }
 
 export interface UIPreferences {
-    theme: 'DARK' | 'LIGHT';
-    ambientGlow: 'slate' | 'blue' | 'cyan' | 'emerald' | 'violet' | 'rose' | 'amber';
-    accentColor: 'slate' | 'blue' | 'cyan' | 'emerald' | 'violet' | 'rose' | 'amber';
-    reducedMotion: boolean;
-    glassIntensity: 'LOW' | 'MEDIUM' | 'HIGH';
-    density: 'COMFORTABLE' | 'COMPACT';
+  theme: 'DARK' | 'LIGHT';
+  ambientGlow: 'slate' | 'blue' | 'cyan' | 'emerald' | 'violet' | 'rose' | 'amber';
+  accentColor: 'slate' | 'blue' | 'cyan' | 'emerald' | 'violet' | 'rose' | 'amber';
+  reducedMotion: boolean;
+  glassIntensity: 'LOW' | 'MEDIUM' | 'HIGH';
+  density: 'COMFORTABLE' | 'COMPACT';
 }
 
 export type ProjectBillingMode = 'OWNER_WALLET' | 'PROJECT_INVESTMENT';
 
 export enum OutreachStrategy {
-    OWNER_IDENTITY = 'OWNER_IDENTITY', // All mails sent via Owner's selected email
-    INDIVIDUAL_IDENTITY = 'INDIVIDUAL_IDENTITY' // Mails sent via User's own selected email
+  OWNER_IDENTITY = 'OWNER_IDENTITY', // All mails sent via Owner's selected email
+  INDIVIDUAL_IDENTITY = 'INDIVIDUAL_IDENTITY' // Mails sent via User's own selected email
 }
 
 export interface UserPreferences {
   defaultInvitationPermission: EmployeeAddPermission;
   defaultQuickDemoteTarget: DemoteTarget;
   defaultAnalystAccessOnlyForCompleted: boolean;
-  defaultAdminCanChangeStatus: boolean; 
+  defaultAdminCanChangeStatus: boolean;
   defaultAdminCanManageQuotas: boolean;
   // New Settings
   defaultAnalystCanViewActivity: boolean;
   defaultAnalystCanUseGhosting: boolean;
-  defaultScoutCanUseGhosting: boolean; 
-  
+  defaultScoutCanUseGhosting: boolean;
+
   defaultOutreachStrategy: OutreachStrategy; // New: Default for new projects
   defaultOwnerOutreachEmailId?: string; // New: Specific email ID to use when strategy is OWNER_IDENTITY
-  
+
   defaultScanQuota: number | 'UNLIMITED';
   defaultBillingMode: ProjectBillingMode;
   defaultInvestmentBudget: number;
@@ -108,22 +108,22 @@ export interface UserPreferences {
 }
 
 export interface EmailIntegration {
-    id: string;
-    provider: 'GMAIL' | 'OUTLOOK' | 'OFFICE365' | 'IMAP';
-    emailAddress: string;
-    isConnected: boolean;
-    addedAt: string;
+  id: string;
+  provider: 'GMAIL' | 'OUTLOOK' | 'OFFICE365' | 'IMAP';
+  emailAddress: string;
+  isConnected: boolean;
+  addedAt: string;
 }
 
 export interface User {
   id: UserId;
   email: string;
-  phoneNumber?: string; 
+  phoneNumber?: string;
   displayName: string;
   avatarUrl?: string;
-  jobTitle?: string; 
+  jobTitle?: string;
   company?: string;
-  industry?: string; 
+  industry?: string;
   role: Role;
   subscriptionPlan: SubscriptionPlan;
   scansBalance: number;
@@ -135,14 +135,14 @@ export interface User {
   banReason?: string;
   bannedAt?: string;
   bannedBy?: string;
-  banExpiresAt?: string | null; 
+  banExpiresAt?: string | null;
   country?: string;
   city?: string;
-  coordinates?: { lat: number; lng: number }; 
+  coordinates?: { lat: number; lng: number };
   lastActive?: string;
   signupDate?: string;
-  hasCompletedOnboarding?: boolean; 
-  
+  hasCompletedOnboarding?: boolean;
+
   // Updated: List of integrations
   emailIntegrations: EmailIntegration[];
 }
@@ -156,9 +156,9 @@ export enum ProjectRole {
 export type ProjectPermission = 'SCAN' | 'ANALYZE';
 
 export enum EmployeeAddPermission {
-  ALL = 'ALL', 
-  OWN_CONNECTIONS = 'OWN_CONNECTIONS', 
-  OWNER_CONNECTIONS = 'OWNER_CONNECTIONS' 
+  ALL = 'ALL',
+  OWN_CONNECTIONS = 'OWN_CONNECTIONS',
+  OWNER_CONNECTIONS = 'OWNER_CONNECTIONS'
 }
 
 export type DemoteTarget = 'VISITOR' | 'SCOUT' | 'ANALYST' | 'PARTNER';
@@ -166,11 +166,12 @@ export type DemoteTarget = 'VISITOR' | 'SCOUT' | 'ANALYST' | 'PARTNER';
 export interface ProjectMember {
   userId: UserId;
   role: ProjectRole;
-  permissions: ProjectPermission[]; 
+  permissions: ProjectPermission[];
   scansUsed: number;
   scanQuota: number | 'UNLIMITED';
   joinedAt: string;
   preferredOutreachEmailId?: string; // The email ID this user wants to use for this project
+  user?: User;
 }
 
 export interface ProjectSettings {
@@ -182,8 +183,8 @@ export interface ProjectSettings {
   // New Settings
   analystCanViewActivity: boolean;
   analystCanUseGhosting: boolean;
-  scoutCanUseGhosting: boolean; 
-  
+  scoutCanUseGhosting: boolean;
+
   // Updated Outreach Config
   outreachStrategy: OutreachStrategy;
   ownerOutreachEmailId?: string; // If OWNER_IDENTITY, which email ID to use?
@@ -209,23 +210,23 @@ export interface Project {
 
 export interface ProjectFile {
   id: FileId;
-  projectId: ProjectId; 
+  projectId: ProjectId;
   name: string;
   size: string;
   status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   uploadedAt: string;
   score?: number;
   candidateName?: string;
-  uploadedByUserId?: UserId; 
-  failureReasons?: string[]; 
-  
+  uploadedByUserId?: UserId;
+  failureReasons?: string[];
+
   // --- MARKERS ---
   lastContactedAt?: string; // Legacy/Compat
-  
+
   // Public Marker: Email Sent
   emailSentAt?: string;
   emailSentBy?: string;
-  
+
   // Public Marker: Draft
   emailDraft?: string;
 
@@ -235,11 +236,11 @@ export interface ProjectFile {
 }
 
 // --- WORKER MESSAGES ---
-export type WorkerMessage = 
+export type WorkerMessage =
   | { type: 'FILTER_FILES'; payload: { files: ProjectFile[]; query: string; minScore?: number } }
   | { type: 'CALCULATE_ANALYTICS'; payload: { projects: Project[]; files: ProjectFile[] } };
 
-export type WorkerResponse = 
+export type WorkerResponse =
   | { type: 'FILTER_FILES_RESULT'; payload: ProjectFile[] }
   | { type: 'ANALYTICS_RESULT'; payload: any };
 
@@ -265,75 +266,75 @@ export interface ProjectMessage {
 }
 
 export interface PricingPlan {
-    id: SubscriptionPlan;
-    name: string;
-    price: number;
-    period: string;
-    description: string;
-    features: string[];
-    monthlyScans: number;
-    maxProjects: number | 'UNLIMITED';
-    maxMembers: number | 'UNLIMITED';
-    colorTheme: 'slate' | 'blue' | 'purple' | 'amber' | 'emerald';
-    allowOverage: boolean;
-    recommended?: boolean;
+  id: SubscriptionPlan;
+  name: string;
+  price: number;
+  period: string;
+  description: string;
+  features: string[];
+  monthlyScans: number;
+  maxProjects: number | 'UNLIMITED';
+  maxMembers: number | 'UNLIMITED';
+  colorTheme: 'slate' | 'blue' | 'purple' | 'amber' | 'emerald';
+  allowOverage: boolean;
+  recommended?: boolean;
 }
 
 export interface ScanPackageConfig {
-    id: string;
-    name: string;
-    scans: number;
-    price: number;
-    features: string[];
-    colorTheme: 'blue' | 'purple' | 'amber';
-    isPopular?: boolean;
+  id: string;
+  name: string;
+  scans: number;
+  price: number;
+  features: string[];
+  colorTheme: 'blue' | 'purple' | 'amber';
+  isPopular?: boolean;
 }
 
 // --- ANALYTICS TYPES ---
 
 export interface DashboardKPI {
-    totalCandidates: number;
-    candidateTrend: string;
-    analyzedCount: number;
-    qualifiedRate: number;
-    qualifiedTrend: string;
-    activeProjects: number;
-    avgTimeProcessing: string;
-    failedUploadsCount: number;
+  totalCandidates: number;
+  candidateTrend: string;
+  analyzedCount: number;
+  qualifiedRate: number;
+  qualifiedTrend: string;
+  activeProjects: number;
+  avgTimeProcessing: string;
+  failedUploadsCount: number;
 }
 
 export interface TeamStats {
-    admins: number;
-    partners: number;
-    scouts: number;
-    analysts: number;
+  admins: number;
+  partners: number;
+  scouts: number;
+  analysts: number;
 }
 
 export interface TimelineDataPoint {
-    date: string;
-    applications: number;
-    avgQuality: number;
+  date: string;
+  applications: number;
+  avgQuality: number;
 }
 
 export interface ErrorDataPoint {
-    name: string;
-    value: number;
-    fill: string;
+  name: string;
+  value: number;
+  fill: string;
 }
 
 export interface ProjectPerformanceRow {
-    id: ProjectId;
-    name: string;
-    status: 'ACTIVE' | 'ARCHIVED' | 'COMPLETED';
-    candidates: number;
-    qualified: number;
-    avgScore: number;
+  id: ProjectId;
+  name: string;
+  status: 'ACTIVE' | 'ARCHIVED' | 'COMPLETED';
+  candidates: number;
+  qualified: number;
+  avgScore: number;
 }
 
 export interface DashboardAnalytics {
-    kpi: DashboardKPI;
-    teamStats: TeamStats;
-    timelineData: TimelineDataPoint[];
-    errorData: ErrorDataPoint[];
-    projectPerformance: ProjectPerformanceRow[];
+  kpi: DashboardKPI;
+  teamStats: TeamStats;
+  timelineData: TimelineDataPoint[];
+  errorData: ErrorDataPoint[];
+  projectPerformance: ProjectPerformanceRow[];
 }

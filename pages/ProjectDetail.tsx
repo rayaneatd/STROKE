@@ -36,11 +36,34 @@ interface ProjectDetailProps {
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deductScans, currentUser, onNavigate, onUpdateUser }) => {
     const {
         project,
-        setProject,
-        isIdentitySelectorOpen,
-        setIsIdentitySelectorOpen,
         activeTab,
         setActiveTab,
+        files,
+        isUploading,
+        isProjectLoading,
+        analytics,
+        topCandidates,
+        contributionData,
+        currentUserRole,
+        currentPermissions,
+        isProjectOwner,
+        isAdmin,
+        isAnalyst,
+        isScout,
+        isActive,
+        isArchived,
+        isCompleted,
+        canManageTeam,
+        canChat,
+        canScan,
+        canEditProject,
+        canViewOverview,
+        canViewResumes,
+        canAccessAdminChannel,
+        canViewActivityTab,
+        canUseAntiGhosting,
+        isIdentitySelectorOpen,
+        setIsIdentitySelectorOpen,
         addMemberType,
         setAddMemberType,
         isEditModalOpen,
@@ -55,28 +78,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
         setIsProjectLockedModalOpen,
         isDescriptionExpanded,
         setIsDescriptionExpanded,
-        quotaError,
-        setQuotaError,
-        files,
-        isUploading,
-        removeFile,
-        retryFile,
-        projectOwner,
-        ownerScans,
-        isInvestmentMode,
-        displayBalance,
-        canManageTeam,
-        canChat,
-        canScan,
-        canEditProject,
-        canViewOverview,
-        canViewResumes,
-        canAccessAdminChannel,
-        canViewActivityTab,
-        canUseAntiGhosting,
-        analytics,
-        contributionData,
-        topCandidates,
         handleEditClick,
         handleExport,
         handleMarkContacted,
@@ -86,19 +87,35 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
         handleFilesAdded,
         handleIdentityChange,
         showCentralizedBadge,
-        centralizedEmailAddress,
         showIdentitySelector,
         activeEmail,
         currentIdentityId,
-        isProjectOwner,
-        isAdmin,
-        isAnalyst,
-        isScout,
-        isActive,
-        isArchived,
-        isCompleted,
-
-    } = useProjectDetail({ projectId, onBack, currentUser, onNavigate, onUpdateUser });
+        setProject,
+        removeFile,
+        retryFile,
+        projectOwner,
+        ownerScans,
+        isInvestmentMode,
+        displayBalance,
+        centralizedEmailAddress,
+        addMember,
+        removeMember,
+        updateMember,
+        fundProject,
+        withdrawFunds,
+        updateProject,
+        isActionLoading,
+        quotaError,
+        setQuotaError,
+        markViewed,
+        markExported
+    } = useProjectDetail({
+        projectId: projectId,
+        onBack: onBack,
+        currentUser,
+        onNavigate,
+        onUpdateUser
+    });
 
     // Theme Helpers
     const theme = currentUser.preferences?.uiConfig?.theme || 'DARK';
@@ -341,6 +358,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         project={project}
                         canUseAntiGhosting={canUseAntiGhosting}
                         onMarkContacted={handleMarkContacted}
+                        onMarkViewed={markViewed}
+                        onMarkExported={markExported}
                         onBatchUpdate={handleBatchUpdate}
                         currentUser={currentUser}
                     />
@@ -358,6 +377,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         checkProjectStatus={() => setIsProjectLockedModalOpen(true)}
                         canUseAntiGhosting={canUseAntiGhosting}
                         onMarkContacted={handleMarkContacted}
+                        onMarkViewed={markViewed}
+                        onMarkExported={markExported}
+                        onBatchUpdate={handleBatchUpdate}
                         currentUser={currentUser}
                     />
                 )}
@@ -366,22 +388,25 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                     <TeamTab
                         project={project}
                         currentUser={currentUser}
-                        setProject={setProject}
-                        onOpenAddModal={(type) => {
+                        isAdmin={isAdmin}
+                        isProjectOwner={isProjectOwner}
+                        canManageTeam={canManageTeam}
+                        onAddMember={(role) => {
                             if (canManageTeam) {
-                                setAddMemberType(type);
+                                setAddMemberType(role as any);
                             } else {
                                 setIsProjectLockedModalOpen(true);
                             }
                         }}
-                        isReadOnly={!canManageTeam}
-                        checkProjectStatus={() => setIsProjectLockedModalOpen(true)}
+                        removeMember={removeMember}
+                        updateMember={updateMember}
+                        isActionLoading={isActionLoading}
                     />
                 )}
 
                 {activeTab === 'discussions' && (
                     <DiscussionsTab
-                        projectId={project.id}
+                        project={project}
                         currentUser={currentUser}
                         canAccessAdminChannel={canAccessAdminChannel}
                         isReadOnly={!canChat}
@@ -395,7 +420,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                 currentUser={currentUser}
                 addMemberType={addMemberType}
                 onClose={() => setAddMemberType(null)}
-                setProject={setProject}
+                addMember={addMember}
+                isActionLoading={isActionLoading}
             />
 
             <EditProjectModal
@@ -406,6 +432,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                 onSave={saveProjectChanges}
                 onUserUpdate={onUpdateUser}
                 onNavigate={onNavigate}
+                fundProject={fundProject}
+                withdrawProjectFunds={withdrawFunds}
             />
 
             <UpgradePlanModal

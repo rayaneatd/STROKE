@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { MOCK_PROJECTS, updateProject, getProjectAnalytics, generateReport, getUser, notifyOwner, processScanTransaction, markCandidateContacted, updateMemberPreferredEmail } from '../services/mockData';
-import { Project, ProjectRole, User as UserType, ProjectFile, OutreachStrategy } from '../types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Project, ProjectRole, User as UserType, ProjectFile, OutreachStrategy, FileId } from '../types';
+import { supabase } from '../lib/supabase';
 import { useFileProcessing } from './useFileProcessing';
 
 interface UseProjectDetailProps {
@@ -8,15 +9,13 @@ interface UseProjectDetailProps {
     onBack: () => void;
     currentUser: UserType;
     onNavigate: (page: string) => void;
-    onUpdateUser?: (user: UserType) => void;
+    onUpdateUser?: (data: Partial<UserType>, sync?: boolean) => void;
 }
 
 export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, onUpdateUser }: UseProjectDetailProps) => {
-    const [project, setProject] = useState<Project | undefined>(() => {
-        const p = MOCK_PROJECTS.find(pr => pr.id === projectId);
-        return p ? { ...p, members: [...p.members] } : undefined;
-    });
+    const queryClient = useQueryClient();
 
+    // UI Local States
     const [isIdentitySelectorOpen, setIsIdentitySelectorOpen] = useState(false);
     const [addMemberType, setAddMemberType] = useState<'ADMIN' | 'EMPLOYEE' | 'VISITOR' | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -25,55 +24,106 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     const [isOwnerBannedModalOpen, setIsOwnerBannedModalOpen] = useState(false);
     const [isProjectLockedModalOpen, setIsProjectLockedModalOpen] = useState(false);
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-
     const [quotaError, setQuotaError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!project) return;
+    // 1. Fetch Project Details
+    const { data: project, isLoading: isProjectLoading } = useQuery({
+        queryKey: ['project', projectId],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('projects')
+                .select(`
+                    *,
+                    members:project_members(
+                        *,
+                        user:profiles(*)
+                    )
+                `)
+                .eq('id', projectId)
+                .single();
 
-        const checkOwnerStatus = () => {
-            const owner = getUser(project.ownerId);
-            // If owner is banned and the modal isn't already open
-            if (owner?.isBanned && !isOwnerBannedModalOpen) {
-                setIsOwnerBannedModalOpen(true);
-            }
+            if (error) throw error;
+
+            return {
+                id: data.id,
+                title: data.title,
+                description: data.description || '',
+                ownerId: data.owner_id,
+                createdAt: data.created_at,
+                status: data.status,
+                settings: data.settings || {},
+                investmentBalance: data.investment_balance || 0,
+                totalInvested: data.total_invested || 0,
+                members: data.members.map((m: any) => ({
+                    userId: m.user_id,
+                    role: m.role as ProjectRole,
+                    permissions: m.permissions || [],
+                    scansUsed: m.scans_used || 0,
+                    scanQuota: m.scan_quota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scan_quota),
+                    joinedAt: m.joined_at,
+                    user: m.user ? {
+                        id: m.user.id,
+                        email: m.user.email,
+                        displayName: m.user.display_name || m.user.email.split('@')[0],
+                        avatarUrl: m.user.avatar_url,
+                        isBanned: m.user.role === 'BANNED'
+                    } : undefined
+                }))
+            } as Project;
+        }
+    });
+
+    // 2. Fetch Candidates (ProjectFiles)
+    const { data: candidates = [], isLoading: isCandidatesLoading } = useQuery({
+        queryKey: ['candidates', projectId],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('candidates')
+                .select('*')
+                .eq('project_id', projectId)
+                .order('uploaded_at', { ascending: false });
+
+            if (error) throw error;
+
+            return data.map((c: any) => ({
+                id: c.id as FileId,
+                projectId: c.project_id,
+                name: c.name,
+                size: c.size,
+                status: c.status,
+                uploadedAt: c.uploaded_at,
+                score: c.score,
+                candidateName: c.candidate_name,
+                uploadedByUserId: c.uploaded_by,
+                viewedBy: c.viewed_by || [],
+                exportedBy: c.exported_by || [],
+                emailSentAt: c.email_sent_at,
+                emailDraft: c.email_draft
+            } as ProjectFile));
+        }
+    });
+
+    // Real-time Subscriptions
+    useEffect(() => {
+        const channel = supabase
+            .channel(`project_detail_${projectId}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'projects', filter: `id=eq.${projectId}` }, () => {
+                queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'candidates', filter: `project_id=eq.${projectId}` }, () => {
+                queryClient.invalidateQueries({ queryKey: ['candidates', projectId] });
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'project_members', filter: `project_id=eq.${projectId}` }, () => {
+                queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
         };
+    }, [projectId, queryClient]);
 
-        // Check immediately on mount
-        checkOwnerStatus();
-
-        // Poll every 3 seconds
-        const interval = setInterval(checkOwnerStatus, 3000);
-        return () => clearInterval(interval);
-    }, [project?.ownerId, isOwnerBannedModalOpen]);
-
-    useEffect(() => {
-        const freshProject = MOCK_PROJECTS.find(p => p.id === projectId);
-
-        if (freshProject && freshProject.status === 'COMPLETED' && freshProject.settings.analystAccessOnlyForCompleted) {
-            const memberRecord = freshProject.members.find(m => m.userId === currentUser.id);
-            const isOwner = freshProject.ownerId === currentUser.id;
-            const isAdmin = memberRecord?.role === ProjectRole.ADMIN;
-            const hasAnalyzePerm = memberRecord?.permissions.includes('ANALYZE');
-
-            if (!isOwner && !isAdmin && !hasAnalyzePerm) {
-                onBack();
-                return;
-            }
-        }
-
-        setProject(freshProject ? { ...freshProject, members: [...freshProject.members] } : undefined);
-    }, [projectId, currentUser.id, onBack]);
-
-    // Click outside to close identity selector
-    useEffect(() => {
-        if (isIdentitySelectorOpen) {
-            const handleClickOutside = () => setIsIdentitySelectorOpen(false);
-            document.addEventListener('click', handleClickOutside);
-            return () => document.removeEventListener('click', handleClickOutside);
-        }
-    }, [isIdentitySelectorOpen]);
-
+    // File Processing Integration
     const {
         files,
         setFiles,
@@ -82,36 +132,224 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         removeFile,
         retryFile,
         queueFilesForProcessing
-    } = useFileProcessing(projectId, currentUser, project, setProject);
+    } = useFileProcessing(projectId, currentUser, project, () => { });
 
-    const initialTab = useMemo(() => {
-        if (!project) return 'overview';
-        const me = project.members.find(m => m.userId === currentUser.id);
-        if (!me) return 'overview';
-        if (me.role === ProjectRole.OWNER || me.role === ProjectRole.ADMIN) return 'overview';
-        if (me.permissions.includes('ANALYZE')) return 'overview';
-        if (me.permissions.includes('SCAN')) return 'resumes';
-        return 'team';
-    }, [project, currentUser.id]);
+    // Sync files state with candidates from DB
+    useEffect(() => {
+        if (candidates.length > 0) {
+            setFiles(candidates);
+        }
+    }, [candidates, setFiles]);
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'resumes' | 'discussions' | 'activity'>(initialTab);
-
-    // Derived Project Data
-    const projectOwner = project ? getUser(project.ownerId) : undefined;
-    const ownerScans = projectOwner ? projectOwner.scansBalance : 0;
-
-    const isInvestmentMode = project?.settings.billingMode === 'PROJECT_INVESTMENT';
-    const displayBalance = isInvestmentMode ? project?.investmentBalance : ownerScans;
-
-    const currentMemberRecord = project?.members.find(m => m.userId === currentUser.id);
+    // Permissions & Derived State
+    const currentMemberRecord = useMemo(() => project?.members.find(m => m.userId === currentUser.id), [project, currentUser.id]);
     const currentUserRole = currentMemberRecord?.role;
     const currentPermissions = currentMemberRecord?.permissions || [];
 
     const isProjectOwner = currentUser.id === project?.ownerId;
     const isAdmin = currentUserRole === ProjectRole.ADMIN;
-    const isAnalyst = !isAdmin && !isProjectOwner && currentPermissions.includes('ANALYZE') && !currentPermissions.includes('SCAN');
-    const isScout = !isAdmin && !isProjectOwner && currentPermissions.includes('SCAN') && !currentPermissions.includes('ANALYZE');
 
+    // Tab Management
+    const initialTab = useMemo(() => {
+        if (!project) return 'overview';
+        const me = currentMemberRecord;
+        if (!me) return 'overview';
+        if (me.role === ProjectRole.OWNER || me.role === ProjectRole.ADMIN) return 'overview';
+        if (me.permissions.includes('ANALYZE')) return 'overview';
+        if (me.permissions.includes('SCAN')) return 'resumes';
+        return 'team';
+    }, [project, currentMemberRecord]);
+
+    const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'resumes' | 'discussions' | 'activity'>(initialTab);
+
+    // Mutations
+    const updateProjectMutation = useMutation({
+        mutationFn: async (data: any) => {
+            const { error } = await supabase.from('projects').update(data).eq('id', projectId);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+            setIsEditModalOpen(false);
+        }
+    });
+
+    const markViewedMutation = useMutation({
+        mutationFn: async (candidateId: string) => {
+            const { error } = await supabase.rpc('mark_candidate_viewed', {
+                candidate_id: candidateId,
+                user_id: currentUser.id
+            });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['candidates', projectId] });
+        }
+    });
+
+    const markExportedMutation = useMutation({
+        mutationFn: async (candidateId: string) => {
+            const { error } = await supabase.rpc('mark_candidate_exported', {
+                candidate_id: candidateId,
+                user_id: currentUser.id
+            });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['candidates', projectId] });
+        }
+    });
+
+    const updateCandidateMutation = useMutation({
+        mutationFn: async ({ id, data }: { id: string, data: any }) => {
+            // Transform keys for Supabase
+            const payload = { ...data };
+            if (payload.candidateName !== undefined) {
+                payload.candidate_name = payload.candidateName;
+                delete payload.candidateName;
+            }
+            if (payload.emailSentAt !== undefined) {
+                payload.email_sent_at = payload.emailSentAt;
+                delete payload.emailSentAt;
+            }
+            if (payload.emailDraft !== undefined) {
+                payload.email_draft = payload.emailDraft;
+                delete payload.emailDraft;
+            }
+
+            const { error } = await supabase.from('candidates').update(payload).eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['candidates', projectId] });
+        }
+    });
+
+    const addMemberMutation = useMutation({
+        mutationFn: async ({ userId, role, permissions, quota }: { userId: string, role: ProjectRole, permissions: string[], quota: number | 'UNLIMITED' }) => {
+            const { error } = await supabase.from('project_members').insert({
+                project_id: projectId,
+                user_id: userId,
+                role,
+                permissions,
+                scan_quota: quota === 'UNLIMITED' ? -1 : quota,
+                joined_at: new Date().toISOString()
+            });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+        }
+    });
+
+    const removeMemberMutation = useMutation({
+        mutationFn: async (userId: string) => {
+            const { error } = await supabase.from('project_members').delete().eq('project_id', projectId).eq('user_id', userId);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+        }
+    });
+
+    const updateMemberMutation = useMutation({
+        mutationFn: async ({ userId, data }: { userId: string, data: any }) => {
+            // Transform quota if present
+            const payload = { ...data };
+            if ('scanQuota' in data) {
+                payload.scan_quota = data.scanQuota === 'UNLIMITED' ? -1 : data.scanQuota;
+                delete payload.scanQuota;
+            }
+            const { error } = await supabase.from('project_members').update(payload).eq('project_id', projectId).eq('user_id', userId);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+        }
+    });
+
+    const fundProjectMutation = useMutation({
+        mutationFn: async (amount: number) => {
+            const { data, error } = await supabase.rpc('transfer_project_funds', {
+                p_project_id: projectId,
+                p_amount: amount,
+                p_action: 'DEPOSIT'
+            });
+            if (error) throw error;
+            if (data && !data.success) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            if (onUpdateUser && data) {
+                onUpdateUser({ scansBalance: data.user_balance }, true);
+            }
+        }
+    });
+
+    const withdrawFundsMutation = useMutation({
+        mutationFn: async (amount: number) => {
+            const { data, error } = await supabase.rpc('transfer_project_funds', {
+                p_project_id: projectId,
+                p_amount: amount,
+                p_action: 'WITHDRAW'
+            });
+            if (error) throw error;
+            if (data && !data.success) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            if (onUpdateUser && data) {
+                onUpdateUser({ scansBalance: data.user_balance }, true);
+            }
+        }
+    });
+
+    // Analytics Calculation
+    const analytics = useMemo(() => {
+        if (!files.length) return { total: 0, completed: 0, pending: 0, avgScore: 0, timelineData: [] };
+
+        const completed = files.filter(f => f.status === 'COMPLETED');
+        const pending = files.filter(f => f.status === 'PROCESSING' || f.status === 'PENDING');
+        const avgScore = completed.length
+            ? Math.round(completed.reduce((acc, f) => acc + (f.score || 0), 0) / completed.length)
+            : 0;
+
+        // Calculate timeline data (group by date)
+        const timelineMap = new Map<string, number>();
+        files.forEach(f => {
+            const date = new Date(f.uploadedAt).toLocaleDateString();
+            timelineMap.set(date, (timelineMap.get(date) || 0) + 1);
+        });
+
+        const timelineData = Array.from(timelineMap.entries())
+            .map(([date, applications]) => ({ date, applications }))
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            .slice(-7); // Last 7 days with data
+
+        return {
+            total: files.length,
+            completed: completed.length,
+            pending: pending.length,
+            avgScore,
+            timelineData
+        };
+    }, [files]);
+
+    const topCandidates = useMemo(() => [...files]
+        .filter(f => f.score && f.score > 0)
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .slice(0, 5), [files]);
+
+    const contributionData = useMemo(() => project?.members.map(m => ({
+        scans: m.scansUsed,
+        role: m.role
+    })) || [], [project?.members]);
+
+    // Actions & Derived Permissions
     const isActive = project?.status === 'ACTIVE';
     const isArchived = project?.status === 'ARCHIVED';
     const isCompleted = project?.status === 'COMPLETED';
@@ -125,110 +363,83 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     const canViewResumes = isProjectOwner || isAdmin || currentPermissions.includes('SCAN');
     const canAccessAdminChannel = isProjectOwner || isAdmin;
 
+    const isAnalyst = !isAdmin && !isProjectOwner && currentPermissions.includes('ANALYZE') && !currentPermissions.includes('SCAN');
+    const isScout = !isAdmin && !isProjectOwner && currentPermissions.includes('SCAN') && !currentPermissions.includes('ANALYZE');
+
     const canViewActivityTab = isProjectOwner || isAdmin || (isAnalyst && project?.settings.analystCanViewActivity);
 
     const canUseAntiGhosting = isProjectOwner || isAdmin ||
         (isAnalyst && project?.settings.analystCanUseGhosting) ||
         (isScout && project?.settings.scoutCanUseGhosting);
 
-    const analytics = useMemo(() => getProjectAnalytics(projectId), [files, project?.members, projectId]);
-
-    const contributionData = useMemo(() => project?.members.map(m => {
-        return { scans: m.scansUsed, role: m.role };
-    }), [project?.members]);
-
-    const topCandidates = useMemo(() => files
-        .filter(f => f.score && f.score > 0)
-        .sort((a, b) => (b.score || 0) - (a.score || 0))
-        .slice(0, 5), [files]);
-
-    // Actions
     const handleEditClick = () => {
-        if (canEditProject) {
-            setIsEditModalOpen(true);
-        }
+        if (canEditProject) setIsEditModalOpen(true);
     };
 
     const handleExport = () => {
-        const url = generateReport('CSV', 'PROJECT', projectId);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `airecruit_project_${projectId}_report.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // Logic for export - usually a direct CSV generation or call to an edge function
+        console.log("Exporting project data...");
     };
 
     const handleMarkContacted = (fileId: string) => {
-        const updatedFile = markCandidateContacted(fileId, currentUser.id);
-        if (updatedFile) {
-            setFiles(prev => prev.map(f => f.id === fileId ? { ...f, emailSentAt: updatedFile.emailSentAt, emailSentBy: updatedFile.emailSentBy, lastContactedAt: updatedFile.lastContactedAt, emailDraft: undefined } : f));
-        }
+        updateCandidateMutation.mutate({
+            id: fileId,
+            data: {
+                emailSentAt: new Date().toISOString(),
+                // could add email_sent_by: currentUser.id if column exists
+            }
+        });
     };
 
-    const handleBatchUpdate = (updates: { id: string, changes: Partial<ProjectFile> }[]) => {
-        setFiles(prev => prev.map(f => {
-            const update = updates.find(u => u.id === f.id);
-            return update ? { ...f, ...update.changes } : f;
-        }));
+    const handleBatchUpdate = async (updates: { id: string, changes: Partial<ProjectFile> }[]) => {
+        try {
+            for (const update of updates) {
+                await updateCandidateMutation.mutateAsync({ id: update.id, data: update.changes });
+            }
+        } catch (error) {
+            console.error("Batch update failed:", error);
+        }
     };
 
     const saveProjectChanges = (e: React.FormEvent, updatedProject: Partial<Project>) => {
         e.preventDefault();
-        if (!updatedProject.id) return;
-        updateProject(updatedProject.id, updatedProject);
-        setProject(prev => prev ? ({ ...prev, ...updatedProject } as Project) : prev);
-        setIsEditModalOpen(false);
+        updateProjectMutation.mutate({
+            title: updatedProject.title,
+            description: updatedProject.description,
+            status: updatedProject.status,
+            settings: updatedProject.settings,
+            investment_balance: updatedProject.investmentBalance
+        });
     };
 
-    const handleStartScan = () => {
+    const handleStartScan = async () => {
         if (!project || !canScan) {
             setIsProjectLockedModalOpen(true);
             return;
         }
 
-        setQuotaError(null);
-
-        const currentOwner = getUser(project.ownerId);
-        if (currentOwner?.isBanned) {
-            setIsOwnerBannedModalOpen(true);
-            return;
-        }
+        const isInvestmentMode = project.settings.billingMode === 'PROJECT_INVESTMENT';
+        const owner = project.members.find(m => m.role === ProjectRole.OWNER);
+        const displayBalance = isInvestmentMode ? project.investmentBalance : (owner?.user?.scansBalance || 0);
 
         const pendingFiles = files.filter(f => f.status === 'PENDING');
         if (pendingFiles.length === 0) return;
 
-        const result = processScanTransaction(project.id, currentUser.id, pendingFiles.length);
-
-        if (result.success) {
-            if (result.updatedProject) {
-                setProject(result.updatedProject);
-            }
-            if (isProjectOwner && result.updatedUser && onUpdateUser) {
-                onUpdateUser(result.updatedUser);
-            }
-
-            // Delegate to hook
-            queueFilesForProcessing(pendingFiles);
-
-        } else {
-            if (result.error?.includes('quota')) {
-                setQuotaError(result.error);
-            } else if (result.error?.includes('Overage') || result.error?.includes('Insufficient') || result.error?.includes('budget depleted')) {
-                if (isProjectOwner) {
-                    if (isInvestmentMode) {
-                        alert(result.error + " Please update project budget.");
-                        setIsEditModalOpen(true);
-                    } else {
-                        setIsUpgradeModalOpen(true);
-                    }
+        if (displayBalance < pendingFiles.length) {
+            if (isProjectOwner) {
+                if (isInvestmentMode) {
+                    setIsEditModalOpen(true);
                 } else {
-                    setIsNoScansModalOpen(true);
+                    setIsUpgradeModalOpen(true);
                 }
             } else {
-                alert(result.error);
+                setIsNoScansModalOpen(true);
             }
+            return;
         }
+
+        // Delegate real processing to useFileProcessing or an edge function
+        queueFilesForProcessing(pendingFiles);
     };
 
     const handleFilesAdded = (addedFiles: File[]) => {
@@ -240,43 +451,54 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     };
 
     const handleIdentityChange = (emailId: string) => {
-        updateMemberPreferredEmail(projectId, currentUser.id, emailId);
-        // Optimistic Update
-        setProject(prev => {
-            if (!prev) return prev;
-            const updatedMembers = prev.members.map(m =>
-                m.userId === currentUser.id ? { ...m, preferredOutreachEmailId: emailId } : m
-            );
-            return { ...prev, members: updatedMembers };
-        });
-        setIsIdentitySelectorOpen(false);
+        // In a real app, update project_members table
+        supabase.from('project_members')
+            .update({ preferred_outreach_email_id: emailId })
+            .eq('project_id', projectId)
+            .eq('user_id', currentUser.id)
+            .then(() => {
+                queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+                setIsIdentitySelectorOpen(false);
+            });
     };
 
-    // Identity Logic for Header
+    // Derived UI State
     const isCentralized = project?.settings.outreachStrategy === OutreachStrategy.OWNER_IDENTITY;
     const showIdentitySelector = canUseAntiGhosting && !isCentralized;
     const showCentralizedBadge = canUseAntiGhosting && isCentralized;
-
+    const activeEmail = currentUser.emailIntegrations.find(e => e.id === currentMemberRecord?.preferredOutreachEmailId);
     const currentIdentityId = currentMemberRecord?.preferredOutreachEmailId;
-    const activeEmail = currentUser.emailIntegrations.find(e => e.id === currentIdentityId);
-
-    // If centralized, fetch owner email
-    let centralizedEmailAddress = '...';
-    if (isCentralized && project?.settings.ownerOutreachEmailId) {
-        // In a real app we might not have ownerUser fully loaded if we aren't owner/admin, 
-        // but mockData getUser() works synchronously.
-        const ownerUser = getUser(project.ownerId);
-        const emailObj = ownerUser?.emailIntegrations.find(e => e.id === project.settings.ownerOutreachEmailId);
-        if (emailObj) centralizedEmailAddress = emailObj.emailAddress;
-    }
 
     return {
         project,
-        setProject,
-        isIdentitySelectorOpen,
-        setIsIdentitySelectorOpen,
         activeTab,
         setActiveTab,
+        files,
+        isUploading,
+        isProjectLoading: isProjectLoading || isCandidatesLoading,
+        analytics,
+        topCandidates,
+        contributionData,
+        currentUserRole,
+        currentPermissions,
+        isProjectOwner,
+        isAdmin,
+        isAnalyst,
+        isScout,
+        isActive,
+        isArchived,
+        isCompleted,
+        canManageTeam,
+        canChat,
+        canScan,
+        canEditProject,
+        canViewOverview,
+        canViewResumes,
+        canAccessAdminChannel,
+        canViewActivityTab,
+        canUseAntiGhosting,
+        isIdentitySelectorOpen,
+        setIsIdentitySelectorOpen,
         addMemberType,
         setAddMemberType,
         isEditModalOpen,
@@ -293,26 +515,6 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         setIsDescriptionExpanded,
         quotaError,
         setQuotaError,
-        files,
-        isUploading,
-        removeFile,
-        retryFile,
-        projectOwner,
-        ownerScans,
-        isInvestmentMode,
-        displayBalance,
-        canManageTeam,
-        canChat,
-        canScan,
-        canEditProject,
-        canViewOverview,
-        canViewResumes,
-        canAccessAdminChannel,
-        canViewActivityTab,
-        canUseAntiGhosting,
-        analytics,
-        contributionData,
-        topCandidates,
         handleEditClick,
         handleExport,
         handleMarkContacted,
@@ -322,17 +524,31 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         handleFilesAdded,
         handleIdentityChange,
         showCentralizedBadge,
-        centralizedEmailAddress,
         showIdentitySelector,
         activeEmail,
         currentIdentityId,
-        isProjectOwner,
-        isAdmin,
-        isAnalyst,
-        isScout,
-        isActive,
-        isArchived,
-        isCompleted,
-
+        onBack,
+        setProject: (p: any) => {
+            // This is a bridge for legacy code that expected a setState
+            queryClient.setQueryData(['project', projectId], p);
+        },
+        removeFile,
+        retryFile,
+        markViewed: markViewedMutation.mutate,
+        markExported: markExportedMutation.mutate,
+        projectOwner: project?.members.find(m => m.role === ProjectRole.OWNER)?.user,
+        ownerScans: project?.members.find(m => m.role === ProjectRole.OWNER)?.user?.scansBalance || 0,
+        isInvestmentMode: project?.settings.billingMode === 'PROJECT_INVESTMENT',
+        displayBalance: project?.settings.billingMode === 'PROJECT_INVESTMENT'
+            ? project.investmentBalance
+            : (project?.members.find(m => m.role === ProjectRole.OWNER)?.user?.scansBalance || 0),
+        centralizedEmailAddress: project?.members.find(m => m.role === ProjectRole.OWNER)?.user?.email,
+        addMember: addMemberMutation.mutate,
+        removeMember: removeMemberMutation.mutate,
+        updateMember: updateMemberMutation.mutate,
+        fundProject: fundProjectMutation.mutate,
+        withdrawFunds: withdrawFundsMutation.mutate,
+        updateProject: updateProjectMutation.mutate,
+        isActionLoading: addMemberMutation.isPending || removeMemberMutation.isPending || updateMemberMutation.isPending || fundProjectMutation.isPending || withdrawFundsMutation.isPending || markViewedMutation.isPending || markExportedMutation.isPending
     };
 };

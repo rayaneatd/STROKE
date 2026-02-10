@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { login as authLogin, register, MOCK_USERS } from '../services/mockData';
-import { User } from '../types';
+import { supabase } from '../lib/supabase';
+import { MOCK_USERS } from '../services/mockData';
 
 export const useLogin = () => {
-    const { login } = useAuth();
     const navigate = useNavigate();
 
     const [isRegistering, setIsRegistering] = useState(false);
@@ -43,45 +41,68 @@ export const useLogin = () => {
 
     const strength = getPasswordStrength(password);
 
-    const handleLoginSuccess = (user: User) => {
-        login(user);
-        navigate('/');
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
-        setTimeout(() => {
-            try {
-                let user: User;
-                if (isRegistering) {
-                    if (!displayName) throw new Error("Name is required");
-                    user = register(email, password, displayName, phoneNumber);
-                } else {
-                    user = authLogin(email, password);
-                }
-                handleLoginSuccess(user);
-            } catch (err: any) {
-                setError(err.message || "An unexpected error occurred");
-                setLoading(false);
+        try {
+            if (isRegistering) {
+                if (!displayName) throw new Error("Name is required");
+
+                const { error: signUpError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            display_name: displayName,
+                            phone_number: phoneNumber
+                        }
+                    }
+                });
+
+                if (signUpError) throw signUpError;
+                alert("Please check your email for the confirmation link!");
+            } else {
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+
+                if (signInError) throw signInError;
+                navigate('/');
             }
-        }, 500);
+        } catch (err: any) {
+            setError(err.message || "An unexpected error occurred");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleSocialLogin = (provider: string) => {
+    const handleSocialLogin = async (provider: any) => {
         setSocialLoading(provider);
-        setTimeout(() => {
-            // Mock Social Login - just pick the first user or create one
-            const mockUser = MOCK_USERS[0];
-            handleLoginSuccess(mockUser);
-        }, 1500);
+        try {
+            const { error: socialError } = await supabase.auth.signInWithOAuth({
+                provider,
+            });
+            if (socialError) throw socialError;
+        } catch (err: any) {
+            setError(err.message || "Social login failed");
+            setSocialLoading(null);
+        }
     };
 
-    const handleForgotPassword = () => {
-        // Mock forgot password flow
-        alert("Reset link sent to your email (Demo Mode).");
+    const handleForgotPassword = async () => {
+        if (!email) {
+            setError("Please enter your email address first");
+            return;
+        }
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+        if (resetError) {
+            setError(resetError.message);
+        } else {
+            alert("Reset link sent to your email.");
+        }
     };
 
     const toggleMode = () => {
@@ -90,10 +111,6 @@ export const useLogin = () => {
         setPassword('');
         setPhoneNumber('');
         setShowPassword(false);
-    };
-
-    const handleQuickLogin = (user: User) => {
-        handleLoginSuccess(user);
     };
 
     return {
@@ -117,7 +134,6 @@ export const useLogin = () => {
         handleSocialLogin,
         handleForgotPassword,
         toggleMode,
-        handleQuickLogin,
-        MOCK_USERS // Expose for debug login
+        MOCK_USERS // Keep for UI compatibility if needed elsewhere
     };
 };

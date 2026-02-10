@@ -1,57 +1,182 @@
-
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { User, UserId } from '../types';
-import { secureStorage } from '../utils/security';
-import { getUser } from '../services/mockData';
+import { User, Role, SubscriptionPlan, BillingType } from '../types';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
-    login: (user: User) => void;
-    logout: () => void;
+    logout: () => Promise<void>;
     updateUser: (data: Partial<User>) => void;
+    loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    // Initial Load - Check secure storage
-    useEffect(() => {
-        const storedUser = secureStorage.getItem<User>('auth_user');
-        if (storedUser) {
-            // Verify session validity here (mock)
-            setUser(storedUser);
+    const fetchProfile = async (userId: string, authUser: any) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
+
+            if (data) {
+                return {
+                    id: data.id,
+                    email: data.email,
+                    displayName: data.display_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'Member',
+                    phoneNumber: data.phone_number || authUser.user_metadata?.phone_number || '',
+                    avatarUrl: data.avatar_url || authUser.user_metadata?.avatar_url || '',
+                    role: data.role as Role || Role.USER,
+                    subscriptionPlan: data.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
+                    scansBalance: data.scans_balance || 0,
+                    purchasedScans: data.purchased_scans || 0,
+                    billingType: data.billing_type as BillingType || BillingType.PREPAID,
+                    overageCap: data.overage_cap || 500,
+                    company: data.company || '',
+                    industry: data.industry || '',
+                    preferences: data.preferences as any || {},
+                    emailIntegrations: [],
+                    signupDate: data.signup_date
+                } as User;
+            }
+        } catch (err) {
+            console.error('Fetch profile error:', err);
         }
+
+        // Optimistic Fallback: Return skeleton user from Auth Metadata 
+        // to prevent redirect loops or "Loading" hangs
+        return {
+            id: userId,
+            email: authUser.email || '',
+            displayName: authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'Member',
+            phoneNumber: authUser.user_metadata?.phone_number || '',
+            avatarUrl: authUser.user_metadata?.avatar_url || '',
+            role: Role.USER,
+            subscriptionPlan: SubscriptionPlan.FREE,
+            scansBalance: 0,
+            purchasedScans: 0,
+            billingType: BillingType.PREPAID,
+            overageCap: 0,
+            preferences: {},
+            emailIntegrations: [],
+        } as User;
+    };
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadingTimeout = setTimeout(() => {
+            if (isMounted && loading) setLoading(false);
+        }, 3000); // Reduced to 3s for snappier feel
+
+        const handleAuthChange = async (session: any) => {
+            if (session?.user) {
+                const profile = await fetchProfile(session.user.id, session.user);
+                if (isMounted) {
+                    setUser(profile);
+                    setLoading(false);
+                }
+            } else {
+                if (isMounted) {
+                    setUser(null);
+                    setLoading(false);
+                }
+            }
+        };
+
+        // Single Initialization Path
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            handleAuthChange(session);
+        }).catch(err => {
+            console.error('Session init error:', err);
+            if (isMounted) setLoading(false);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            handleAuthChange(session);
+        });
+
+        // Profile Real-time Subscription
+        let profileSubscription: any = null;
+        if (user?.id) {
+            profileSubscription = supabase
+                .channel(`profile_realtime_${user.id}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'profiles',
+                        filter: `id=eq.${user.id}`
+                    },
+                    (payload) => {
+                        fetchProfile(user.id, {
+                            email: user.email,
+                            user_metadata: {
+                                display_name: user.displayName,
+                                avatar_url: user.avatarUrl
+                            }
+                        }).then(updatedProfile => {
+                            if (isMounted) setUser(updatedProfile);
+                        });
+                    }
+                )
+                .subscribe();
+        }
+
+        return () => {
+            isMounted = false;
+            subscription.unsubscribe();
+            if (profileSubscription) supabase.removeChannel(profileSubscription);
+            clearTimeout(loadingTimeout);
+        };
     }, []);
 
-    const login = (newUser: User) => {
-        setUser(newUser);
-        secureStorage.setItem('auth_user', newUser);
+    const logout = async () => {
+        await supabase.auth.signOut();
     };
 
-    const logout = () => {
-        setUser(null);
-        secureStorage.removeItem('auth_user');
-    };
-
-    const updateUser = (data: Partial<User>) => {
+    const updateUser = async (data: Partial<User>, syncWithBackend = false) => {
         setUser((prev) => {
             if (!prev) return null;
-            const updated = { ...prev, ...data };
-            secureStorage.setItem('auth_user', updated);
-            return updated;
+            return { ...prev, ...data };
         });
+
+        if (syncWithBackend && user?.id) {
+            try {
+                // Map local fields to DB fields if necessary
+                const dbData: any = {};
+                if (data.displayName !== undefined) dbData.display_name = data.displayName;
+                if (data.avatarUrl !== undefined) dbData.avatar_url = data.avatarUrl;
+                if (data.preferences !== undefined) dbData.preferences = data.preferences;
+                if (data.scansBalance !== undefined) dbData.scans_balance = data.scansBalance;
+                if (data.subscriptionPlan !== undefined) dbData.subscription_plan = data.subscriptionPlan;
+                if (data.company !== undefined) dbData.company = data.company;
+                if (data.industry !== undefined) dbData.industry = data.industry;
+                if (data.overageCap !== undefined) dbData.overage_cap = data.overageCap;
+
+                await supabase
+                    .from('profiles')
+                    .update(dbData)
+                    .eq('id', user.id);
+            } catch (err) {
+                console.error('Failed to sync user update:', err);
+            }
+        }
     };
 
     const value = useMemo(() => ({
         user,
         isAuthenticated: !!user,
-        login,
         logout,
-        updateUser
-    }), [user]);
+        updateUser,
+        loading
+    }), [user, loading]);
 
     return (
         <AuthContext.Provider value={value}>

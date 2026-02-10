@@ -109,3 +109,19 @@ FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
 
 -- INSERT INTO public.projects (id, title, description, owner_id)
 -- VALUES ('11111111-1111-1111-1111-111111111111', 'Senior Frontend Engineer', 'React, TypeScript, Node.js', '00000000-0000-0000-0000-000000000001');
+
+-- TRIGGER POUR CRÉER LE PROFIL AUTOMATIQUEMENT
+-- À exécuter dans ton SQL Editor
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, display_name, avatar_url)
+  VALUES (new.id, new.email, new.raw_user_meta_data->>'display_name', new.raw_user_meta_data->>'avatar_url');
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
