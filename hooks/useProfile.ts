@@ -8,6 +8,7 @@ export const useProfile = () => {
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isNylasConnecting, setIsNylasConnecting] = useState(false);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
     // 1. Fetch Profile Data
     const { data: user, isLoading: loading, error } = useQuery({
@@ -82,11 +83,33 @@ export const useProfile = () => {
             const { data: { user: authUser } } = await supabase.auth.getUser();
             if (!authUser) throw new Error('Not authenticated');
 
+            let finalAvatarUrl = newData.avatarUrl;
+
+            // 1. Upload Avatar if changed
+            if (avatarFile) {
+                const fileExt = avatarFile.name.split('.').pop();
+                const fileName = `${authUser.id}-${Date.now()}.${fileExt}`;
+                const filePath = `${authUser.id}/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('avatars')
+                    .upload(filePath, avatarFile, { upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(filePath);
+
+                finalAvatarUrl = publicUrl;
+            }
+
+            // 2. Update Profile
             const { error } = await supabase
                 .from('profiles')
                 .update({
                     display_name: newData.displayName,
-                    avatar_url: newData.avatarUrl,
+                    avatar_url: finalAvatarUrl,
                     // Store extra fields in preferences for now if no specific columns
                     preferences: {
                         ...(user?.preferences || {}),
@@ -97,6 +120,7 @@ export const useProfile = () => {
                 .eq('id', authUser.id);
 
             if (error) throw error;
+            setAvatarFile(null); // Clear file after success
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -123,6 +147,9 @@ export const useProfile = () => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
+            setAvatarFile(file);
+
+            // Show preview locally
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFormData(prev => ({ ...prev, avatarUrl: reader.result as string }));

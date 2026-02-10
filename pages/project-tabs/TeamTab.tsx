@@ -352,7 +352,7 @@ interface TeamTabProps {
     isProjectOwner: boolean;
     canManageTeam: boolean;
     onAddMember: (role: ProjectRole) => void;
-    removeMember: (params: { userId: string }) => void;
+    removeMember: (userId: string) => void;
     updateMember: (params: { userId: string, data: any }) => void;
     isActionLoading: boolean;
 }
@@ -497,7 +497,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
 
     const handleBulkRemove = () => {
         selectedMemberIds.forEach(userId => {
-            removeMember({ userId });
+            removeMember(userId);
         });
         setIsBulkRemoveModalOpen(false);
         setSelectedMemberIds(new Set());
