@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, ShieldCheck, Zap } from 'lucide-react';
-import SubscriptionPlanCard, { PlanDetails } from '../components/cards/SubscriptionPlanCard';
+import SubscriptionPlanCard from '../components/cards/SubscriptionPlanCard';
 import { SubscriptionPlan, User } from '../types';
-import { getSubscriptionPlans } from '../services/mockData';
-import { useTheme } from '../context/ThemeContext';
+import { useUpgradePlan } from '../hooks/useUpgradePlan';
 
 interface UpgradePlanProps {
     onBack: () => void;
@@ -13,58 +12,20 @@ interface UpgradePlanProps {
 }
 
 const UpgradePlan: React.FC<UpgradePlanProps> = ({ onBack, onUpgrade, currentUser }) => {
-    const { isLight, styles } = useTheme();
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-    const [availablePlans, setAvailablePlans] = useState<PlanDetails[]>([]);
-
-    useEffect(() => {
-        // Fetch plans dynamically
-        const plans = getSubscriptionPlans();
-        // Sort by price to ensure logical ordering (Free -> Elite)
-        plans.sort((a, b) => a.price - b.price);
-        setAvailablePlans(plans as PlanDetails[]);
-    }, []);
-
-    const handleSelect = (planId: SubscriptionPlan) => {
-        const targetPlan = availablePlans.find(p => p.id === planId);
-        
-        // Handle "Contact Us" for Elite only if price is 0 and it's NOT the Free tier
-        // Current logic: If plan is ELITE and has specific handling, or just check ID
-        if (targetPlan && targetPlan.price <= 0 && planId === SubscriptionPlan.ELITE) {
-            window.location.href = "mailto:enterprise@airecruit.com?subject=Elite%20Plan%20Inquiry";
-            return;
-        }
-
-        setIsProcessing(true);
-        // Simulate API call
-        setTimeout(() => {
-            onUpgrade(planId);
-            setIsProcessing(false);
-            onBack();
-        }, 1500);
-    };
-
-    // Calculate displayed plans based on billing cycle
-    const displayPlans: PlanDetails[] = availablePlans.map(plan => {
-        let price = plan.price;
-        // Don't apply discount if price is 0 (Free/Contact Us)
-        if (billingCycle === 'yearly' && price > 0) {
-            // Apply ~20% discount for yearly
-            price = Math.floor(plan.price * 0.8);
-        }
-
-        return {
-            ...plan,
-            price,
-            period: billingCycle === 'yearly' ? '/mo' : plan.period, 
-        };
-    });
+    const {
+        isLight,
+        styles,
+        isProcessing,
+        billingCycle,
+        setBillingCycle,
+        displayPlans,
+        handleSelect
+    } = useUpgradePlan({ onBack, onUpgrade });
 
     const headerText = isLight ? 'text-slate-900' : 'text-white';
     const subText = isLight ? 'text-slate-500' : 'text-zinc-400';
     const backBtn = isLight ? 'text-slate-500 hover:text-slate-800' : 'text-zinc-500 hover:text-white';
-    
+
     // Toggle Switch Styles
     const toggleBg = isLight ? 'bg-white border border-slate-200 shadow-sm' : 'bg-[#0e0e10] border border-white/10 shadow-inner';
     const pillBg = isLight ? 'bg-slate-100 border border-slate-200' : 'bg-white/10 border border-white/5';
@@ -91,32 +52,28 @@ const UpgradePlan: React.FC<UpgradePlanProps> = ({ onBack, onUpgrade, currentUse
             <div className="flex justify-center mb-12">
                 <div className={`p-1.5 rounded-full flex items-center relative cursor-pointer ${toggleBg}`}>
                     {/* Sliding Background Pill */}
-                    <div 
-                        className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-sm transition-all duration-300 ease-in-out ${pillBg} ${
-                            billingCycle === 'monthly' ? 'left-1.5' : 'left-[calc(50%+3px)]'
-                        }`}
+                    <div
+                        className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-full shadow-sm transition-all duration-300 ease-in-out ${pillBg} ${billingCycle === 'monthly' ? 'left-1.5' : 'left-[calc(50%+3px)]'
+                            }`}
                     ></div>
 
-                    <button 
+                    <button
                         onClick={() => setBillingCycle('monthly')}
-                        className={`relative z-10 px-8 py-2.5 rounded-full text-sm font-bold transition-colors duration-300 w-36 ${
-                            billingCycle === 'monthly' ? activeToggleText : inactiveToggleText
-                        }`}
+                        className={`relative z-10 px-8 py-2.5 rounded-full text-sm font-bold transition-colors duration-300 w-36 ${billingCycle === 'monthly' ? activeToggleText : inactiveToggleText
+                            }`}
                     >
                         Monthly
                     </button>
-                    <button 
+                    <button
                         onClick={() => setBillingCycle('yearly')}
-                        className={`relative z-10 px-8 py-2.5 rounded-full text-sm font-bold transition-colors duration-300 w-36 flex items-center justify-center gap-2 ${
-                            billingCycle === 'yearly' ? activeToggleText : inactiveToggleText
-                        }`}
+                        className={`relative z-10 px-8 py-2.5 rounded-full text-sm font-bold transition-colors duration-300 w-36 flex items-center justify-center gap-2 ${billingCycle === 'yearly' ? activeToggleText : inactiveToggleText
+                            }`}
                     >
                         Yearly
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-md transition-colors ${
-                            billingCycle === 'yearly' 
-                            ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/20' 
-                            : isLight ? 'bg-emerald-100 text-emerald-600/50' : 'bg-emerald-500/10 text-emerald-600/50'
-                        }`}>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-md transition-colors ${billingCycle === 'yearly'
+                                ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/20'
+                                : isLight ? 'bg-emerald-100 text-emerald-600/50' : 'bg-emerald-500/10 text-emerald-600/50'
+                            }`}>
                             -20%
                         </span>
                     </button>
@@ -127,8 +84,8 @@ const UpgradePlan: React.FC<UpgradePlanProps> = ({ onBack, onUpgrade, currentUse
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(displayPlans.length, 5)} gap-6 items-start justify-center`}>
                 {displayPlans.map((plan) => (
                     <div key={plan.id} className="relative group">
-                         <SubscriptionPlanCard 
-                            plan={plan} 
+                        <SubscriptionPlanCard
+                            plan={plan}
                             currentPlanId={currentUser.subscriptionPlan}
                             onSelect={handleSelect}
                             isLoading={isProcessing}

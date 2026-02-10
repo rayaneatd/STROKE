@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ShieldCheck, Zap, CreditCard, HelpCircle } from 'lucide-react';
-import ScanPackageCard, { ScanPackage } from '../components/cards/ScanPackageCard';
-import { getScanPackages } from '../services/mockData';
-import { useTheme } from '../context/ThemeContext';
+import ScanPackageCard from '../components/cards/ScanPackageCard';
+import { useBuyScans } from '../hooks/useBuyScans';
 
 interface BuyScansProps {
     onBack: () => void;
@@ -12,23 +11,12 @@ interface BuyScansProps {
 }
 
 const BuyScans: React.FC<BuyScansProps> = ({ onBack, onBuy, currentBalance }) => {
-    const { isLight, styles } = useTheme();
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [packages, setPackages] = useState<ScanPackage[]>([]);
-
-    useEffect(() => {
-        setPackages(getScanPackages() as ScanPackage[]);
-    }, []);
-
-    const handlePurchase = (amount: number) => {
-        setIsProcessing(true);
-        // Simulate API call
-        setTimeout(() => {
-            onBuy(amount);
-            setIsProcessing(false);
-            onBack();
-        }, 1500);
-    };
+    const {
+        isLight,
+        isProcessing,
+        packages,
+        handlePurchase
+    } = useBuyScans({ onBack, onBuy });
 
     const headerText = isLight ? 'text-slate-900' : 'text-white';
     const subText = isLight ? 'text-slate-500' : 'text-zinc-400';
@@ -75,9 +63,9 @@ const BuyScans: React.FC<BuyScansProps> = ({ onBack, onBuy, currentBalance }) =>
             {/* Pricing Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                 {packages.map((pkg) => (
-                    <ScanPackageCard 
-                        key={pkg.id} 
-                        pkg={pkg} 
+                    <ScanPackageCard
+                        key={pkg.id}
+                        pkg={pkg}
                         onBuy={handlePurchase}
                         isLoading={isProcessing}
                     />
