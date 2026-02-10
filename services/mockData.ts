@@ -497,12 +497,19 @@ export const markFileExported = (fileId: string, userId: string) => {
 
 // --- CONNECTIONS ---
 
-export const MOCK_CONNECTIONS: ConnectionItem[] = [
-    { id: 'c1', otherUser: MOCK_USERS[1], status: 'CONNECTED', date: '2023-01-01' },
-    { id: 'c2', otherUser: { ...MOCK_USERS[0], displayName: 'Jane Smith', email: 'jane.smith@example.com' } as User, status: 'RECEIVED', date: '2024-02-10' }
+interface InternalConnection {
+    id: string;
+    senderId: UserId;
+    receiverId: UserId;
+    status: 'CONNECTED' | 'PENDING';
+    date: string;
+}
+
+export const INTERNAL_CONNECTIONS: InternalConnection[] = [
+    { id: 'c1', senderId: 'u1' as UserId, receiverId: 'u2' as UserId, status: 'CONNECTED', date: '2023-01-01' }
 ];
 
-export const sendConnectionRequest = (fromId: string, toEmail: string) => {
+export const sendConnectionRequest = (fromId: UserId, toEmail: string) => {
     const targetUser = MOCK_USERS.find(u => u.email.toLowerCase() === toEmail.toLowerCase());
 
     if (!targetUser) {
@@ -513,40 +520,66 @@ export const sendConnectionRequest = (fromId: string, toEmail: string) => {
         throw new Error("You cannot connect with yourself.");
     }
 
-    const existing = MOCK_CONNECTIONS.find(c =>
-        (c.otherUser.id === targetUser.id && (c.status === 'SENT' || c.status === 'CONNECTED'))
+    const existing = INTERNAL_CONNECTIONS.find(c =>
+        (c.senderId === fromId && c.receiverId === targetUser.id) ||
+        (c.senderId === targetUser.id && c.receiverId === fromId)
     );
 
     if (existing) {
-        throw new Error("A connection or request already exists with this user.");
+        if (existing.status === 'CONNECTED') throw new Error("You are already connected with this user.");
+        if (existing.senderId === fromId) throw new Error("You have already sent a request to this user.");
+        throw new Error("This user has already sent you a request.");
     }
 
-    const newRequest: ConnectionItem = {
+    const newRequest: InternalConnection = {
         id: `conn-${Date.now()}`,
-        otherUser: targetUser,
-        status: 'SENT',
+        senderId: fromId,
+        receiverId: targetUser.id,
+        status: 'PENDING',
         date: new Date().toISOString().split('T')[0]
     };
 
-    MOCK_CONNECTIONS.push(newRequest);
+    INTERNAL_CONNECTIONS.push(newRequest);
     return "Request Sent Successfully";
 };
 
-export const fetchNetworkData = (userId: string) => {
-    // In a real app, this would query a table where either requester_id or receiver_id is userId.
-    // For this mock, we'll treat 'otherUser' as the target of our actions.
-    return {
-        connections: MOCK_CONNECTIONS.filter(c => c.status === 'CONNECTED'),
-        received: MOCK_CONNECTIONS.filter(c => c.status === 'RECEIVED'),
-        sent: MOCK_CONNECTIONS.filter(c => c.status === 'SENT')
-    };
+export const fetchNetworkData = (userId: UserId) => {
+    const connections: ConnectionItem[] = [];
+    const received: ConnectionItem[] = [];
+    const sent: ConnectionItem[] = [];
+
+    INTERNAL_CONNECTIONS.forEach(c => {
+        if (c.status === 'CONNECTED') {
+            if (c.senderId === userId || c.receiverId === userId) {
+                const otherId = c.senderId === userId ? c.receiverId : c.senderId;
+                const otherUser = getUser(otherId);
+                if (otherUser) {
+                    connections.push({ id: c.id, otherUser, status: 'CONNECTED', date: c.date });
+                }
+            }
+        } else if (c.status === 'PENDING') {
+            if (c.senderId === userId) {
+                const otherUser = getUser(c.receiverId);
+                if (otherUser) {
+                    sent.push({ id: c.id, otherUser, status: 'SENT', date: c.date });
+                }
+            } else if (c.receiverId === userId) {
+                const otherUser = getUser(c.senderId);
+                if (otherUser) {
+                    received.push({ id: c.id, otherUser, status: 'RECEIVED', date: c.date });
+                }
+            }
+        }
+    });
+
+    return { connections, received, sent };
 };
 
 export const updateConnectionStatus = (id: string, action: 'ACCEPT' | 'DECLINE' | 'CANCEL' | 'REMOVE') => {
-    const idx = MOCK_CONNECTIONS.findIndex(c => c.id === id);
+    const idx = INTERNAL_CONNECTIONS.findIndex(c => c.id === id);
     if (idx === -1) throw new Error("Connection not found");
 
-    const conn = MOCK_CONNECTIONS[idx];
+    const conn = INTERNAL_CONNECTIONS[idx];
 
     switch (action) {
         case 'ACCEPT':
@@ -556,7 +589,7 @@ export const updateConnectionStatus = (id: string, action: 'ACCEPT' | 'DECLINE' 
         case 'DECLINE':
         case 'CANCEL':
         case 'REMOVE':
-            MOCK_CONNECTIONS.splice(idx, 1);
+            INTERNAL_CONNECTIONS.splice(idx, 1);
             break;
     }
 };
