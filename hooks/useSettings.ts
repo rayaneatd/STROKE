@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { User, UserPreferences, EmployeeAddPermission, AIPreferences, UIPreferences, BillingType, SubscriptionPlan, OutreachStrategy } from '../types';
 import { supabase } from '../lib/supabase';
+import { Json } from '../lib/database.types';
 import { useTheme } from '../context/ThemeContext';
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -100,7 +101,7 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
             const { error } = await supabase
                 .from('profiles')
                 .update({
-                    preferences: data.preferences,
+                    preferences: data.preferences as unknown as Json,
                     billing_type: data.billingType,
                     overage_cap: data.overageCap === 'UNLIMITED' ? -1 : data.overageCap,
                     company: (data.preferences as any).company,

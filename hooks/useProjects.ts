@@ -329,8 +329,11 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                         if (error) {
                             console.error('Initial deposit failed:', error);
                             alert("Project created but initial budget transfer failed: " + error.message);
-                        } else if (data && !data.success) {
-                            alert("Project created but initial budget transfer failed: " + data.error);
+                        } else {
+                            const result = data as { success: boolean; error?: string };
+                            if (result && !result.success) {
+                                alert("Project created but initial budget transfer failed: " + result.error);
+                            }
                         }
                     }
                 }

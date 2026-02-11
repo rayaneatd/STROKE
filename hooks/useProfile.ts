@@ -2,8 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { User, Role, SubscriptionPlan, BillingType } from '../types';
+import { Tables, Json } from '../lib/database.types';
 
-export const useProfile = () => {
+interface UseProfileProps {
+    user?: User | null;
+    onUpdateUser?: (data: Partial<User>) => void;
+    onNavigate?: (path: string) => void;
+}
+
+export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseProfileProps = {}) => {
     const queryClient = useQueryClient();
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +35,7 @@ export const useProfile = () => {
             }
 
             // Map data or use fallback
-            const profile = data || {};
+            const profile = (data || {}) as Partial<Tables<'profiles'>>;
 
             return {
                 id: authUser.id,
@@ -42,12 +49,12 @@ export const useProfile = () => {
                 purchasedScans: profile.purchased_scans || 0,
                 billingType: profile.billing_type as BillingType || BillingType.PREPAID,
                 overageCap: 0,
-                preferences: profile.preferences as any || {},
+                preferences: profile.preferences as unknown as Json || {},
                 emailIntegrations: [],
                 signupDate: profile.signup_date,
                 company: (profile.preferences as any)?.company || '',
                 industry: (profile.preferences as any)?.industry || ''
-            } as User & { company?: string, industry?: string };
+            } as unknown as User & { company?: string, industry?: string };
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
         retry: 1
@@ -115,7 +122,7 @@ export const useProfile = () => {
                         ...(user?.preferences || {}),
                         company: newData.company,
                         industry: newData.industry
-                    }
+                    } as unknown as Json
                 })
                 .eq('id', authUser.id);
 
@@ -191,7 +198,7 @@ export const useProfile = () => {
         handleFileChange,
         handleSubmit,
         handleConnectNylas: () => alert("Nylas is simulated"),
-        handleDisconnectAccount: () => alert("Nylas is simulated"),
+        handleDisconnectAccount: (id: string) => alert(`Nylas is simulated. Disconnecting ${id}`),
         getPlanColor
     };
 };

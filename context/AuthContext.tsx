@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { User, Role, SubscriptionPlan, BillingType } from '../types';
 import { supabase } from '../lib/supabase';
+import { TablesUpdate, Json } from '../lib/database.types';
 
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
     logout: () => Promise<void>;
-    updateUser: (data: Partial<User>) => void;
+    updateUser: (data: Partial<User>, syncWithBackend?: boolean) => void;
     loading: boolean;
 }
 
@@ -36,13 +37,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     scansBalance: data.scans_balance || 0,
                     purchasedScans: data.purchased_scans || 0,
                     billingType: data.billing_type as BillingType || BillingType.PREPAID,
-                    overageCap: data.overage_cap || 500,
+                    overageCap: data.overage_cap || 0,
                     company: data.company || '',
                     industry: data.industry || '',
-                    preferences: data.preferences as any || {},
+                    preferences: data.preferences as Json || {},
                     emailIntegrations: [],
-                    signupDate: data.signup_date
-                } as User;
+                    signupDate: data.signup_date || undefined
+                } as unknown as User;
             }
         } catch (err) {
             console.error('Fetch profile error:', err);
@@ -64,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             overageCap: 0,
             preferences: {},
             emailIntegrations: [],
-        } as User;
+        } as unknown as User;
     };
 
     useEffect(() => {
@@ -115,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         filter: `id=eq.${user.id}`
                     },
                     (payload) => {
-                        fetchProfile(user.id, {
+                        fetchProfile(user.id as unknown as string, {
                             email: user.email,
                             user_metadata: {
                                 display_name: user.displayName,
@@ -135,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (profileSubscription) supabase.removeChannel(profileSubscription);
             clearTimeout(loadingTimeout);
         };
-    }, []);
+    }, [user?.id]); // Re-subscribe if user ID changes
 
     const logout = async () => {
         await supabase.auth.signOut();
@@ -150,20 +151,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (syncWithBackend && user?.id) {
             try {
                 // Map local fields to DB fields if necessary
-                const dbData: any = {};
+                const dbData: TablesUpdate<'profiles'> = {};
                 if (data.displayName !== undefined) dbData.display_name = data.displayName;
                 if (data.avatarUrl !== undefined) dbData.avatar_url = data.avatarUrl;
-                if (data.preferences !== undefined) dbData.preferences = data.preferences;
+                if (data.preferences !== undefined) dbData.preferences = data.preferences as unknown as Json;
                 if (data.scansBalance !== undefined) dbData.scans_balance = data.scansBalance;
                 if (data.subscriptionPlan !== undefined) dbData.subscription_plan = data.subscriptionPlan;
                 if (data.company !== undefined) dbData.company = data.company;
                 if (data.industry !== undefined) dbData.industry = data.industry;
-                if (data.overageCap !== undefined) dbData.overage_cap = data.overageCap;
+                if (data.overageCap !== undefined && data.overageCap !== 'UNLIMITED') dbData.overage_cap = data.overageCap;
 
                 await supabase
                     .from('profiles')
                     .update(dbData)
-                    .eq('id', user.id);
+                    .eq('id', user.id as unknown as string);
             } catch (err) {
                 console.error('Failed to sync user update:', err);
             }

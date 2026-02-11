@@ -32,8 +32,8 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
     const [ownerConnections, setOwnerConnections] = useState<UserType[]>([]);
     const [isOwnerConnectionsLoading, setIsOwnerConnectionsLoading] = useState(false);
 
-    const currentUserMember = project.members.find(m => m.userId === currentUser.id);
-    const currentUserRole = currentUserMember?.role || (project.ownerId === currentUser.id ? ProjectRole.OWNER : null);
+    const currentUserMember = project.members.find(m => m.userId === (currentUser.id as unknown as string));
+    const currentUserRole = currentUserMember?.role || (project.ownerId === (currentUser.id as unknown as string) ? ProjectRole.OWNER : null);
 
     // Fetch Owner Connections if needed
     useEffect(() => {
@@ -49,7 +49,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                     if (error) throw error;
 
                     if (data) {
-                        const mappedUsers: UserType[] = data.map((u: any) => ({
+                        const mappedUsers: UserType[] = (data as any[]).map((u: any) => ({
                             id: u.id,
                             displayName: u.display_name || u.email.split('@')[0],
                             email: u.email,
@@ -91,17 +91,17 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
         const perm = project.settings.employeeAddPermission;
 
         if (currentUserRole === ProjectRole.OWNER || (currentUserRole === ProjectRole.ADMIN && (perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS))) {
-            myConns.forEach(u => uniqueUsers.set(u.id, u));
+            myConns.forEach(u => uniqueUsers.set(u.id as unknown as string, u));
         }
 
         // 2. Add owner connections if Admin and allowed
         if (currentUserRole === ProjectRole.ADMIN && (perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWNER_CONNECTIONS)) {
-            ownerConnections.forEach(u => uniqueUsers.set(u.id, u));
+            ownerConnections.forEach(u => uniqueUsers.set(u.id as unknown as string, u));
         }
 
         // Filter out users who are already members
-        return Array.from(uniqueUsers.values()).filter(u => !project.members.some(m => m.userId === u.id));
-    }, [network.connections, ownerConnections, project.members, currentUserRole, project.settings.employeeAddPermission]);
+        return Array.from(uniqueUsers.values()).filter(u => !project.members.some(m => m.userId === (u.id as unknown as string)));
+    }, [network?.connections, ownerConnections, project.members, currentUserRole, project.settings.employeeAddPermission]);
 
     const toggleUserSelection = (userId: string) => {
         setSelectedUsersToAdd(prev =>
@@ -173,8 +173,8 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                             <button
                                 onClick={() => setSelectedEmployeeSubRole('PARTNER')}
                                 className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all gap-2 text-center group ${selectedEmployeeSubRole === 'PARTNER'
-                                        ? 'bg-purple-500/10 border-purple-500/50 text-purple-500 ring-1 ring-purple-500/50 shadow-sm z-10'
-                                        : isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-purple-300 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200'
+                                    ? 'bg-purple-500/10 border-purple-500/50 text-purple-500 ring-1 ring-purple-500/50 shadow-sm z-10'
+                                    : isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-purple-300 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200'
                                     }`}
                             >
                                 <div className={`p-2 rounded-full transition-colors ${selectedEmployeeSubRole === 'PARTNER' ? 'bg-purple-500/20 text-purple-500' : isLight ? 'bg-slate-100 text-slate-400 group-hover:bg-purple-50 group-hover:text-purple-500' : 'bg-white/5 text-zinc-500 group-hover:text-purple-400'}`}>
@@ -186,8 +186,8 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                             <button
                                 onClick={() => setSelectedEmployeeSubRole('SCOUT')}
                                 className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all gap-2 text-center group ${selectedEmployeeSubRole === 'SCOUT'
-                                        ? `bg-${accent}-500/10 border-${accent}-500/50 text-${accent}-500 ring-1 ring-${accent}-500/50 shadow-sm z-10`
-                                        : isLight ? `bg-white border-slate-200 text-slate-600 hover:border-${accent}-300 hover:bg-slate-50` : 'bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200'
+                                    ? `bg-${accent}-500/10 border-${accent}-500/50 text-${accent}-500 ring-1 ring-${accent}-500/50 shadow-sm z-10`
+                                    : isLight ? `bg-white border-slate-200 text-slate-600 hover:border-${accent}-300 hover:bg-slate-50` : 'bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200'
                                     }`}
                             >
                                 <div className={`p-2 rounded-full transition-colors ${selectedEmployeeSubRole === 'SCOUT' ? `bg-${accent}-500/20 text-${accent}-500` : isLight ? `bg-slate-100 text-slate-400 group-hover:bg-${accent}-50 group-hover:text-${accent}-500` : `bg-white/5 text-zinc-500 group-hover:text-${accent}-400`}`}>
@@ -199,8 +199,8 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                             <button
                                 onClick={() => setSelectedEmployeeSubRole('ANALYST')}
                                 className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all gap-2 text-center group ${selectedEmployeeSubRole === 'ANALYST'
-                                        ? 'bg-blue-500/10 border-blue-500/50 text-blue-500 ring-1 ring-blue-500/50 shadow-sm z-10'
-                                        : isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200'
+                                    ? 'bg-blue-500/10 border-blue-500/50 text-blue-500 ring-1 ring-blue-500/50 shadow-sm z-10'
+                                    : isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200'
                                     }`}
                             >
                                 <div className={`p-2 rounded-full transition-colors ${selectedEmployeeSubRole === 'ANALYST' ? 'bg-blue-500/20 text-blue-500' : isLight ? 'bg-slate-100 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500' : 'bg-white/5 text-zinc-500 group-hover:text-blue-400'}`}>
@@ -250,11 +250,11 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                         </div>
                     ) : (
                         availableUsers.map(u => {
-                            const isSelected = selectedUsersToAdd.includes(u.id);
+                            const isSelected = selectedUsersToAdd.includes(u.id as unknown as string);
                             return (
                                 <div
-                                    key={u.id}
-                                    onClick={() => toggleUserSelection(u.id)}
+                                    key={u.id as unknown as string}
+                                    onClick={() => toggleUserSelection(u.id as unknown as string)}
                                     className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${isSelected ? (isLight ? `bg-${accent}-50 border-${accent}-200 shadow-sm` : `bg-${accent}-500/10 border-${accent}-500/30`) : (isLight ? 'hover:bg-slate-50 border-transparent hover:border-slate-100' : 'hover:bg-white/5 border-transparent hover:border-white/5')}`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -290,4 +290,3 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
 };
 
 export default AddMemberModal;
-

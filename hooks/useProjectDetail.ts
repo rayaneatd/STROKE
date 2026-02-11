@@ -44,17 +44,18 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
             if (error) throw error;
 
+            const projectData = data as any;
             return {
-                id: data.id,
-                title: data.title,
-                description: data.description || '',
-                ownerId: data.owner_id,
-                createdAt: data.created_at,
-                status: data.status,
-                settings: data.settings || {},
-                investmentBalance: data.investment_balance || 0,
-                totalInvested: data.total_invested || 0,
-                members: data.members.map((m: any) => ({
+                id: projectData.id,
+                title: projectData.title,
+                description: projectData.description || '',
+                ownerId: projectData.owner_id,
+                createdAt: projectData.created_at,
+                status: projectData.status,
+                settings: projectData.settings || {},
+                investmentBalance: projectData.investment_balance || 0,
+                totalInvested: projectData.total_invested || 0,
+                members: projectData.members.map((m: any) => ({
                     userId: m.user_id,
                     role: m.role as ProjectRole,
                     permissions: m.permissions || [],
@@ -232,7 +233,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 user_id: userId,
                 role,
                 permissions,
-                scan_quota: quota === 'UNLIMITED' ? -1 : quota,
+                scan_quota: String(quota === 'UNLIMITED' ? -1 : quota),
                 joined_at: new Date().toISOString()
             });
             if (error) throw error;
@@ -257,7 +258,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
             // Transform quota if present
             const payload = { ...data };
             if ('scanQuota' in data) {
-                payload.scan_quota = data.scanQuota === 'UNLIMITED' ? -1 : data.scanQuota;
+                payload.scan_quota = String(data.scanQuota === 'UNLIMITED' ? -1 : data.scanQuota);
                 delete payload.scanQuota;
             }
             const { error } = await supabase.from('project_members').update(payload).eq('project_id', projectId).eq('user_id', userId);
@@ -276,8 +277,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 p_action: 'DEPOSIT'
             });
             if (error) throw error;
-            if (data && !data.success) throw new Error(data.error);
-            return data;
+            const result = data as { success: boolean; error?: string; user_balance: number };
+            if (result && !result.success) throw new Error(result.error);
+            return result;
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['project', projectId] });
@@ -296,8 +298,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 p_action: 'WITHDRAW'
             });
             if (error) throw error;
-            if (data && !data.success) throw new Error(data.error);
-            return data;
+            const result = data as { success: boolean; error?: string; user_balance: number };
+            if (result && !result.success) throw new Error(result.error);
+            return result;
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['project', projectId] });
@@ -452,14 +455,19 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
     const handleIdentityChange = (emailId: string) => {
         // In a real app, update project_members table
-        supabase.from('project_members')
-            .update({ preferred_outreach_email_id: emailId })
-            .eq('project_id', projectId)
-            .eq('user_id', currentUser.id)
-            .then(() => {
-                queryClient.invalidateQueries({ queryKey: ['project', projectId] });
-                setIsIdentitySelectorOpen(false);
-            });
+        // preferred_outreach_email_id column is not yet in the schema
+        // supabase.from('project_members')
+        //     .update({ preferred_outreach_email_id: emailId } as any)
+        //     .eq('project_id', projectId)
+        //     .eq('user_id', currentUser.id)
+        //     .then(() => {
+        //         queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+        //         setIsIdentitySelectorOpen(false);
+        //     });
+
+        // Temporary implementation
+        queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+        setIsIdentitySelectorOpen(false);
     };
 
     // Derived UI State
