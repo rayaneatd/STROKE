@@ -50,7 +50,6 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
     const [isSavingPrimary, setIsSavingPrimary] = useState(false);
     const [isSavingWork, setIsSavingWork] = useState(false);
     const [isConnectingNylas, setIsConnectingNylas] = useState(false);
-
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
