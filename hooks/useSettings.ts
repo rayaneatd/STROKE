@@ -35,7 +35,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
     uiConfig: {
         theme: 'DARK',
         ambientGlow: 'slate',
-        accentColor: 'blue',
+        accentColor: 'slate',
         reducedMotion: false,
         glassIntensity: 'MEDIUM',
         density: 'COMFORTABLE'

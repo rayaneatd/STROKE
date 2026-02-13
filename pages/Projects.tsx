@@ -327,6 +327,9 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
         ? 'bg-white border-slate-200 text-slate-700 focus:ring-2 focus:ring-slate-100'
         : 'bg-[#18181b] border-white/10 text-zinc-300 focus:ring-2 focus:ring-white/5';
 
+    // Dual Identity Constraint
+    const canCreateProject = currentUser.isOwner || !!currentUser.primaryEmail;
+
     return (
         <div className="space-y-6 animate-fade-in relative">
             <LowCreditsBanner balance={currentUser.scansBalance} onBuy={() => onNavigate('buy-scans')} />
@@ -336,13 +339,22 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                     <h1 className={`text-2xl font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>Projects</h1>
                     <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Manage your recruitment missions</p>
                 </div>
-                <button
-                    onClick={handleCreateClick}
-                    className={`bg-${accentColor}-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-${accentColor}-500 transition-colors flex items-center gap-2 shadow-lg shadow-${accentColor}-900/20 active:translate-y-0.5 hover:-translate-y-0.5`}
-                >
-                    <Plus size={16} />
-                    Create Project
-                </button>
+                <div className="flex items-center gap-2">
+                    {!canCreateProject && (
+                        <span className="text-xs text-red-500 font-bold hidden md:inline-block">
+                            Add Primary Email to create projects
+                        </span>
+                    )}
+                    <button
+                        onClick={canCreateProject ? handleCreateClick : undefined}
+                        disabled={!canCreateProject}
+                        title={!canCreateProject ? "Please add a primary email in Settings > Security" : "Create New Project"}
+                        className={`bg-${accentColor}-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-${accentColor}-500 transition-colors flex items-center gap-2 shadow-lg shadow-${accentColor}-900/20 active:translate-y-0.5 hover:-translate-y-0.5 ${!canCreateProject ? 'opacity-50 cursor-not-allowed saturate-0' : ''}`}
+                    >
+                        <Plus size={16} />
+                        Create Project
+                    </button>
+                </div>
             </div>
 
             {/* Filter Bar */}

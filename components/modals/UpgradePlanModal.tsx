@@ -45,7 +45,7 @@ const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({
               <div className="px-8 pt-8 pb-8 text-center">
                   <h2 className={`text-2xl font-black mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Unlock Unlimited Potential</h2>
                   <p className={`text-sm mb-8 leading-relaxed ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-                      You've run out of scans! Upgrade to <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">AIRecruit Pro</span> to remove limits and hire faster.
+                      You've run out of scans! Upgrade to <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500">STROKE Pro</span> to remove limits and hire faster.
                   </p>
 
                   <div className="space-y-3 mb-8 text-left">

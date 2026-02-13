@@ -14,7 +14,6 @@ export const MOCK_USERS: User[] = [
     {
         id: 'u1' as UserId,
         email: 'admin@airecruit.com',
-        phoneNumber: '+1 (555) 010-9999',
         displayName: 'Admin User',
         role: Role.ADMIN,
         subscriptionPlan: SubscriptionPlan.ELITE,
@@ -56,7 +55,6 @@ export const MOCK_USERS: User[] = [
     {
         id: 'u2' as UserId,
         email: 'user@company.com',
-        phoneNumber: '+1 (555) 012-3456',
         displayName: 'John Doe',
         role: Role.USER,
         subscriptionPlan: SubscriptionPlan.PRO,
@@ -152,18 +150,17 @@ export const MOCK_FILES: ProjectFile[] = [
 // --- AUTH SERVICES ---
 
 export const login = (identifier: string, pass: string): User => {
-    const user = MOCK_USERS.find(u => u.email === identifier || u.phoneNumber === identifier);
+    const user = MOCK_USERS.find(u => u.email === identifier);
     if (!user) throw new Error("Invalid credentials");
     if (user.isBanned) throw new Error("Account suspended");
     return user;
 };
 
-export const register = (email: string, pass: string, name: string, phone?: string): User => {
+export const register = (email: string, pass: string, name: string): User => {
     if (MOCK_USERS.find(u => u.email === email)) throw new Error("Email already exists");
     const newUser: User = {
         id: `u${Date.now()}` as UserId,
         email,
-        phoneNumber: phone,
         displayName: name,
         role: Role.USER,
         subscriptionPlan: SubscriptionPlan.FREE,

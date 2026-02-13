@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import { User } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { ACCENT_PALETTES } from '../theme/designTokens';
+import { useAvatarSync } from '../hooks/useAvatarSync';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, onNavigate, onBuyScans }) => {
   const { uiConfig, isLight, accent, styles } = useTheme();
+
+  // Automatically sync external avatars to internal storage
+  useAvatarSync(user);
 
   const getAmbientGlow = () => {
       // In Light mode, we use broader, more diffuse pastel gradients

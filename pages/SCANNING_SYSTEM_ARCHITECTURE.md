@@ -3,7 +3,7 @@
 
 ## 1. Executive Summary
 
-The AIRecruit scanning engine utilizes a **Hybrid Client-Side Storage / Server-Side Metadata** pattern. 
+The STROKE scanning engine utilizes a **Hybrid Client-Side Storage / Server-Side Metadata** pattern. 
 
 ### The Problem
 Traditional file uploads in serverless environments (like Vercel/Next.js) face strict limitations:

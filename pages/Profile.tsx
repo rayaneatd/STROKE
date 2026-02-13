@@ -3,7 +3,7 @@ import React from 'react';
 import { User, SubscriptionPlan, Role } from '../types';
 import {
     Camera, Save, Mail, User as UserIcon, Shield, CreditCard, Check,
-    AlertCircle, Loader2, Building2, Server, Phone, Link, Plus, Trash2
+    AlertCircle, Loader2, Building2, Server, Link, Plus, Trash2
 } from 'lucide-react';
 import { INDUSTRIES } from '../constants';
 import SearchableSelect from '../components/ui/SearchableSelect';
@@ -115,23 +115,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdateUser, onNavigate }) => 
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className={`text-xs font-bold ml-1 ${labelClass}`}>Phone Number</label>
-                                    <div className="relative opacity-60">
-                                        <Phone className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${textSecondary}`} size={16} />
-                                        <input
-                                            type="tel"
-                                            value={formData.phoneNumber}
-                                            readOnly
-                                            disabled
-                                            placeholder="+1 (555) 000-0000"
-                                            className={`w-full pl-10 pr-4 py-2.5 rounded-xl cursor-not-allowed text-sm font-medium border ${isLight ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-white/5 border-white/5 text-zinc-500'}`}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2" title="Managed in Security Settings">
-                                            <Shield size={14} className={textSecondary} />
-                                        </div>
-                                    </div>
-                                </div>
+
                             </div>
 
                             {/* Professional Details */}

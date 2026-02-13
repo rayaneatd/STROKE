@@ -15,7 +15,7 @@ interface ThemeContextType {
 const DEFAULT_UI_CONFIG: UIPreferences = {
     theme: 'DARK',
     ambientGlow: 'slate',
-    accentColor: 'blue',
+    accentColor: 'slate',
     reducedMotion: false,
     glassIntensity: 'MEDIUM',
     density: 'COMFORTABLE'

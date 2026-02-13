@@ -65,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
                 <Zap className={`${logoColor} fill-current transition-colors`} size={18} />
             </div>
         </div>
-        <span className={`text-base font-bold tracking-tight transition-colors ${isLight ? 'text-slate-900 group-hover:text-slate-700' : 'text-white group-hover:text-zinc-200'}`}>AIRecruit</span>
+        <span className={`text-base font-bold tracking-tight transition-colors ${isLight ? 'text-slate-900 group-hover:text-slate-700' : 'text-white group-hover:text-zinc-200'}`}>STROKE</span>
       </div>
 
       {/* Center: Premium Plan Indicator */}

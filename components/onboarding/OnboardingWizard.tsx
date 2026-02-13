@@ -168,7 +168,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, onComplete })
                         <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white shadow-lg">
                             <Rocket size={16} className="fill-current" />
                         </div>
-                        <span className="font-bold text-white tracking-tight text-lg">AIRecruit</span>
+                        <span className="font-bold text-white tracking-tight text-lg">STROKE</span>
                     </div>
                     
                     <div className="space-y-1">

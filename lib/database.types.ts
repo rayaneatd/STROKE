@@ -126,13 +126,16 @@ export type Database = {
                     id: string
                     industry: string | null
                     overage_cap: number | null
-                    phone_number: string | null
                     preferences: Json | null
+                    primary_email: string | null
                     purchased_scans: number | null
                     role: string | null
                     scans_balance: number | null
                     signup_date: string | null
                     subscription_plan: string | null
+                    work_email: string | null
+                    is_owner: boolean | null
+                    nylas_connected: boolean | null
                 }
                 Insert: {
                     avatar_url?: string | null
@@ -143,13 +146,16 @@ export type Database = {
                     id: string
                     industry?: string | null
                     overage_cap?: number | null
-                    phone_number?: string | null
                     preferences?: Json | null
+                    primary_email?: string | null
                     purchased_scans?: number | null
                     role?: string | null
                     scans_balance?: number | null
                     signup_date?: string | null
                     subscription_plan?: string | null
+                    work_email?: string | null
+                    is_owner?: boolean | null
+                    nylas_connected?: boolean | null
                 }
                 Update: {
                     avatar_url?: string | null
@@ -160,13 +166,16 @@ export type Database = {
                     id?: string
                     industry?: string | null
                     overage_cap?: number | null
-                    phone_number?: string | null
                     preferences?: Json | null
+                    primary_email?: string | null
                     purchased_scans?: number | null
                     role?: string | null
                     scans_balance?: number | null
                     signup_date?: string | null
                     subscription_plan?: string | null
+                    work_email?: string | null
+                    is_owner?: boolean | null
+                    nylas_connected?: boolean | null
                 }
                 Relationships: []
             }
@@ -332,7 +341,6 @@ export type Database = {
                     id: string
                     industry: string | null
                     overage_cap: number | null
-                    phone_number: string | null
                     preferences: Json | null
                     purchased_scans: number | null
                     role: string | null

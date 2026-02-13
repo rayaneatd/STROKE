@@ -9,13 +9,17 @@ export const useLogin = () => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [loading, setLoading] = useState(false);
     const [socialLoading, setSocialLoading] = useState<string | null>(null);
+    const [magicLinkLoading, setMagicLinkLoading] = useState(false);
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
 
     const [showPassword, setShowPassword] = useState(false);
+    const [staySignedIn, setStaySignedIn] = useState(false);
+    const [marketingConsent, setMarketingConsent] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const [magicLinkSuccess, setMagicLinkSuccess] = useState(false);
     const [error, setError] = useState('');
 
     const generatePassword = () => {
@@ -55,8 +59,7 @@ export const useLogin = () => {
                     password,
                     options: {
                         data: {
-                            display_name: displayName,
-                            phone_number: phoneNumber
+                            display_name: displayName
                         }
                     }
                 });
@@ -79,16 +82,62 @@ export const useLogin = () => {
         }
     };
 
-    const handleSocialLogin = async (provider: any) => {
+    const handleSocialLogin = async (provider: 'google' | 'azure' | 'github' | 'linkedin' | string) => {
         setSocialLoading(provider);
         try {
+            const options: any = {
+                redirectTo: `${window.location.origin}/`,
+            };
+
+            if (provider === 'google') {
+                options.queryParams = {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                };
+            }
+
+            if (provider === 'azure') {
+                options.scopes = 'email profile openid offline_access User.Read';
+            }
+
             const { error: socialError } = await supabase.auth.signInWithOAuth({
-                provider,
+                provider: provider as any,
+                options,
             });
             if (socialError) throw socialError;
         } catch (err: any) {
             setError(err.message || "Social login failed");
             setSocialLoading(null);
+        }
+    };
+
+    const handleMagicLinkLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        if (!email) {
+            setError("Please enter your email address");
+            return;
+        }
+        if (!captchaToken) {
+            setError("Please complete the captcha challenge");
+            return;
+        }
+        setMagicLinkLoading(true);
+        try {
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                    shouldCreateUser: true,
+                    emailRedirectTo: `${window.location.origin}/`,
+                    captchaToken,
+                }
+            });
+            if (error) throw error;
+            setMagicLinkSuccess(true);
+        } catch (err: any) {
+            setError(err.message || "Failed to send magic link");
+        } finally {
+            setMagicLinkLoading(false);
         }
     };
 
@@ -109,7 +158,6 @@ export const useLogin = () => {
         setIsRegistering(!isRegistering);
         setError('');
         setPassword('');
-        setPhoneNumber('');
         setShowPassword(false);
     };
 
@@ -123,8 +171,6 @@ export const useLogin = () => {
         setPassword,
         displayName,
         setDisplayName,
-        phoneNumber,
-        setPhoneNumber,
         showPassword,
         setShowPassword,
         error,
@@ -134,6 +180,16 @@ export const useLogin = () => {
         handleSocialLogin,
         handleForgotPassword,
         toggleMode,
+        staySignedIn,
+        setStaySignedIn,
+        marketingConsent,
+        setMarketingConsent,
+        captchaToken,
+        setCaptchaToken,
+        magicLinkLoading,
+        handleMagicLinkLogin,
+        magicLinkSuccess,
+        setMagicLinkSuccess,
         MOCK_USERS // Keep for UI compatibility if needed elsewhere
     };
 };

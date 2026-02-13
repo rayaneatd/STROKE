@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { User, Role, SubscriptionPlan, BillingType } from '../types';
 import { supabase } from '../lib/supabase';
 import { TablesUpdate, Json } from '../lib/database.types';
+import { classifyEmailDomain, EmailType } from '../utils/emailDomains';
 
 interface AuthContextType {
     user: User | null;
@@ -26,11 +27,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .maybeSingle();
 
             if (data) {
+                // Dual Identity Logic
+                let primaryEmail = data.primary_email;
+                let workEmail = data.work_email;
+                const isOwner = data.is_owner || false;
+                const nylasConnected = data.nylas_connected || false;
+
+                if (!primaryEmail && !workEmail && authUser.email) {
+                    const type = classifyEmailDomain(authUser.email);
+                    if (type === EmailType.PUBLIC) {
+                        primaryEmail = authUser.email;
+                    } else {
+                        workEmail = authUser.email;
+                    }
+                }
+
                 return {
                     id: data.id,
-                    email: data.email,
+                    email: authUser.email || data.email, // Prefer authUser email as source of truth
                     displayName: data.display_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'Member',
-                    phoneNumber: data.phone_number || authUser.user_metadata?.phone_number || '',
                     avatarUrl: data.avatar_url || authUser.user_metadata?.avatar_url || '',
                     role: data.role as Role || Role.USER,
                     subscriptionPlan: data.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
@@ -42,7 +57,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     industry: data.industry || '',
                     preferences: data.preferences as Json || {},
                     emailIntegrations: [],
-                    signupDate: data.signup_date || undefined
+                    signupDate: data.signup_date || undefined,
+                    identities: authUser.identities || [],
+                    newEmail: authUser.new_email,
+                    primaryEmail,
+                    workEmail,
+                    isOwner,
+                    nylasConnected
                 } as unknown as User;
             }
         } catch (err) {
@@ -51,11 +72,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Optimistic Fallback: Return skeleton user from Auth Metadata 
         // to prevent redirect loops or "Loading" hangs
+        const type = classifyEmailDomain(authUser.email || '');
         return {
             id: userId,
             email: authUser.email || '',
             displayName: authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'Member',
-            phoneNumber: authUser.user_metadata?.phone_number || '',
             avatarUrl: authUser.user_metadata?.avatar_url || '',
             role: Role.USER,
             subscriptionPlan: SubscriptionPlan.FREE,
@@ -65,6 +86,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             overageCap: 0,
             preferences: {},
             emailIntegrations: [],
+            identities: authUser.identities || [],
+            newEmail: authUser.new_email,
+            primaryEmail: type === EmailType.PUBLIC ? authUser.email : null,
+            workEmail: type === EmailType.CUSTOM ? authUser.email : null,
+            isOwner: false,
+            nylasConnected: false
         } as unknown as User;
     };
 

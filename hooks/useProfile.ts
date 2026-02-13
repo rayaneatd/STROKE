@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { User, Role, SubscriptionPlan, BillingType } from '../types';
 import { Tables, Json } from '../lib/database.types';
+import { classifyEmailDomain, EmailType } from '../utils/emailDomains';
 
 interface UseProfileProps {
     user?: User | null;
@@ -37,11 +38,25 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             // Map data or use fallback
             const profile = (data || {}) as Partial<Tables<'profiles'>>;
 
+            // Dual Identity Logic
+            let primaryEmail = profile.primary_email;
+            let workEmail = profile.work_email;
+            const isOwner = profile.is_owner || false;
+            const nylasConnected = profile.nylas_connected || false;
+
+            if (!primaryEmail && !workEmail && authUser.email) {
+                const type = classifyEmailDomain(authUser.email);
+                if (type === EmailType.PUBLIC) {
+                    primaryEmail = authUser.email;
+                } else {
+                    workEmail = authUser.email;
+                }
+            }
+
             return {
                 id: authUser.id,
                 email: authUser.email || '',
                 displayName: profile.display_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'Member',
-                phoneNumber: profile.phone_number || authUser.user_metadata?.phone_number || '',
                 avatarUrl: profile.avatar_url || authUser.user_metadata?.avatar_url || '',
                 role: profile.role as Role || Role.USER,
                 subscriptionPlan: profile.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
@@ -53,7 +68,13 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 emailIntegrations: [],
                 signupDate: profile.signup_date,
                 company: (profile.preferences as any)?.company || '',
-                industry: (profile.preferences as any)?.industry || ''
+                industry: (profile.preferences as any)?.industry || '',
+                identities: authUser.identities || [],
+                newEmail: authUser.new_email,
+                primaryEmail,
+                workEmail,
+                isOwner,
+                nylasConnected
             } as unknown as User & { company?: string, industry?: string };
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
@@ -64,7 +85,6 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
     const [formData, setFormData] = useState({
         displayName: '',
         email: '',
-        phoneNumber: '',
         avatarUrl: '',
         company: '',
         industry: ''
@@ -76,7 +96,6 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             setFormData({
                 displayName: user.displayName,
                 email: user.email,
-                phoneNumber: user.phoneNumber || '',
                 avatarUrl: user.avatarUrl || '',
                 company: user.company || '',
                 industry: user.industry || ''
@@ -94,6 +113,25 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
 
             // 1. Upload Avatar if changed
             if (avatarFile) {
+                // DELETE OLD AVATAR IF EXISTS
+                const oldAvatarUrl = user?.avatarUrl;
+                if (oldAvatarUrl && oldAvatarUrl.includes('avatars')) {
+                    try {
+                        // Extract path from URL: .../storage/v1/object/public/avatars/USER_ID/FILENAME
+                        const urlParts = oldAvatarUrl.split('/avatars/');
+                        if (urlParts.length > 1) {
+                            const oldPath = urlParts[1]; // Should be "userId/filename"
+                            // Verify it belongs to current user to be safe
+                            if (oldPath.startsWith(`${authUser.id}/`)) {
+                                await supabase.storage.from('avatars').remove([oldPath]);
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('Failed to delete old avatar:', err);
+                        // Continue even if delete fails
+                    }
+                }
+
                 const fileExt = avatarFile.name.split('.').pop();
                 const fileName = `${authUser.id}-${Date.now()}.${fileExt}`;
                 const filePath = `${authUser.id}/${fileName}`;
@@ -173,7 +211,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
 
     // UI/Theme Helpers (same as before)
     const isLight = user?.preferences?.uiConfig?.theme === 'LIGHT';
-    const accentColor = user?.preferences?.uiConfig?.accentColor || 'blue';
+    const accentColor = user?.preferences?.uiConfig?.accentColor || 'slate';
     const isTeamPlan = user?.subscriptionPlan === SubscriptionPlan.TEAM || user?.subscriptionPlan === SubscriptionPlan.ELITE;
 
     const getPlanColor = (plan: SubscriptionPlan) => {

@@ -66,6 +66,11 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
             data.forEach((item: any) => {
                 const otherPartyData = item.sender_id === currentUser.id ? item.receiver : item.sender;
 
+                if (!otherPartyData) {
+                     // If RLS or data integrity issue hides the profile, skip this item
+                     return;
+                }
+
                 // Map the profile data to a User type
                 const otherUser: User = {
                     id: otherPartyData.id,

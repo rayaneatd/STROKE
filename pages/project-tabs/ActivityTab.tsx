@@ -63,7 +63,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
     // Theme Helpers
     const isLight = currentUser.preferences?.uiConfig?.theme === 'LIGHT';
-    const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'blue';
+    const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'slate';
 
     const cardBg = isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#0e0e10] border-white/5 shadow-sm';
     const textPrimary = isLight ? 'text-slate-900' : 'text-white';
@@ -208,8 +208,16 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         }
     };
 
+    // Anti-Ghosting Check
+    const canSendEmails = currentUser.nylasConnected && !!currentUser.workEmail;
+
     // STRICT STEP 1: Generate Drafts ONLY for candidates who DON'T have one.
     const handleGhostingKiller = () => {
+        if (!canSendEmails) {
+            alert("Please connect your Work Email in Settings > Security to use Anti-Ghosting features.");
+            return;
+        }
+
         if (candidatesNoDrafts.length === 0) return;
         setIsDraftingAll(true);
 
@@ -232,6 +240,11 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
     // STRICT STEP 2: Send ONLY candidates who HAVE a draft.
     const handleSendBulk = () => {
+        if (!canSendEmails) {
+            alert("Please connect your Work Email in Settings > Security to use Anti-Ghosting features.");
+            return;
+        }
+
         if (candidatesWithDrafts.length === 0) return;
         setIsSendingAll(true);
 

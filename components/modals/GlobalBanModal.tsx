@@ -29,7 +29,7 @@ const GlobalBanModal: React.FC<GlobalBanModalProps> = ({ user, onLogout }) => {
                 <h1 className={`text-2xl font-black mb-2 ${textPrimary}`}>Account Suspended</h1>
                 
                 <p className={`text-sm mb-6 leading-relaxed ${textSecondary}`}>
-                    Your account has been suspended by an administrator. You no longer have access to the AIRecruit platform or your projects.
+                    Your account has been suspended by an administrator. You no longer have access to the STROKE platform or your projects.
                 </p>
 
                 {(user.banReason || user.banExpiresAt) && (

@@ -8,7 +8,6 @@ CREATE TABLE public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT UNIQUE NOT NULL,
     display_name TEXT,
-    phone_number TEXT,
     avatar_url TEXT,
     role TEXT CHECK (role IN ('USER', 'ADMIN')) DEFAULT 'USER',
     subscription_plan TEXT DEFAULT 'FREE',

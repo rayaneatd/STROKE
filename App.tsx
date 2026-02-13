@@ -15,6 +15,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 // --- LAZY LOADED ROUTES (Code Splitting) ---
 const Login = React.lazy(() => import('./pages/Login'));
+const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Projects = React.lazy(() => import('./pages/Projects'));
 const ProjectDetail = React.lazy(() => import('./pages/ProjectDetail'));
@@ -157,6 +159,8 @@ const AppContent: React.FC = () => {
             <Suspense fallback={<PageLoader />}>
                 <Routes>
                     <Route path="/login" element={<Login />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </Suspense>

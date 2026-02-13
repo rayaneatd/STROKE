@@ -118,7 +118,6 @@ export interface EmailIntegration {
 export interface User {
   id: UserId;
   email: string;
-  phoneNumber?: string;
   displayName: string;
   avatarUrl?: string;
   jobTitle?: string;
@@ -145,6 +144,22 @@ export interface User {
 
   // Updated: List of integrations
   emailIntegrations: EmailIntegration[];
+  
+  // Auth Identity Info
+  identities?: {
+    id: string;
+    provider: string;
+    created_at: string;
+    last_sign_in_at: string;
+    identity_data?: any;
+  }[];
+  newEmail?: string; // If a change is pending
+
+  // Dual Identity & Owner Override
+  primaryEmail?: string | null;
+  workEmail?: string | null;
+  isOwner?: boolean;
+  nylasConnected?: boolean;
 }
 
 export enum ProjectRole {
