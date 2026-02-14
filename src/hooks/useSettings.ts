@@ -222,7 +222,6 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
         handleAIConfigChange,
         handleUIConfigChange,
         handleSave,
-        handleChangePassword,
         handleDeleteAccount,
         styles // Exposed from useTheme
     };

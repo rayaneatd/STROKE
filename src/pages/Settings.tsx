@@ -42,7 +42,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
         handleAIConfigChange,
         handleUIConfigChange,
         handleSave,
-        handleChangePassword,
         handleDeleteAccount,
         styles
     } = useSettings({ user, onUpdateUser, onLogout });
@@ -132,14 +131,6 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
 
                         {activeTab === 'SECURITY' && (
                             <SecuritySettings
-                                currentEmail={user.email}
-                                identities={user.identities}
-                                newEmail={user.newEmail}
-                                primaryEmail={user.primaryEmail}
-                                workEmail={user.workEmail}
-                                isOwner={user.isOwner}
-                                nylasConnected={user.nylasConnected}
-                                onChangePassword={handleChangePassword}
                                 onDeleteAccount={() => setIsDeleteModalOpen(true)}
                             />
                         )}

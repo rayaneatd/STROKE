@@ -90,6 +90,13 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         industry: ''
     });
 
+    // Email Identity State
+    const [primaryEmailInput, setPrimaryEmailInput] = useState('');
+    const [isEditingPrimary, setIsEditingPrimary] = useState(false);
+    const [isSavingPrimary, setIsSavingPrimary] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+
     // Sync form with user data when loaded
     useEffect(() => {
         if (user) {
@@ -100,6 +107,9 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 company: user.company || '',
                 industry: user.industry || ''
             });
+            if (user.primaryEmail) {
+                setPrimaryEmailInput(user.primaryEmail);
+            }
         }
     }, [user]);
 
@@ -209,6 +219,34 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         updateMutation.mutate(formData);
     };
 
+    const handleUpdateProfileEmail = async () => {
+        setEmailError(null);
+        setEmailSuccess(null);
+        setIsSavingPrimary(true);
+
+        try {
+            if (!user?.id) throw new Error("User ID not found");
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({ 
+                    primary_email: primaryEmailInput 
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            await queryClient.invalidateQueries({ queryKey: ['profile'] });
+            setEmailSuccess('Primary email updated successfully.');
+            setIsEditingPrimary(false);
+        } catch (err: any) {
+            console.error('Update email error:', err);
+            setEmailError(err.message || "Failed to update email");
+        } finally {
+            setIsSavingPrimary(false);
+        }
+    };
+
     // UI/Theme Helpers (same as before)
     const isLight = user?.preferences?.uiConfig?.theme === 'LIGHT';
     const accentColor = user?.preferences?.uiConfig?.accentColor || 'slate';
@@ -220,9 +258,15 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         return isLight ? 'bg-slate-100 text-slate-500 border border-slate-200' : 'bg-white/5 text-zinc-400 border border-white/10';
     };
 
+    // Identify Linked Accounts
+    const linkedAccounts = user?.identities?.filter(id => id.provider !== 'email') || [];
+    const hasLinkedAccounts = linkedAccounts.length > 0;
+
     return {
         user,
         formData,
+        linkedAccounts,
+        hasLinkedAccounts,
         isNylasConnecting,
         isLoading: loading || updateMutation.isPending,
         message,
@@ -237,6 +281,15 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         handleSubmit,
         handleConnectNylas: () => alert("Nylas is simulated"),
         handleDisconnectAccount: (id: string) => alert(`Nylas is simulated. Disconnecting ${id}`),
-        getPlanColor
+        getPlanColor,
+        // Email Identity Exports
+        primaryEmailInput,
+        setPrimaryEmailInput,
+        isEditingPrimary,
+        setIsEditingPrimary,
+        isSavingPrimary,
+        emailError,
+        emailSuccess,
+        handleUpdateProfileEmail
     };
 };
