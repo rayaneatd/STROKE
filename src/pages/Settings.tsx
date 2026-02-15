@@ -10,6 +10,7 @@ import ThemedCard from '../components/ui/ThemedCard';
 import ThemedButton from '../components/ui/ThemedButton';
 import { useSettings } from '../hooks/useSettings';
 import LanguageSwitcher from '../components/LanguageSwitcher'; // Import LanguageSwitcher
+import { useTranslation } from 'react-i18next';
 
 // Sub-Components
 import WorkflowSettings from '../components/settings/WorkflowSettings';
@@ -26,6 +27,7 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => {
+    const { t } = useTranslation();
     const {
         activeTab,
         setActiveTab,
@@ -51,11 +53,11 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
         <div className="max-w-5xl mx-auto animate-fade-in space-y-8 pb-12 relative">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className={`text-3xl font-bold tracking-tight ${styles.text.primary}`}>Settings</h1>
-                    <p className={`mt-1 ${styles.text.secondary}`}>Manage workspace preferences and account security</p>
+                    <h1 className={`text-3xl font-bold tracking-tight ${styles.text.primary}`}>{t('settings.title')}</h1>
+                    <p className={`mt-1 ${styles.text.secondary}`}>{t('settings.subtitle')}</p>
                 </div>
                 <ThemedButton onClick={handleSave} isLoading={isLoading} icon={<Save size={18} />}>
-                    Save Changes
+                    {t('settings.save')}
                 </ThemedButton>
             </div>
 
@@ -70,13 +72,13 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                 {/* Sidebar Navigation */}
                 <div className="lg:col-span-1 space-y-2">
                     {[
-                        { id: 'WORKFLOW', label: 'Workflow', icon: <Layout size={18} /> },
-                        { id: 'APPEARANCE', label: 'Appearance', icon: <Palette size={18} /> },
-                        { id: 'LANGUAGE', label: 'Language', icon: <Globe size={18} /> }, // Added Language Tab
-                        { id: 'NOTIFICATIONS', label: 'Notifications', icon: <Bell size={18} /> },
-                        { id: 'AI', label: 'AI Configuration', icon: <BrainCircuit size={18} /> },
-                        { id: 'BILLING', label: 'Billing Strategy', icon: <Wallet size={18} /> },
-                        { id: 'SECURITY', label: 'Security', icon: <Shield size={18} /> },
+                        { id: 'WORKFLOW', label: t('settings.tabs.workflow'), icon: <Layout size={18} /> },
+                        { id: 'APPEARANCE', label: t('settings.tabs.appearance'), icon: <Palette size={18} /> },
+                        { id: 'LANGUAGE', label: t('settings.tabs.language'), icon: <Globe size={18} /> }, // Added Language Tab
+                        { id: 'NOTIFICATIONS', label: t('settings.tabs.notifications'), icon: <Bell size={18} /> },
+                        { id: 'AI', label: t('settings.tabs.ai'), icon: <BrainCircuit size={18} /> },
+                        { id: 'BILLING', label: t('settings.tabs.billing'), icon: <Wallet size={18} /> },
+                        { id: 'SECURITY', label: t('settings.tabs.security'), icon: <Shield size={18} /> },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -100,41 +102,14 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
 
                         {activeTab === 'APPEARANCE' && (
                             <AppearanceSettings
-                                uiConfig={prefs.uiConfig}
+                                prefs={prefs}
                                 onUIConfigChange={handleUIConfigChange}
+                                userSubscription={user.subscriptionPlan}
                             />
                         )}
 
                         {activeTab === 'LANGUAGE' && (
                             <LanguageSwitcher />
-                        )}
-
-                        {activeTab === 'NOTIFICATIONS' && (
-                            <NotificationSettings prefs={prefs} onToggle={handleToggle} onSelectChange={handleSelectChange} />
-                        )}
-
-                        {activeTab === 'AI' && (
-                            <AISettings aiConfig={prefs.aiConfig} onAIConfigChange={handleAIConfigChange} />
-                        )}
-
-                        {activeTab === 'BILLING' && (
-                            <BillingSettings
-                                billingType={billingType}
-                                setBillingType={setBillingType}
-                                overageCap={overageCap}
-                                setOverageCap={setOverageCap}
-                            />
-                        )}
-
-                        {activeTab === 'SECURITY' && (
-                            <SecuritySettings onDeleteAccount={() => setIsDeleteModalOpen(true)} />
-                        )}
-                    </div>
-                </div>
-                                prefs={prefs}
-                                onUIConfigChange={handleUIConfigChange}
-                                userSubscription={user.subscriptionPlan}
-                            />
                         )}
 
                         {activeTab === 'NOTIFICATIONS' && (
@@ -168,7 +143,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                             />
                         )}
                     </div>
-                </ThemedCard>
+                </div>
             </div>
 
             <DeleteAccountModal

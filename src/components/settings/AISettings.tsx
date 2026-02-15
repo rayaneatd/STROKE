@@ -3,34 +3,36 @@ import React from 'react';
 import { BrainCircuit, Sparkles, Quote, Sliders, Target } from 'lucide-react';
 import { UserPreferences, AIPreferences } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface AISettingsProps {
     prefs: UserPreferences;
     onAIConfigChange: (key: keyof AIPreferences, value: any) => void;
 }
 
-const TONE_EXAMPLES = {
-    'PROFESSIONAL': "Candidate possesses strong proficiency in React. Recommended for initial screening.",
-    'CASUAL': "This candidate looks like a great fit! They've got solid React skills worth a chat.",
-    'DIRECT': "Match Score: 85%. Key Skills: React (High). Recommendation: Interview."
-};
-
 const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
+    const { t } = useTranslation();
     const { styles, accent, isLight } = useTheme();
     const { aiConfig } = prefs;
+
+    const TONE_EXAMPLES = {
+        'PROFESSIONAL': t('settings.ai.personality.example.professional'),
+        'CASUAL': t('settings.ai.personality.example.casual'),
+        'DIRECT': t('settings.ai.personality.example.direct')
+    };
 
     if (!aiConfig) return null;
 
     return (
         <div className="space-y-8 animate-fade-in">
             <div>
-                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>Calibration Engine</h2>
-                <p className={`text-sm mb-6 ${styles.text.secondary}`}>Configure how our engine analyzes and matches candidates.</p>
+                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>{t('settings.ai.calibration.title')}</h2>
+                <p className={`text-sm mb-6 ${styles.text.secondary}`}>{t('settings.ai.calibration.description')}</p>
 
                 {/* Strictness Settings */}
                 <div className={`p-6 rounded-2xl border ${styles.bg.surface} ${styles.border.base}`}>
                     <h3 className={`font-bold text-sm mb-4 flex items-center gap-2 ${styles.text.primary}`}>
-                        <Target size={16} /> Matching Strictness
+                        <Target size={16} /> {t('settings.ai.calibration.strictness.title')}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {['LOW', 'MEDIUM', 'HIGH'].map((level) => (
@@ -45,10 +47,10 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
                             >
                                 <div className="relative z-10">
                                     <div className={`text-xs font-black uppercase tracking-widest mb-1 ${aiConfig.strictness === level ? `text-${accent}-500` : styles.text.secondary}`}>
-                                        {level === 'LOW' ? 'Broad' : level === 'MEDIUM' ? 'Balanced' : 'Precise'}
+                                        {level === 'LOW' ? t('settings.ai.calibration.strictness.low.label') : level === 'MEDIUM' ? t('settings.ai.calibration.strictness.medium.label') : t('settings.ai.calibration.strictness.high.label')}
                                     </div>
                                     <div className={`text-[10px] leading-tight ${styles.text.tertiary}`}>
-                                        {level === 'LOW' ? 'Prioritizes potential & transferable skills.' : level === 'MEDIUM' ? 'Standard keyword & semantic matching.' : 'Strict requirement matching only.'}
+                                        {level === 'LOW' ? t('settings.ai.calibration.strictness.low.description') : level === 'MEDIUM' ? t('settings.ai.calibration.strictness.medium.description') : t('settings.ai.calibration.strictness.high.description')}
                                     </div>
                                 </div>
                             </button>
@@ -59,10 +61,10 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
 
             {/* Tone Settings */}
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Personality</h2>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.ai.personality.title')}</h2>
                 <div className={`p-6 rounded-2xl border ${styles.bg.surface} ${styles.border.base}`}>
                     <h3 className={`font-bold text-sm mb-4 flex items-center gap-2 ${styles.text.primary}`}>
-                        <Sliders size={16} /> Summary Tone
+                        <Sliders size={16} /> {t('settings.ai.personality.tone.title')}
                     </h3>
                     <div className="flex gap-2">
                         {['PROFESSIONAL', 'CASUAL', 'DIRECT'].map((tone) => (
@@ -75,7 +77,9 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
                                     : `${styles.bg.card} ${styles.text.secondary} ${styles.border.base}`
                                 }`}
                             >
-                                {tone.charAt(0) + tone.slice(1).toLowerCase()}
+                                {tone === 'PROFESSIONAL' && t('settings.ai.personality.tone.professional')}
+                                {tone === 'CASUAL' && t('settings.ai.personality.tone.casual')}
+                                {tone === 'DIRECT' && t('settings.ai.personality.tone.direct')}
                             </button>
                         ))}
                     </div>
@@ -86,7 +90,7 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
                         <Quote size={20} className={`${styles.text.secondary} shrink-0`} />
                         <div>
                             <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${styles.text.secondary}`}>
-                                Example Output
+                                {t('settings.ai.personality.example.title')}
                             </div>
                             <p className={`text-sm font-medium italic leading-relaxed ${styles.text.primary}`}>
                                 "{TONE_EXAMPLES[aiConfig.tone as keyof typeof TONE_EXAMPLES]}"

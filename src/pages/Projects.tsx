@@ -32,7 +32,8 @@ const ProjectCard = React.memo(({
     onDelete,
     isLight,
     accentColor,
-    t // Pass translation function
+    t, // Pass translation function
+    currentLanguage // Pass current language for dates
 }: {
     project: Project;
     currentUser: User;
@@ -48,6 +49,7 @@ const ProjectCard = React.memo(({
     isLight: boolean;
     accentColor: string;
     t: any; // Add type for t
+    currentLanguage: string;
 }) => {
     const member = project.members.find(m => m.userId === currentUser.id);
     const userRole = member?.role || ProjectRole.EMPLOYEE;
@@ -100,7 +102,7 @@ const ProjectCard = React.memo(({
                     <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border flex items-center gap-1.5 ${getStatusColor(project.status)}`}>
                         {project.status === 'COMPLETED' && <CheckCircle size={10} />}
                         {project.status === 'ARCHIVED' && <Archive size={10} />}
-                        {project.status}
+                        {t(`projects.filter.${project.status.toLowerCase()}`)}
                     </div>
 
                     <div className="relative">
@@ -115,32 +117,32 @@ const ProjectCard = React.memo(({
                             <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-xl border z-50 overflow-hidden animate-fade-in-up ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`} onClick={(e) => e.stopPropagation()}>
                                 {showReactivate && (
                                     <button onClick={(e) => onStatusChange(e, project, 'ACTIVE')} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                        <RotateCcw size={14} /> Reactivate
+                                        <RotateCcw size={14} /> {t('projects.menu.reactivate')}
                                     </button>
                                 )}
                                 {showComplete && (
                                     <button onClick={(e) => onStatusChange(e, project, 'COMPLETED')} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                        <CheckCircle size={14} /> Mark Completed
+                                        <CheckCircle size={14} /> {t('projects.menu.complete')}
                                     </button>
                                 )}
                                 {showArchive && (
                                     <button onClick={(e) => onStatusChange(e, project, 'ARCHIVED')} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                        <Archive size={14} /> Archive
+                                        <Archive size={14} /> {t('projects.menu.archive')}
                                     </button>
                                 )}
                                 {canEdit && (
                                     <button onClick={(e) => onEdit(e, project, userRole)} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                        <Edit2 size={14} /> Edit Details
+                                        <Edit2 size={14} /> {t('projects.menu.edit')}
                                     </button>
                                 )}
                                 {canLeave && (
                                     <button onClick={(e) => onLeave(e, project)} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                        <LogOut size={14} /> Leave Project
+                                        <LogOut size={14} /> {t('projects.menu.leave')}
                                     </button>
                                 )}
                                 {canDelete && (
                                     <button onClick={(e) => onDelete(e, project)} className={`w-full text-left px-4 py-2.5 text-xs font-medium text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 border-t ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
-                                        <Trash2 size={14} /> Delete Project
+                                        <Trash2 size={14} /> {t('projects.menu.delete')}
                                     </button>
                                 )}
                             </div>
@@ -152,7 +154,7 @@ const ProjectCard = React.memo(({
 
                 <div className={`flex items-center gap-1.5 text-[10px] ${subTextColor} ${isCompact ? 'mb-2' : 'mb-3'}`}>
                     <Crown size={12} className="text-amber-500 fill-current" />
-                    <span className={`font-medium ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>{owner?.displayName || 'Unknown'}</span>
+                    <span className={`font-medium ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>{owner?.displayName || t('common.unknown')}</span>
                 </div>
 
                 <p className={`${subTextColor} text-xs leading-relaxed line-clamp-2 h-9 flex-1 ${isCompact ? 'mb-3' : 'mb-6'}`}>
@@ -171,7 +173,7 @@ const ProjectCard = React.memo(({
                         </div>
                     </div>
                     <div className="flex flex-col items-end">
-                        <span className={`text-[10px] font-medium ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>{new Date(project.createdAt).toLocaleDateString()}</span>
+                        <span className={`text-[10px] font-medium ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>{new Date(project.createdAt).toLocaleDateString(currentLanguage)}</span>
                     </div>
                 </div>
             </div>
@@ -200,14 +202,14 @@ const ProjectCard = React.memo(({
                 <div className={`w-fit px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border flex items-center gap-1.5 ${getStatusColor(project.status)}`}>
                     {project.status === 'COMPLETED' && <CheckCircle size={10} />}
                     {project.status === 'ARCHIVED' && <Archive size={10} />}
-                    {project.status}
+                    {t(`projects.filter.${project.status.toLowerCase()}`)}
                 </div>
             </div>
 
             <div className="col-span-1 md:col-span-2">
                 <div className={`flex items-center gap-2 text-xs ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
                     <Crown size={12} className="text-amber-500 fill-current" />
-                    <span className="truncate font-medium">{owner?.displayName || 'Unknown'}</span>
+                    <span className="truncate font-medium">{owner?.displayName || t('common.unknown')}</span>
                 </div>
             </div>
 
@@ -223,7 +225,7 @@ const ProjectCard = React.memo(({
             </div>
 
             <div className="col-span-1 md:col-span-2 flex items-center justify-between md:justify-end gap-4 relative">
-                <span className={`text-xs font-medium mr-2 ${subTextColor}`}>{new Date(project.createdAt).toLocaleDateString()}</span>
+                <span className={`text-xs font-medium mr-2 ${subTextColor}`}>{new Date(project.createdAt).toLocaleDateString(currentLanguage)}</span>
                 {/* Menu Trigger reused */}
                 <div className="relative">
                     <button
@@ -236,32 +238,32 @@ const ProjectCard = React.memo(({
                         <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-xl border z-50 overflow-hidden animate-fade-in-up ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`} onClick={(e) => e.stopPropagation()}>
                             {showReactivate && (
                                 <button onClick={(e) => onStatusChange(e, project, 'ACTIVE')} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                    <RotateCcw size={14} /> Reactivate
+                                    <RotateCcw size={14} /> {t('projects.menu.reactivate')}
                                 </button>
                             )}
                             {showComplete && (
                                 <button onClick={(e) => onStatusChange(e, project, 'COMPLETED')} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                    <CheckCircle size={14} /> Mark Completed
+                                    <CheckCircle size={14} /> {t('projects.menu.complete')}
                                 </button>
                             )}
                             {showArchive && (
                                 <button onClick={(e) => onStatusChange(e, project, 'ARCHIVED')} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                    <Archive size={14} /> Archive
+                                    <Archive size={14} /> {t('projects.menu.archive')}
                                 </button>
                             )}
                             {canEdit && (
                                 <button onClick={(e) => onEdit(e, project, userRole)} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                    <Edit2 size={14} /> Edit Details
+                                    <Edit2 size={14} /> {t('projects.menu.edit')}
                                 </button>
                             )}
                             {canLeave && (
                                 <button onClick={(e) => onLeave(e, project)} className={`w-full text-left px-4 py-2.5 text-xs font-medium flex items-center gap-2 ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}>
-                                    <LogOut size={14} /> Leave Project
+                                    <LogOut size={14} /> {t('projects.menu.leave')}
                                 </button>
                             )}
                             {canDelete && (
                                 <button onClick={(e) => onDelete(e, project)} className={`w-full text-left px-4 py-2.5 text-xs font-medium text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 border-t ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
-                                    <Trash2 size={14} /> Delete Project
+                                    <Trash2 size={14} /> {t('projects.menu.delete')}
                                 </button>
                             )}
                         </div>
@@ -282,7 +284,7 @@ interface ProjectsProps {
 }
 
 const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavigate, onUpdateUser }) => {
-    const { t } = useTranslation(); // Initialize hook
+    const { t, i18n } = useTranslation(); // Initialize hook
     const {
         projects,
         searchTerm,
@@ -343,23 +345,23 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
 
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className={`text-2xl font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>Projects</h1>
-                    <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Manage your recruitment missions</p>
+                    <h1 className={`text-2xl font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>{t('projects.title')}</h1>
+                    <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('projects.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     {!canCreateProject && (
                         <span className="text-xs text-red-500 font-bold hidden md:inline-block">
-                            Add Primary Email to create projects
+                            {t('projects.errors.noPrimaryEmail')}
                         </span>
                     )}
                     <button
                         onClick={canCreateProject ? handleCreateClick : undefined}
                         disabled={!canCreateProject}
-                        title={!canCreateProject ? "Please add a primary email in Settings > Security" : "Create New Project"}
+                        title={!canCreateProject ? t('projects.errors.noPrimaryEmail') : t('projects.newProject')}
                         className={`bg-${accentColor}-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-${accentColor}-500 transition-colors flex items-center gap-2 shadow-lg shadow-${accentColor}-900/20 active:translate-y-0.5 hover:-translate-y-0.5 ${!canCreateProject ? 'opacity-50 cursor-not-allowed saturate-0' : ''}`}
                     >
                         <Plus size={16} />
-                        Create Project
+                        {t('projects.createProject')}
                     </button>
                 </div>
             </div>
@@ -374,7 +376,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search..."
+                            placeholder={t('common.search')}
                             className={`pl-9 pr-8 py-2 rounded-lg text-sm font-medium outline-none w-full border transition-all ${isLight ? 'bg-slate-50 border-slate-100 text-slate-800 focus:bg-white focus:border-slate-300 placeholder:text-slate-400' : 'bg-white/5 border-white/5 text-zinc-300 focus:bg-black/20 focus:border-white/10 placeholder:text-zinc-600'}`}
                         />
                         {searchTerm && (
@@ -397,10 +399,10 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 onChange={(e) => setStatusFilter(e.target.value as any)}
                                 className={`pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${selectClass}`}
                             >
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">All Status</option>
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ACTIVE">Active</option>
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="COMPLETED">Completed</option>
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ARCHIVED">Archived</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">{t('projects.filter.all')}</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ACTIVE">{t('projects.filter.active')}</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="COMPLETED">{t('projects.filter.completed')}</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ARCHIVED">{t('projects.filter.archived')}</option>
                             </select>
                             <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                         </div>
@@ -411,10 +413,10 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 onChange={(e) => setDateFilter(e.target.value as any)}
                                 className={`pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${selectClass}`}
                             >
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">Any Time</option>
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="LAST_7">Last 7 Days</option>
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="LAST_30">Last 30 Days</option>
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="LAST_90">Last 3 Months</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">{t('projects.filter.anyTime')}</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="LAST_7">{t('projects.filter.last7')}</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="LAST_30">{t('projects.filter.last30')}</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="LAST_90">{t('projects.filter.last90')}</option>
                             </select>
                             <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                         </div>
@@ -425,8 +427,8 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 onChange={(e) => setOwnerFilter(e.target.value as any)}
                                 className={`pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${selectClass}`}
                             >
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">All Owners</option>
-                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ME">My Projects</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">{t('projects.filter.allOwners')}</option>
+                                <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ME">{t('projects.filter.myProjects')}</option>
                             </select>
                             <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                         </div>
@@ -438,7 +440,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                     onChange={(e) => setOrgFilter(e.target.value)}
                                     className={`pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${selectClass}`}
                                 >
-                                    <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">All Orgs</option>
+                                    <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">{t('projects.filter.allOrgs')}</option>
                                     {orgOptions.map((org) => (
                                         <option key={org} className={isLight ? "bg-white" : "bg-[#18181b]"} value={org}>{org}</option>
                                     ))}
@@ -452,7 +454,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 onClick={resetFilters}
                                 className={`px-3 py-2 text-xs font-bold text-${accentColor}-500 hover:text-${accentColor}-600 rounded-lg transition-colors ${isLight ? 'hover:bg-slate-50' : 'hover:bg-white/5'}`}
                             >
-                                Reset
+                                {t('projects.filter.reset')}
                             </button>
                         )}
                     </div>
@@ -463,14 +465,14 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                     <button
                         onClick={() => setViewMode('grid')}
                         className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? (isLight ? 'bg-white text-slate-900 shadow-sm' : 'bg-white/10 text-white') : (isLight ? 'text-slate-400 hover:text-slate-600' : 'text-zinc-500 hover:text-zinc-300')}`}
-                        title="Grid View"
+                        title={t('projects.view.grid')}
                     >
                         <LayoutGrid size={16} />
                     </button>
                     <button
                         onClick={() => setViewMode('list')}
                         className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? (isLight ? 'bg-white text-slate-900 shadow-sm' : 'bg-white/10 text-white') : (isLight ? 'text-slate-400 hover:text-slate-600' : 'text-zinc-500 hover:text-zinc-300')}`}
-                        title="List View"
+                        title={t('projects.view.list')}
                     >
                         <List size={16} />
                     </button>
@@ -482,16 +484,16 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${isLight ? 'bg-slate-50 text-slate-400' : 'bg-white/5 text-zinc-500'}`}>
                         <Filter size={24} />
                     </div>
-                    <h3 className={`text-sm font-bold ${isLight ? 'text-slate-900' : 'text-zinc-300'}`}>No projects found</h3>
+                    <h3 className={`text-sm font-bold ${isLight ? 'text-slate-900' : 'text-zinc-300'}`}>{t('projects.empty.title')}</h3>
                     <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>
-                        {projects.length === 0 ? "You don't have any projects yet." : "No projects match your current filters."}
+                        {projects.length === 0 ? t('projects.empty.noProjects') : t('projects.empty.noMatches')}
                     </p>
                     {activeFiltersCount > 0 && (
                         <button
                             onClick={resetFilters}
                             className={`mt-4 text-${accentColor}-500 text-xs font-bold hover:underline`}
                         >
-                            Clear all filters
+                            {t('projects.empty.clearFilters')}
                         </button>
                     )}
                 </div>
@@ -500,11 +502,11 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                     <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-3"}>
                         {viewMode === 'list' && (
                             <div className={`hidden md:grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-extrabold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
-                                <div className="col-span-4">Project</div>
-                                <div className="col-span-2">Status</div>
-                                <div className="col-span-2">Owner</div>
-                                <div className="col-span-2">Stats</div>
-                                <div className="col-span-2 text-right">Created</div>
+                                <div className="col-span-4">{t('projects.list.project')}</div>
+                                <div className="col-span-2">{t('projects.list.status')}</div>
+                                <div className="col-span-2">{t('projects.list.owner')}</div>
+                                <div className="col-span-2">{t('projects.list.stats')}</div>
+                                <div className="col-span-2 text-right">{t('projects.list.created')}</div>
                             </div>
                         )}
 
@@ -524,7 +526,8 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                             onDelete={handleDeleteProject}
                             isLight={isLight}
                             accentColor={accentColor}
-                            t={t} // Pass t function
+                            t={t}
+                            currentLanguage={i18n.language}
                         />
                     ))}
                 </div>
@@ -535,7 +538,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 onClick={handleLoadMore}
                                 className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 border ${isLight ? 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900 shadow-sm' : 'bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white border-white/5'}`}
                             >
-                                Load More ({filteredProjects.length - displayCount} remaining)
+                                {t('projects.actions.loadMore')} ({filteredProjects.length - displayCount} {t('projects.actions.remaining')})
                             </button>
                         </div>
                     )}

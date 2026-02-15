@@ -3,6 +3,7 @@ import React from 'react';
 import { Wallet, ShieldCheck, Check, Zap, Infinity } from 'lucide-react';
 import { BillingType } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface BillingSettingsProps {
     billingType: BillingType;
@@ -19,13 +20,14 @@ const BillingSettings: React.FC<BillingSettingsProps> = ({
     onOverageCapChange, 
     isPaidPlan 
 }) => {
+    const { t } = useTranslation();
     const { styles, accent, isLight } = useTheme();
 
     return (
         <div className="space-y-8 animate-fade-in">
             <div>
-                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>Billing Strategy</h2>
-                <p className={`text-sm mb-6 ${styles.text.secondary}`}>Control how your workspace handles usage limits.</p>
+                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>{t('settings.billing.title')}</h2>
+                <p className={`text-sm mb-6 ${styles.text.secondary}`}>{t('settings.billing.description')}</p>
 
                 <div className="space-y-4">
                     <button
@@ -42,14 +44,14 @@ const BillingSettings: React.FC<BillingSettingsProps> = ({
                                     <ShieldCheck size={20} />
                                 </div>
                                 <div>
-                                    <span className={`font-bold block ${styles.text.primary}`}>Prudent Mode</span>
-                                    <span className={`text-[10px] uppercase font-bold tracking-wider ${styles.text.secondary}`}>Strict Limits</span>
+                                    <span className={`font-bold block ${styles.text.primary}`}>{t('settings.billing.prudent.title')}</span>
+                                    <span className={`text-[10px] uppercase font-bold tracking-wider ${styles.text.secondary}`}>{t('settings.billing.prudent.badge')}</span>
                                 </div>
                             </div>
                             {billingType === BillingType.PREPAID && <Check size={20} className={`text-${accent}-500`}/>}
                         </div>
                         <p className={`text-xs leading-relaxed pl-[3.25rem] ${styles.text.secondary}`}>
-                            Scanning stops immediately when your balance hits zero. You are never charged extra without manual approval. Ideal for strict budgets.
+                            {t('settings.billing.prudent.description')}
                         </p>
                     </button>
 
@@ -68,17 +70,17 @@ const BillingSettings: React.FC<BillingSettingsProps> = ({
                                     <Zap size={20} />
                                 </div>
                                 <div>
-                                    <span className={`font-bold block ${styles.text.primary}`}>Serein Mode</span>
+                                    <span className={`font-bold block ${styles.text.primary}`}>{t('settings.billing.serein.title')}</span>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-[10px] uppercase font-bold tracking-wider ${styles.text.secondary}`}>Pay-as-you-go</span>
-                                        {!isPaidPlan && <span className="text-[9px] text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">PAID PLAN ONLY</span>}
+                                        <span className={`text-[10px] uppercase font-bold tracking-wider ${styles.text.secondary}`}>{t('settings.billing.serein.badge')}</span>
+                                        {!isPaidPlan && <span className="text-[9px] text-amber-500 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">{t('settings.billing.serein.paidPlanOnly')}</span>}
                                     </div>
                                 </div>
                             </div>
                             {billingType === BillingType.POSTPAID && <Check size={20} className="text-purple-500"/>}
                         </div>
                         <p className={`text-xs leading-relaxed pl-[3.25rem] ${styles.text.secondary}`}>
-                            Work continues seamlessly. Negative balance (overage) is tracked via Polar.sh and billed automatically at the end of the cycle.
+                            {t('settings.billing.serein.description')}
                         </p>
                     </button>
 
@@ -86,7 +88,7 @@ const BillingSettings: React.FC<BillingSettingsProps> = ({
                     {billingType === BillingType.POSTPAID && (
                         <div className="mt-4 ml-2 pl-[3.25rem] pr-2 animate-fade-in">
                             <div className={`rounded-xl border p-4 ${isLight ? 'bg-purple-50 border-purple-100' : 'bg-purple-500/5 border-purple-500/20'}`}>
-                                <label className="text-[10px] font-bold text-purple-400 uppercase tracking-wider block mb-3">Credit Limit (Safety Cap)</label>
+                                <label className="text-[10px] font-bold text-purple-400 uppercase tracking-wider block mb-3">{t('settings.billing.overage.title')}</label>
                                 <div className="flex items-center gap-3">
                                     <div className="flex-1 relative">
                                         <input 
@@ -102,13 +104,13 @@ const BillingSettings: React.FC<BillingSettingsProps> = ({
                                         onClick={() => onOverageCapChange(overageCap === 'UNLIMITED' ? 500 : 'UNLIMITED')}
                                         className={`px-4 py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center gap-2 ${overageCap === 'UNLIMITED' ? 'bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-900/20' : 'bg-transparent text-purple-400 border-purple-500/30 hover:bg-purple-500/10'}`}
                                     >
-                                        <Infinity size={16} /> Unlimited
+                                        <Infinity size={16} /> {t('settings.billing.overage.unlimited')}
                                     </button>
                                 </div>
                                 <p className="text-[10px] text-purple-400/80 mt-2 leading-relaxed">
                                     {overageCap === 'UNLIMITED' 
-                                        ? "You will be billed for all usage at the end of the billing cycle without interruption." 
-                                        : `Scanning will automatically stop if your balance reaches -${overageCap} scans.`}
+                                        ? t('settings.billing.overage.unlimitedDesc') 
+                                        : t('settings.billing.overage.limitedDesc', { cap: overageCap })}
                                 </p>
                             </div>
                         </div>

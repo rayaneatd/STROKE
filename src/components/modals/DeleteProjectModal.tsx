@@ -16,6 +16,7 @@ const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({
   projectTitle, 
   onConfirm 
 }) => {
+  const { t } = useTranslation();
   const { isLight } = useTheme();
 
   if (!isOpen) return null;
@@ -27,12 +28,12 @@ const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border ${isLight ? 'bg-red-50 border-red-100 text-red-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
                       <AlertTriangle size={32} />
                   </div>
-                  <h3 className={`text-xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Delete Project?</h3>
+                  <h3 className={`text-xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t('modal.delete.title')}</h3>
                   <p className={`mb-6 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-                      Are you sure you want to delete <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>"{projectTitle}"</span>?
+                      {t('modal.delete.description', { title: projectTitle })}
                       <br/>
                       <span className="text-red-500 font-bold text-xs uppercase tracking-wide mt-2 block">
-                          This action cannot be undone.
+                          {t('modal.delete.warning')}
                       </span>
                   </p>
                   <div className="flex gap-3 justify-center">
@@ -40,13 +41,13 @@ const DeleteProjectModal: React.FC<DeleteProjectModalProps> = ({
                         onClick={onClose}
                         className={`px-6 py-3 rounded-xl font-bold transition-colors border ${isLight ? 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50' : 'text-zinc-400 bg-white/5 border-white/5 hover:bg-white/10'}`}
                       >
-                          Cancel
+                          {t('modal.delete.cancel')}
                       </button>
                       <button 
                         onClick={onConfirm}
                         className="px-6 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/20 transition-colors flex items-center gap-2"
                       >
-                          <Trash2 size={18} /> Delete Project
+                          <Trash2 size={18} /> {t('modal.delete.confirm')}
                       </button>
                   </div>
               </div>

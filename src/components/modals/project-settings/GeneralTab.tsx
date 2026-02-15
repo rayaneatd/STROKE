@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Type, Sparkles, CheckCircle, Archive, ChevronDown, Edit2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Project } from '../../../types';
 import { useTheme } from '../../../context/ThemeContext';
 
@@ -12,6 +13,7 @@ interface GeneralTabProps {
 }
 
 const GeneralTab: React.FC<GeneralTabProps> = ({ formData, setFormData, isOwner, canChangeStatus }) => {
+    const { t } = useTranslation();
     const { isLight, accent } = useTheme();
     const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white' : 'bg-black/20 border-white/10 text-white focus:bg-black/40';
     const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
@@ -21,11 +23,11 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ formData, setFormData, isOwner,
         <div className="space-y-8 animate-fade-in">
             <div>
                 <h2 className={`text-xl font-bold mb-6 flex items-center gap-2 ${textPrimary}`}>
-                    <Edit2 size={20} className="text-zinc-400"/> General Details
+                    <Edit2 size={20} className="text-zinc-400"/> {t('modal.general.title')}
                 </h2>
                 <div className="space-y-5">
                     <div className="space-y-2">
-                        <label className={`text-sm font-bold ${textSecondary}`}>Project Title</label>
+                        <label className={`text-sm font-bold ${textSecondary}`}>{t('modal.general.projectTitle')}</label>
                         <div className="relative group">
                             <Type className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${isLight ? 'text-slate-400 group-focus-within:text-brand-500' : 'text-zinc-500 group-focus-within:text-brand-400'}`} size={20} />
                             <input 
@@ -40,10 +42,10 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ formData, setFormData, isOwner,
                     
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                            <label className={`text-sm font-bold ${textSecondary}`}>Job Description</label>
+                            <label className={`text-sm font-bold ${textSecondary}`}>{t('modal.general.jobDescription')}</label>
                             <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isLight ? 'bg-violet-50 border-violet-100 text-violet-700' : 'bg-violet-500/10 border-violet-500/20 text-violet-400'}`}>
                                 <Sparkles size={12} className="fill-current" />
-                                <span className="text-[10px] font-bold uppercase tracking-wide">AI Context Active</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wide">{t('modal.general.aiContext')}</span>
                             </div>
                         </div>
                         <div className="group relative">
@@ -58,7 +60,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ formData, setFormData, isOwner,
 
                     {canChangeStatus && (
                         <div className="space-y-2 pt-2">
-                            <label className={`text-sm font-bold ${textSecondary}`}>Status</label>
+                            <label className={`text-sm font-bold ${textSecondary}`}>{t('modal.general.status')}</label>
                             <div className="grid grid-cols-3 gap-3">
                                 {['ACTIVE', 'COMPLETED', 'ARCHIVED'].map(status => (
                                     <button 
@@ -73,7 +75,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ formData, setFormData, isOwner,
                                     >
                                         {status === 'ACTIVE' && <CheckCircle size={14} />}
                                         {status === 'ARCHIVED' && <Archive size={14} />}
-                                        {status}
+                                        {t(`modal.general.${status.toLowerCase()}`)}
                                     </button>
                                 ))}
                             </div>

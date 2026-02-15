@@ -5,6 +5,7 @@ import { UserPreferences, OutreachStrategy } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface WorkflowSettingsProps {
     prefs: UserPreferences;
@@ -26,6 +27,7 @@ const Switch = ({ checked, onChange, accentColor }: { checked: boolean; onChange
 );
 
 const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, onSelectChange }) => {
+    const { t } = useTranslation();
     const { styles, accent, isLight } = useTheme();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -38,12 +40,12 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
         <div className="space-y-8 animate-fade-in">
             {/* Outreach Defaults - Visual Card Selector */}
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Outreach Defaults</h2>
-                <p className={`text-sm mb-4 ${styles.text.secondary}`}>Set the default sender identity for new projects.</p>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.workflow.outreachDefaults.title')}</h2>
+                <p className={`text-sm mb-4 ${styles.text.secondary}`}>{t('settings.workflow.outreachDefaults.description')}</p>
                 
                 <div className={`p-6 rounded-2xl border ${styles.bg.surface} ${styles.border.base}`}>
                     <h3 className={`font-bold text-sm mb-4 flex items-center gap-2 ${styles.text.primary}`}>
-                        <Mail size={16} /> Default Sender Policy
+                        <Mail size={16} /> {t('settings.workflow.outreachDefaults.policyTitle')}
                     </h3>
                     
                     <div className="space-y-4">
@@ -63,9 +65,9 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
                                     </div>
                                     {prefs.defaultOutreachStrategy === OutreachStrategy.OWNER_IDENTITY && <div className={`p-1 rounded-full ${isLight ? `bg-${accent}-100 text-${accent}-600` : `bg-${accent}-500 text-white`}`}><Check size={12} strokeWidth={4}/></div>}
                                 </div>
-                                <div className="font-bold text-sm mb-1">Centralized (Owner)</div>
+                                <div className="font-bold text-sm mb-1">{t('settings.workflow.outreachDefaults.centralized.title')}</div>
                                 <p className={`text-xs leading-relaxed ${styles.text.secondary}`}>
-                                    All emails are sent from your primary account. Ideal for brand consistency.
+                                    {t('settings.workflow.outreachDefaults.centralized.description')}
                                 </p>
                             </button>
 
@@ -84,9 +86,9 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
                                     </div>
                                     {prefs.defaultOutreachStrategy === OutreachStrategy.INDIVIDUAL_IDENTITY && <div className={`p-1 rounded-full ${isLight ? `bg-${accent}-100 text-${accent}-600` : `bg-${accent}-500 text-white`}`}><Check size={12} strokeWidth={4}/></div>}
                                 </div>
-                                <div className="font-bold text-sm mb-1">Decentralized (Individual)</div>
+                                <div className="font-bold text-sm mb-1">{t('settings.workflow.outreachDefaults.decentralized.title')}</div>
                                 <p className={`text-xs leading-relaxed ${styles.text.secondary}`}>
-                                    Members send emails from their own connected accounts. Best for speed.
+                                    {t('settings.workflow.outreachDefaults.decentralized.description')}
                                 </p>
                             </button>
                         </div>
@@ -94,18 +96,18 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
                         {/* Default Centralized Email Selector */}
                         {prefs.defaultOutreachStrategy === OutreachStrategy.OWNER_IDENTITY && user && (
                             <div className={`animate-fade-in mt-2 p-4 rounded-xl border border-dashed ${isLight ? 'bg-slate-50 border-slate-300' : 'bg-white/5 border-white/10'}`}>
-                                <label className={`text-xs font-bold uppercase tracking-wider mb-2 block ${styles.text.secondary}`}>Default Sender Address</label>
+                                <label className={`text-xs font-bold uppercase tracking-wider mb-2 block ${styles.text.secondary}`}>{t('settings.workflow.outreachDefaults.senderAddress')}</label>
                                 
                                 {(!user.emailIntegrations || user.emailIntegrations.length === 0) ? (
                                     <div className={`flex items-center justify-between p-3 rounded-lg border ${isLight ? 'bg-red-50 border-red-200 text-red-600' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
                                         <span className="text-xs font-bold flex items-center gap-2">
-                                            <Ghost size={14}/> No connected emails found.
+                                            <Ghost size={14}/> {t('settings.workflow.outreachDefaults.noEmails')}
                                         </span>
                                         <button 
                                             onClick={() => navigate('/profile')}
                                             className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${isLight ? 'bg-white border border-red-100 hover:bg-red-50' : 'bg-red-500/20 hover:bg-red-500/30'}`}
                                         >
-                                            Connect in Profile <ArrowRight size={12} />
+                                            {t('settings.workflow.outreachDefaults.connect')} <ArrowRight size={12} />
                                         </button>
                                     </div>
                                 ) : (
@@ -116,7 +118,7 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
                                             onChange={(e) => onSelectChange('defaultOwnerOutreachEmailId', e.target.value)}
                                             className={`w-full pl-10 pr-10 py-3 rounded-xl border text-sm font-medium focus:outline-none focus:ring-1 focus:ring-${accent}-500 cursor-pointer transition-all ${inputBg}`}
                                         >
-                                            <option value="" disabled className={optionClass}>Select default sending email...</option>
+                                            <option value="" disabled className={optionClass}>{t('settings.workflow.outreachDefaults.selectPlaceholder')}</option>
                                             {user.emailIntegrations.map(email => (
                                                 <option key={email.id} value={email.id} className={optionClass}>
                                                     {email.emailAddress} ({email.provider})
@@ -135,8 +137,8 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
             <div className={`border-t ${styles.border.base}`}></div>
 
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Project Automation</h2>
-                <p className={`text-sm mb-4 ${styles.text.secondary}`}>Streamline how your projects behave by default.</p>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.workflow.automation.title')}</h2>
+                <p className={`text-sm mb-4 ${styles.text.secondary}`}>{t('settings.workflow.automation.description')}</p>
                 <div className="space-y-6">
                     {/* Auto Archive */}
                     <div className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${styles.bg.surface} ${styles.border.base}`}>
@@ -145,8 +147,8 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
                                 <Archive size={20} />
                             </div>
                             <div>
-                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>Auto-Archive Projects</h3>
-                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>Automatically archive projects after 30 days of inactivity.</p>
+                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>{t('settings.workflow.automation.autoArchive.title')}</h3>
+                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>{t('settings.workflow.automation.autoArchive.description')}</p>
                             </div>
                         </div>
                         <Switch checked={prefs.autoArchiveProjects} onChange={() => onToggle('autoArchiveProjects')} accentColor={accent} />
@@ -159,8 +161,8 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
                                 <Briefcase size={20} />
                             </div>
                             <div>
-                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>Compact Density</h3>
-                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>Show more items per page in project lists and tables.</p>
+                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>{t('settings.workflow.automation.compactMode.title')}</h3>
+                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>{t('settings.workflow.automation.compactMode.description')}</p>
                             </div>
                         </div>
                         <Switch checked={prefs.compactMode} onChange={() => onToggle('compactMode')} accentColor={accent} />
@@ -170,18 +172,18 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
 
             {/* Role Permissions */}
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Role Defaults</h2>
-                <p className={`text-sm mb-4 ${styles.text.secondary}`}>Set default permissions for new team members.</p>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.workflow.roles.title')}</h2>
+                <p className={`text-sm mb-4 ${styles.text.secondary}`}>{t('settings.workflow.roles.description')}</p>
                 
                 <div className={`p-6 rounded-2xl border ${styles.bg.surface} ${styles.border.base}`}>
                     <h3 className={`font-bold text-sm mb-6 flex items-center gap-2 ${styles.text.primary}`}>
-                        <Activity size={16} /> Analyst Permissions
+                        <Activity size={16} /> {t('settings.workflow.roles.analystPermissions')}
                     </h3>
                     <div className="space-y-5">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h4 className={`font-bold text-xs ${styles.text.secondary}`}>Analyst Activity View</h4>
-                                <p className={`text-[10px] mt-0.5 ${styles.text.tertiary}`}>Can analysts see the global audit log and user activity?</p>
+                                <h4 className={`font-bold text-xs ${styles.text.secondary}`}>{t('settings.workflow.roles.activityView.title')}</h4>
+                                <p className={`text-[10px] mt-0.5 ${styles.text.tertiary}`}>{t('settings.workflow.roles.activityView.description')}</p>
                             </div>
                             <Switch checked={prefs.defaultAnalystCanViewActivity} onChange={() => onToggle('defaultAnalystCanViewActivity')} accentColor={accent} />
                         </div>
@@ -189,8 +191,8 @@ const WorkflowSettings: React.FC<WorkflowSettingsProps> = ({ prefs, onToggle, on
                         
                         <div className="flex items-center justify-between">
                             <div>
-                                <h4 className={`font-bold text-xs ${styles.text.secondary}`}>Analyst Ghosting Tool</h4>
-                                <p className={`text-[10px] mt-0.5 ${styles.text.tertiary}`}>Can analysts send mass response emails to candidates?</p>
+                                <h4 className={`font-bold text-xs ${styles.text.secondary}`}>{t('settings.workflow.roles.ghostingTool.title')}</h4>
+                                <p className={`text-[10px] mt-0.5 ${styles.text.tertiary}`}>{t('settings.workflow.roles.ghostingTool.description')}</p>
                             </div>
                             <Switch checked={prefs.defaultAnalystCanUseGhosting} onChange={() => onToggle('defaultAnalystCanUseGhosting')} accentColor={accent} />
                         </div>

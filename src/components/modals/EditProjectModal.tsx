@@ -35,6 +35,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
     fundProject,
     withdrawProjectFunds
 }) => {
+    const { t } = useTranslation();
     const {
         activeTab,
         setActiveTab,
@@ -89,32 +90,32 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                 {/* Sidebar */}
                 <div className={`w-full md:w-64 flex flex-col shrink-0 ${sidebarBg}`}>
                     <div className={`p-6 border-b ${borderClass}`}>
-                        <h3 className={`font-bold text-lg tracking-tight ${textPrimary}`}>{mode === 'CREATE' ? 'New Project' : 'Project Settings'}</h3>
-                        <p className={`text-xs mt-1 ${textSecondary}`}>{mode === 'CREATE' ? 'Setup configuration' : 'Manage configuration'}</p>
+                        <h3 className={`font-bold text-lg tracking-tight ${textPrimary}`}>{mode === 'CREATE' ? t('modal.newTitle') : t('modal.editTitle')}</h3>
+                        <p className={`text-xs mt-1 ${textSecondary}`}>{mode === 'CREATE' ? t('modal.newSubtitle') : t('modal.editSubtitle')}</p>
                     </div>
                     <div className="p-3 space-y-1 overflow-y-auto flex-1">
                         <button onClick={() => setActiveTab('GENERAL')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'GENERAL' ? sidebarActive : sidebarInactive}`}>
-                            <Layout size={18} /> General
+                            <Layout size={18} /> {t('modal.tabs.general')}
                         </button>
                         {isOwner && formData.settings && (
                             <>
                                 <button onClick={() => setActiveTab('TEAM')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'TEAM' ? sidebarActive : sidebarInactive}`}>
-                                    <Users size={18} /> Team & Permissions
+                                    <Users size={18} /> {t('modal.tabs.team')}
                                 </button>
                                 <button onClick={() => setActiveTab('BILLING')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'BILLING' ? sidebarActive : sidebarInactive}`}>
-                                    <Wallet size={18} /> Billing & Quotas
+                                    <Wallet size={18} /> {t('modal.tabs.billing')}
                                 </button>
 
                                 <div className={`pt-4 mt-2 border-t ${borderClass}`}>
                                     <button onClick={() => setActiveTab('AI_DIAGNOSTICS')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'AI_DIAGNOSTICS' ? 'bg-indigo-500/10 text-indigo-400 shadow-sm border border-indigo-500/20' : 'text-zinc-500 hover:bg-indigo-500/5 hover:text-indigo-400'}`}>
-                                        <BrainCircuit size={18} /> AI Diagnostics
+                                        <BrainCircuit size={18} /> {t('modal.tabs.ai')}
                                     </button>
                                 </div>
                             </>
                         )}
                     </div>
                     <div className={`p-4 border-t ${borderClass} text-xs ${textSecondary} text-center`}>
-                        {mode === 'EDIT' && project ? <span className="font-mono">{project.id}</span> : 'Draft Mode'}
+                        {mode === 'EDIT' && project ? <span className="font-mono">{project.id}</span> : t('modal.draft')}
                     </div>
                 </div>
 
@@ -177,14 +178,14 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
 
                     {/* Footer */}
                     <div className={`p-6 border-t flex justify-between items-center shrink-0 ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
-                        <button type="button" onClick={onClose} className={`px-6 py-3 rounded-xl font-bold transition-colors ${isLight ? 'text-slate-500 hover:bg-slate-100' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}>Cancel</button>
+                        <button type="button" onClick={onClose} className={`px-6 py-3 rounded-xl font-bold transition-colors ${isLight ? 'text-slate-500 hover:bg-slate-100' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}>{t('modal.actions.cancel')}</button>
                         <button
                             onClick={() => document.getElementById('edit-project-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
                             disabled={isLoading || !formData.title || !formData.description}
                             className={`px-8 py-3 rounded-xl bg-${accent}-600 text-white font-bold hover:bg-${accent}-500 shadow-lg shadow-${accent}-900/20 hover:shadow-${accent}-500/40 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait disabled:bg-zinc-600 disabled:shadow-none`}
                         >
                             {isLoading ? <Loader2 className="animate-spin" size={18} /> : mode === 'CREATE' ? <Rocket size={18} /> : <Save size={18} />}
-                            {mode === 'CREATE' ? 'Create Project' : 'Save Changes'}
+                            {mode === 'CREATE' ? t('modal.actions.create') : t('modal.actions.save')}
                         </button>
                     </div>
                 </div>

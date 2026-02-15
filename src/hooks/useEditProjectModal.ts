@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Project, User, ProjectRole, SubscriptionPlan, EmployeeAddPermission, OutreachStrategy } from '../types';
 import { runProjectDiagnostics, CalibrationResult } from '../services/aiCalibrationEngine';
 import { useTheme } from '../context/ThemeContext';
@@ -23,6 +24,7 @@ export const useEditProjectModal = ({
     fundProject,
     withdrawProjectFunds
 }: UseEditProjectModalProps) => {
+    const { t } = useTranslation();
     const { isLight, accent } = useTheme();
     const [activeTab, setActiveTab] = useState<TabType>('GENERAL');
     const [formData, setFormData] = useState<Partial<Project>>({});
@@ -150,11 +152,11 @@ export const useEditProjectModal = ({
         }
 
         setIsAnalyzing(true);
-        setAnalysisStep('Analyzing upload velocity...');
+        setAnalysisStep(t('modal.ai.step1'));
 
-        setTimeout(() => setAnalysisStep('Calculating member burn rates...'), 600);
-        setTimeout(() => setAnalysisStep('Forecasting monthly budget...'), 1200);
-        setTimeout(() => setAnalysisStep('Generating optimization plan...'), 1800);
+        setTimeout(() => setAnalysisStep(t('modal.ai.step2')), 600);
+        setTimeout(() => setAnalysisStep(t('modal.ai.step3')), 1200);
+        setTimeout(() => setAnalysisStep(t('modal.ai.step4')), 1800);
 
         setTimeout(() => {
             const result = runProjectDiagnostics(targetProject, currentUser);

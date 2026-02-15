@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, ChevronRight } from 'lucide-react';
 
 interface LowCreditsBannerProps {
@@ -8,6 +9,7 @@ interface LowCreditsBannerProps {
 }
 
 const LowCreditsBanner: React.FC<LowCreditsBannerProps> = ({ balance, onBuy }) => {
+  const { t } = useTranslation();
   // Only show if balance is very low (e.g., <= 20)
   if (balance > 20) return null;
 
@@ -18,9 +20,9 @@ const LowCreditsBanner: React.FC<LowCreditsBannerProps> = ({ balance, onBuy }) =
                 <AlertTriangle size={20} />
             </div>
             <div>
-                <h3 className="text-sm font-bold text-amber-400">Low Credits Warning</h3>
+                <h3 className="text-sm font-bold text-amber-400">{t('common.lowCredits.title')}</h3>
                 <p className="text-xs text-amber-200/80 mt-0.5">
-                    You have only <span className="font-bold">{balance} scans</span> remaining. Top up now to avoid interruption.
+                    {t('common.lowCredits.description', { count: balance })}
                 </p>
             </div>
         </div>
@@ -28,7 +30,7 @@ const LowCreditsBanner: React.FC<LowCreditsBannerProps> = ({ balance, onBuy }) =
             onClick={onBuy}
             className="hidden sm:flex items-center gap-1 text-xs font-bold text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
         >
-            Buy Scans <ChevronRight size={14} />
+            {t('common.lowCredits.action')} <ChevronRight size={14} />
         </button>
     </div>
   );

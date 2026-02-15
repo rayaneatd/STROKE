@@ -115,7 +115,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
         <div className="flex h-96 items-center justify-center">
             <div className="flex flex-col items-center gap-3">
                 <RefreshCw className={`animate-spin text-${accentColor}-500`} size={24} />
-                <p className={`text-sm font-medium ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Loading Intelligence...</p>
+                <p className={`text-sm font-medium ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.loadingIntelligence')}</p>
             </div>
         </div>
     );
@@ -133,10 +133,10 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
                 <div>
                     <h1 className={`text-2xl font-bold flex items-center gap-3 tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                        Performance Overview
+                        {t('dashboard.header.title')}
                         {loading && <div className={`w-2 h-2 bg-${accentColor}-500 rounded-full animate-pulse`}></div>}
                     </h1>
-                    <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Real-time business intelligence across your organization</p>
+                    <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.header.subtitle')}</p>
                 </div>
 
                 {/* Analytics Filter Toolbar */}
@@ -148,11 +148,11 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                             onChange={(e) => setTimeRange(parseInt(e.target.value))}
                             className={`w-full md:w-auto pl-3 pr-8 py-1.5 bg-transparent text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg transition-colors ${isLight ? 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' : 'text-zinc-300 focus:text-white hover:bg-white/5'}`}
                         >
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={7}>Last 7 Days</option>
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={14}>Last 14 Days</option>
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={30}>Last 30 Days</option>
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={90}>Last 3 Months</option>
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={365}>Last Year</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={7}>{t('dashboard.filters.timeRange.last7Days')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={14}>{t('dashboard.filters.timeRange.last14Days')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={30}>{t('dashboard.filters.timeRange.last30Days')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={90}>{t('dashboard.filters.timeRange.last3Months')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={365}>{t('dashboard.filters.timeRange.lastYear')}</option>
                         </select>
                         <ChevronDown size={12} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                     </div>
@@ -165,10 +165,10 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                             onChange={(e) => setStatusFilter(e.target.value as any)}
                             className={`w-full md:w-auto pl-3 pr-8 py-1.5 bg-transparent text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg transition-colors ${isLight ? 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' : 'text-zinc-300 focus:text-white hover:bg-white/5'}`}
                         >
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">All Statuses</option>
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ACTIVE">Active Projects</option>
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="COMPLETED">Completed</option>
-                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ARCHIVED">Archived</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">{t('dashboard.filters.status.all')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ACTIVE">{t('dashboard.filters.status.active')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="COMPLETED">{t('dashboard.filters.status.completed')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ARCHIVED">{t('dashboard.filters.status.archived')}</option>
                         </select>
                         <ChevronDown size={12} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                     </div>
@@ -182,8 +182,8 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                     onChange={(e) => setOwnerFilter(e.target.value as any)}
                                     className={`w-full md:w-auto pl-3 pr-8 py-1.5 bg-transparent text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg transition-colors ${isLight ? 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' : 'text-zinc-300 focus:text-white hover:bg-white/5'}`}
                                 >
-                                    <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">Organization</option>
-                                    <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ME">My Projects</option>
+                                    <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">{t('dashboard.filters.owner.organization')}</option>
+                                    <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ME">{t('dashboard.filters.owner.myProjects')}</option>
                                 </select>
                                 <ChevronDown size={12} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                             </div>
@@ -195,7 +195,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                     <button
                         onClick={handleManualRefresh}
                         className={`p-1.5 transition-colors rounded-lg ${loading ? `animate-spin text-${accentColor}-500` : isLight ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
-                        title="Force Refresh Data"
+                        title={t('dashboard.actions.forceRefresh')}
                         disabled={loading}
                     >
                         <RefreshCw size={14} />
@@ -206,12 +206,12 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                             onClick={() => setExportMenuOpen(!exportMenuOpen)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${isLight ? 'bg-white hover:bg-slate-50 text-slate-600 border-slate-200 shadow-sm' : 'bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border-white/5'}`}
                         >
-                            <Download size={12} /> Export
+                            <Download size={12} /> {t('dashboard.actions.export')}
                         </button>
                         {exportMenuOpen && (
                             <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-2xl border overflow-hidden z-20 animate-fade-in-up ${isLight ? 'bg-white border-slate-100' : 'bg-[#18181b] border-white/10'}`}>
-                                <button onClick={() => handleExport('CSV')} className={`w-full text-left px-4 py-3 text-xs font-medium border-b border-dashed ${isLight ? 'text-slate-600 hover:bg-slate-50 border-slate-100' : 'text-zinc-300 hover:text-white hover:bg-white/5 border-white/10'}`}>Export CSV</button>
-                                <button onClick={() => handleExport('JSON')} className={`w-full text-left px-4 py-3 text-xs font-medium ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:text-white hover:bg-white/5'}`}>Export JSON</button>
+                                <button onClick={() => handleExport('CSV')} className={`w-full text-left px-4 py-3 text-xs font-medium border-b border-dashed ${isLight ? 'text-slate-600 hover:bg-slate-50 border-slate-100' : 'text-zinc-300 hover:text-white hover:bg-white/5 border-white/10'}`}>{t('dashboard.actions.exportCSV')}</button>
+                                <button onClick={() => handleExport('JSON')} className={`w-full text-left px-4 py-3 text-xs font-medium ${isLight ? 'text-slate-600 hover:bg-slate-50' : 'text-zinc-300 hover:text-white hover:bg-white/5'}`}>{t('dashboard.actions.exportJSON')}</button>
                             </div>
                         )}
                     </div>
@@ -277,7 +277,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                         count={data.teamStats.partners}
                         icon={<Briefcase />}
                         color="bg-purple-500"
-                        desc="Scan & Analyze"
+                        desc={t('dashboard.team.scanAnalyze')}
                         isLight={isLight}
                     />
                     <TeamRoleCard
@@ -379,7 +379,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                     </div>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                         <span className={`text-2xl font-bold leading-none ${isLight ? 'text-slate-800' : 'text-white'}`}>{totalErrors}</span>
-                                        <span className={`text-[10px] font-bold uppercase mt-1 ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Errors</span>
+                                        <span className={`text-[10px] font-bold uppercase mt-1 ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>{t('dashboard.charts.failureAnalysis.errors')}</span>
                                     </div>
                                 </div>
 
@@ -415,27 +415,27 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
             <div className={`rounded-2xl border overflow-hidden ${cardContainerClass}`}>
                 <div className={`p-6 border-b flex flex-col md:flex-row justify-between items-center gap-2 ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
                     <div>
-                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>Project Performance</h3>
-                        <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Top performing recruitment campaigns</p>
+                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{t('dashboard.leaderboard.title')}</h3>
+                        <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.leaderboard.subtitle')}</p>
                     </div>
                 </div>
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left min-w-[700px]">
                         <thead>
                             <tr className={`text-[10px] uppercase tracking-wider font-bold border-b ${isLight ? 'bg-slate-50/50 text-slate-500 border-slate-100' : 'bg-white/5 text-zinc-500 border-white/5'}`}>
-                                <th className="px-6 py-4">Project Name</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4 text-right">Candidates</th>
-                                <th className="px-6 py-4 text-right">Qualified</th>
-                                <th className="px-6 py-4 text-right">Avg. Score</th>
-                                <th className="px-6 py-4">Efficiency</th>
+                                <th className="px-6 py-4">{t('dashboard.leaderboard.headers.projectName')}</th>
+                                <th className="px-6 py-4">{t('dashboard.leaderboard.headers.status')}</th>
+                                <th className="px-6 py-4 text-right">{t('dashboard.leaderboard.headers.candidates')}</th>
+                                <th className="px-6 py-4 text-right">{t('dashboard.leaderboard.headers.qualified')}</th>
+                                <th className="px-6 py-4 text-right">{t('dashboard.leaderboard.headers.avgScore')}</th>
+                                <th className="px-6 py-4">{t('dashboard.leaderboard.headers.efficiency')}</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${isLight ? 'divide-slate-100' : 'divide-white/5'}`}>
                             {data.projectPerformance.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className={`px-5 py-8 text-center text-xs ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>
-                                        No projects match your current filters.
+                                        {t('dashboard.leaderboard.noProjects')}
                                     </td>
                                 </tr>
                             ) : (
@@ -465,7 +465,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                             <td className="px-6 py-4">
                                                 <div className={`flex items-center gap-2 text-xs font-bold ${isLight ? 'text-slate-600' : 'text-zinc-500'}`}>
                                                     <div className={`w-2 h-2 rounded-full ${efficiency > 30 ? 'bg-emerald-500' : efficiency > 15 ? 'bg-amber-500' : 'bg-rose-500'}`}></div>
-                                                    {Math.round(efficiency)}% Conv.
+                                                    {Math.round(efficiency)}% {t('dashboard.leaderboard.conversion')}
                                                 </div>
                                             </td>
                                         </tr>

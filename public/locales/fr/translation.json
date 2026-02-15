@@ -11,7 +11,13 @@
         "confirm": "Confirmer",
         "close": "Fermer",
         "search": "Rechercher...",
-        "noData": "Aucune donnée disponible"
+        "noData": "Aucune donnée disponible",
+        "unknown": "Inconnu",
+        "lowCredits": {
+            "title": "Attention : Crédits Faibles",
+            "description": "Il ne vous reste que {{count}} scans. Rechargez maintenant pour éviter toute interruption.",
+            "action": "Acheter des Scans"
+        }
     },
     "nav": {
         "dashboard": "Tableau de bord",
@@ -24,19 +30,264 @@
     },
     "settings": {
         "title": "Paramètres",
-        "appearance": "Apparence",
+        "subtitle": "Gérer les préférences de l'espace de travail et la sécurité du compte",
+        "save": "Enregistrer les modifications",
         "language": "Langue",
-        "notifications": "Notifications",
-        "security": "Sécurité",
-        "billing": "Facturation",
-        "ai": "Configuration IA",
-        "selectLanguage": "Choisir la langue"
+        "tabs": {
+            "workflow": "Flux de travail",
+            "appearance": "Apparence",
+            "language": "Langue",
+            "notifications": "Notifications",
+            "ai": "Configuration IA",
+            "billing": "Stratégie de facturation",
+            "security": "Sécurité"
+        },
+        "workflow": {
+            "outreachDefaults": {
+                "title": "Paramètres de contact",
+                "description": "Définir l'identité d'expéditeur par défaut pour les nouveaux projets.",
+                "policyTitle": "Politique d'envoi par défaut",
+                "centralized": {
+                    "title": "Centralisé (Propriétaire)",
+                    "description": "Tous les e-mails sont envoyés depuis votre compte principal. Idéal pour la cohérence de la marque."
+                },
+                "decentralized": {
+                    "title": "Décentralisé (Individuel)",
+                    "description": "Les membres envoient des e-mails depuis leurs propres comptes connectés. Idéal pour la rapidité."
+                },
+                "senderAddress": "Adresse d'expédition par défaut",
+                "noEmails": "Aucun e-mail connecté trouvé.",
+                "connect": "Connecter dans Profil",
+                "selectPlaceholder": "Sélectionner l'e-mail d'envoi par défaut..."
+            },
+            "automation": {
+                "title": "Automatisation des projets",
+                "description": "Optimisez le comportement par défaut de vos projets.",
+                "autoArchive": {
+                    "title": "Archivage automatique",
+                    "description": "Archiver automatiquement les projets après 30 jours d'inactivité."
+                },
+                "compactMode": {
+                    "title": "Densité compacte",
+                    "description": "Afficher plus d'éléments par page dans les listes de projets et les tableaux."
+                }
+            },
+            "roles": {
+                "title": "Rôles par défaut",
+                "description": "Définir les permissions par défaut pour les nouveaux membres de l'équipe.",
+                "analystPermissions": "Permissions Analyste",
+                "activityView": {
+                    "title": "Vue d'activité Analyste",
+                    "description": "Les analystes peuvent-ils voir le journal d'audit global et l'activité des utilisateurs ?"
+                },
+                "ghostingTool": {
+                    "title": "Outil Anti-Fantôme Analyste",
+                    "description": "Les analystes peuvent-ils envoyer des e-mails de réponse en masse aux candidats ?"
+                }
+            }
+        },
+        "appearance": {
+            "title": "Thème de l'interface",
+            "darkMode": "Mode Sombre",
+            "lightMode": "Mode Clair",
+            "accentColor": "Couleur d'accentuation",
+            "accentDescription": "Personnalisez la couleur principale de votre espace de travail.",
+            "atmosphere": "Ambiance",
+            "atmosphereDescription": "Choisissez l'effet de lueur en arrière-plan.",
+            "graphics": {
+                "title": "Graphismes & Accessibilité",
+                "glass": {
+                    "title": "Intensité du verre",
+                    "description": "Ajustez la force du flou."
+                },
+                "motion": {
+                    "title": "Réduire les animations",
+                    "description": "Désactiver les animations lourdes."
+                }
+            },
+            "levels": {
+                "low": "BAS",
+                "medium": "MOYEN",
+                "high": "HAUT"
+            }
+        },
+        "notifications": {
+            "channels": {
+                "title": "Canaux",
+                "description": "Choisissez comment vous souhaitez recevoir les alertes et les mises à jour.",
+                "email": {
+                    "title": "Notifications par e-mail",
+                    "description": "Recevez des résumés hebdomadaires et des alertes critiques."
+                },
+                "push": {
+                    "title": "Notifications push",
+                    "description": "Mises à jour en temps réel dans le navigateur."
+                }
+            },
+            "frequency": {
+                "title": "Fréquence",
+                "schedule": "Calendrier du résumé",
+                "daily": "Quotidien",
+            "weekly": "Hebdomadaire",
+            "never": "Jamais",
+            "criticalAlerts": "Les alertes critiques (sécurité, paiement) sont toujours envoyées immédiatement."
+        }
     },
-    "languages": {
+    "ai": {
+        "calibration": {
+            "title": "Moteur de calibrage",
+            "description": "Configurez comment notre moteur analyse et fait correspondre les candidats.",
+            "strictness": {
+                "title": "Rigueur de correspondance",
+                "low": {
+                    "label": "Large",
+                    "description": "Privilégie le potentiel et les compétences transférables."
+                },
+                "medium": {
+                    "label": "Équilibré",
+                    "description": "Correspondance standard par mots-clés et sémantique."
+                },
+                "high": {
+                    "label": "Précis",
+                    "description": "Correspondance stricte des exigences uniquement."
+                }
+            }
+        },
+        "personality": {
+            "title": "Personnalité",
+            "tone": {
+                "title": "Ton du résumé",
+                "professional": "Professionnel",
+                "casual": "Décontracté",
+                "direct": "Direct"
+            },
+            "example": {
+                "title": "Exemple de sortie",
+                "professional": "Le candidat possède une forte maîtrise de React. Recommandé pour un premier entretien.",
+                "casual": "Ce candidat semble parfait ! Il a de solides compétences en React qui valent le détour.",
+                "direct": "Score de correspondance : 85%. Compétences clés : React (Élevé). Recommandation : Entretien."
+            }
+        }
+    },
+    "billing": {
+        "title": "Stratégie de facturation",
+        "description": "Contrôlez comment votre espace de travail gère les limites d'utilisation.",
+        "prudent": {
+            "title": "Mode Prudent",
+            "badge": "Limites strictes",
+            "description": "Le scan s'arrête immédiatement lorsque votre solde atteint zéro. Vous n'êtes jamais facturé en supplément sans approbation manuelle. Idéal pour les budgets stricts."
+        },
+        "serein": {
+            "title": "Mode Serein",
+            "badge": "Paiement à l'usage",
+            "paidPlanOnly": "FORFAIT PAYANT UNIQUEMENT",
+            "description": "Le travail continue sans interruption. Le solde négatif (dépassement) est suivi via Polar.sh et facturé automatiquement à la fin du cycle."
+        },
+        "overage": {
+            "title": "Limite de crédit (Plafond de sécurité)",
+            "unlimited": "Illimité",
+            "unlimitedDesc": "Vous serez facturé pour toute l'utilisation à la fin du cycle de facturation sans interruption.",
+            "limitedDesc": "Le scan s'arrêtera automatiquement si votre solde atteint -{{cap}} scans."
+        }
+    },
+    "security": {
+        "dangerZone": {
+            "title": "Zone de danger",
+            "deleteAccount": {
+                "title": "Supprimer le compte",
+                "description": "Supprimez définitivement votre compte personnel et tout son contenu de la plateforme <1>logo</1>. Cette action est irréversible, veuillez donc continuer avec prudence.",
+                "button": "Supprimer le compte"
+            }
+        }
+    },
+    "plans": {
+        "free": "GRATUIT",
+        "essential": "ESSENTIEL",
+        "pro": "PRO",
+        "team": "ÉQUIPE",
+        "elite": "ELITE"
+    },
+    "roles": {
+        "admin": "ADMIN",
+        "user": "UTILISATEUR",
+        "recruiter": "RECRUTEUR"
+    },
+    "profile": {
+        "title": "Mon Profil",
+        "description": "Gérez votre identité numérique et vos canaux de communication",
+        "personalInfo": "Informations Personnelles",
+        "displayName": "Nom d'affichage",
+        "professionalContext": "Contexte Professionnel",
+        "companyName": "Nom de l'entreprise",
+        "companyPlaceholder": "ex. Acme Corp",
+        "industry": "Secteur d'activité",
+        "industryPlaceholder": "Sélectionner le secteur...",
+        "saveChanges": "Enregistrer",
+        "linkedAccounts": "Comptes liés",
+        "lastSignIn": "Dernière connexion : {{date}}",
+        "active": "Actif",
+        "primaryEmail": "Email Principal",
+        "actionRequired": "Action Requise :",
+        "addEmailMessage": "Veuillez ajouter un email personnel principal pour activer la création de projets et la récupération de compte.",
+        "cancel": "Annuler",
+        "save": "Sauvegarder",
+        "edit": "Modifier",
+        "workEmails": "Emails Professionnels",
+        "workEmailsDescription": "Gérez plusieurs identités email professionnelles",
+        "workEmail": "Email Pro",
+        "remove": "Supprimer",
+        "noWorkEmails": "Aucun email professionnel connecté",
+        "addWorkEmail": "Ajouter un email pro",
+        "currentPlan": "Forfait Actuel",
+        "upgrade": "Mettre à niveau",
+        "tier": "NIVEAU {{plan}}",
+        "renewsOn": "Renouvellement le {{date}}",
+        "projects": "Projets",
+        "scansPerMonth": "Scans / Mois",
+        "remaining": "{{count}} Restants",
+        "unlimited": "Illimité",
+        "connectWorkEmail": "Connecter un email pro",
+        "connectAurinkoDescription": "Liez une boîte mail professionnelle via Aurinko",
+        "aurinkoDisclaimer": "Nous utiliserons Aurinko pour connecter votre boîte mail afin que vous puissiez envoyer des suivis et activer l'anti-ghosting.",
+        "connectAurinko": "Se connecter avec Aurinko",
+        "member": "Membre"
+    }
+},
+"languages": {
         "en": "Anglais",
         "fr": "Français"
     },
     "dashboard": {
+        "loadingIntelligence": "Chargement de l'intelligence...",
+        "header": {
+            "title": "Aperçu des performances",
+            "subtitle": "Intelligence d'affaires en temps réel dans votre organisation"
+        },
+        "filters": {
+            "timeRange": {
+                "last7Days": "7 derniers jours",
+                "last14Days": "14 derniers jours",
+                "last30Days": "30 derniers jours",
+                "last3Months": "3 derniers mois",
+                "lastYear": "L'année dernière"
+            },
+            "status": {
+                "all": "Tous les statuts",
+                "active": "Projets actifs",
+                "completed": "Terminés",
+                "archived": "Archivés"
+            },
+            "owner": {
+                "organization": "Organisation",
+                "myProjects": "Mes projets"
+            }
+        },
+        "actions": {
+            "forceRefresh": "Forcer l'actualisation",
+            "export": "Exporter",
+            "exportCSV": "Exporter CSV",
+            "exportJSON": "Exporter JSON"
+        },
         "kpi": {
             "totalUploads": "Total Candidats",
             "processed": "traités",
@@ -69,20 +320,47 @@
                 "title": "Analyse des Échecs",
                 "subtitle": "Erreurs de traitement",
                 "successRate": "100% de Réussite",
-                "allProcessed": "Tous les fichiers ont été traités avec succès."
+                "allProcessed": "Tous les fichiers ont été traités avec succès.",
+                "errors": "Erreurs"
             }
+        },
+        "leaderboard": {
+            "title": "Performance des projets",
+            "subtitle": "Meilleures campagnes de recrutement",
+            "headers": {
+                "projectName": "Nom du projet",
+                "status": "Statut",
+                "candidates": "Candidats",
+                "qualified": "Qualifiés",
+                "avgScore": "Score Moy.",
+                "efficiency": "Efficacité"
+            },
+            "noProjects": "Aucun projet ne correspond à vos filtres.",
+            "conversion": "Conv."
         }
     },
     "projects": {
         "title": "Projets",
         "subtitle": "Gérez vos campagnes de recrutement",
         "newProject": "Nouveau Projet",
+        "createProject": "Créer un projet",
         "searchPlaceholder": "Rechercher des projets...",
+        "errors": {
+            "noPrimaryEmail": "Ajoutez un email principal pour créer des projets"
+        },
         "filter": {
             "all": "Tous les statuts",
             "active": "Actif",
             "completed": "Terminé",
-            "archived": "Archivé"
+            "archived": "Archivé",
+            "anyTime": "Tout le temps",
+            "last7": "7 derniers jours",
+            "last30": "30 derniers jours",
+            "last90": "3 derniers mois",
+            "allOwners": "Tous les propriétaires",
+            "myProjects": "Mes projets",
+            "allOrgs": "Toutes les orgs",
+            "reset": "Réinitialiser"
         },
         "role": {
             "owner": "Propriétaire",
@@ -98,9 +376,27 @@
             "leave": "Quitter le projet",
             "delete": "Supprimer le projet"
         },
+        "list": {
+            "project": "Projet",
+            "status": "Statut",
+            "owner": "Propriétaire",
+            "stats": "Stats",
+            "created": "Créé le"
+        },
+        "view": {
+            "grid": "Vue Grille",
+            "list": "Vue Liste"
+        },
         "empty": {
             "title": "Aucun projet trouvé",
-            "subtitle": "Essayez d'ajuster vos filtres ou créez un nouveau projet."
+            "subtitle": "Essayez d'ajuster vos filtres ou créez un nouveau projet.",
+            "clearFilters": "Effacer tous les filtres",
+            "noProjects": "Vous n'avez pas encore de projets.",
+            "noMatches": "Aucun projet ne correspond à vos filtres."
+        },
+        "actions": {
+            "loadMore": "Charger plus",
+            "remaining": "restant(s)"
         }
     },
     "project": {
@@ -117,6 +413,129 @@
             "resumes": "CVs",
             "team": "Équipe",
             "discussions": "Discussions"
+        }
+    },
+    "modal": {
+        "newTitle": "Nouveau Projet",
+        "editTitle": "Paramètres du Projet",
+        "newSubtitle": "Configuration initiale",
+        "editSubtitle": "Gérer la configuration",
+        "draft": "Mode Brouillon",
+        "tabs": {
+            "general": "Général",
+            "team": "Équipe & Permissions",
+            "billing": "Facturation & Quotas",
+            "ai": "Diagnostics IA"
+        },
+        "general": {
+            "title": "Détails Généraux",
+            "projectTitle": "Titre du Projet",
+            "jobDescription": "Description du Poste",
+            "aiContext": "Contexte IA Actif",
+            "status": "Statut",
+            "active": "ACTIF",
+            "completed": "TERMINÉ",
+            "archived": "ARCHIVÉ"
+        },
+        "team": {
+            "title": "Équipe & Permissions",
+            "outreachPolicy": "Politique d'Identité de Contact",
+            "centralized": "Centralisé (Propriétaire)",
+            "centralizedDesc": "Tous les e-mails sont envoyés via le propriétaire.",
+            "decentralized": "Décentralisé (Utilisateur)",
+            "decentralizedDesc": "Les utilisateurs envoient via leur propre e-mail.",
+            "selectSender": "Sélectionner l'adresse d'envoi centralisée",
+            "noEmails": "Aucun e-mail connecté trouvé.",
+            "connectProfile": "Connecter dans le Profil",
+            "selectEmail": "Sélectionner un e-mail...",
+            "emailNote": "Cet e-mail sera utilisé pour tous les contacts du projet.",
+            "ownerNote": "Les e-mails sont envoyés via l'adresse centralisée du Propriétaire du Projet.",
+            "userNote": "Les e-mails sont envoyés via votre propre adresse personnelle connectée.",
+            "invitationPolicy": "Politique d'Invitation",
+            "invite": {
+                "all": "Connexions Propriétaire & Admin",
+                "admin": "Connexions Admin Uniquement",
+                "owner": "Connexions Propriétaire Uniquement"
+            },
+            "toggles": {
+                "analystCompleted": "Terminé Analyste Uniquement",
+                "analystCompletedDesc": "Masquer les projets terminés aux non-analystes.",
+                "adminStatus": "Contrôle Statut Admin",
+                "adminStatusDesc": "Permettre aux Admins d'archiver/terminer.",
+                "analystAudit": "Vue Audit Analyste",
+                "analystAuditDesc": "Permettre aux Analystes de voir l'onglet Activité.",
+                "analystGhost": "Outil Fantôme Analyste",
+                "analystGhostDesc": "Permettre aux Analystes d'utiliser les e-mails de masse."
+            },
+            "demoteTarget": "Cible de Rétrogradation Rapide",
+            "roles": {
+                "partner": "Partenaire Talent (Accès Complet)",
+                "scout": "Chasseur de Têtes (Scan Uniquement)",
+                "analyst": "Analyste Talent (Vue Uniquement)",
+                "visitor": "Visiteur (Lecture Seule)"
+            }
+        },
+        "billing": {
+            "title": "Facturation & Limites",
+            "sharedWallet": "Portefeuille Partagé",
+            "sharedWalletDesc": "Les scans sont déduits directement du solde personnel du Propriétaire.",
+            "dedicatedBudget": "Budget Dédié",
+            "dedicatedBudgetDesc": "Le projet a son propre budget financé par le Propriétaire. Plus sûr pour les équipes.",
+            "projectBudget": "Budget du Projet",
+            "scans": "scans",
+            "walletBalance": "Solde de votre Portefeuille",
+            "amount": "Montant",
+            "deposit": "Dépôt",
+            "withdraw": "Retrait",
+            "initialBudget": "Budget Initial du Projet",
+            "yourWallet": "Votre Portefeuille : {{balance}}",
+            "enterAmount": "Entrer le montant à transférer...",
+            "transferNote": "Les scans seront transférés de votre portefeuille vers ce projet lors de la création.",
+            "defaultQuota": "Quota Membre Par Défaut",
+            "unlimited": "Illimité",
+            "customLimit": "Limite Personnalisée",
+            "enterQuota": "Entrer le maximum de scans par membre",
+            "quotaNote": "Note : Ceci définit le quota par défaut pour les nouveaux membres. Les quotas des membres existants ne sont pas modifiés.",
+            "lockedTitle": "Facturation Avancée Verrouillée",
+            "lockedDesc": "Passez au plan Pro ou Équipe pour allouer des budgets spécifiques par projet et contrôler les quotas des membres."
+        },
+        "ai": {
+            "title": "Moteur de Calibrage IA",
+            "description": "Exécutez une analyse statistique avancée sur la vélocité du projet pour optimiser votre budget et vos quotas.",
+            "running": "Exécution des Diagnostics...",
+            "ready": "Prêt à Optimiser ?",
+            "step1": "Analyse de la vélocité de téléchargement...",
+            "step2": "Calcul des taux de consommation des membres...",
+            "step3": "Prévision du budget mensuel...",
+            "step4": "Génération du plan d'optimisation...",
+            "intro": "Notre IA analysera 30 jours de données historiques, la variance des membres et les taux de consommation pour prévoir votre configuration idéale.",
+            "processing": "Traitement...",
+            "run": "Lancer les Diagnostics",
+            "healthScore": "Score de Santé",
+            "dailyScans": "Scans Quotidiens Moy.",
+            "projectedMonthly": "Mensuel Projeté",
+            "projectBudget": "Budget du Projet",
+            "memberQuota": "Quota Membre",
+            "dismiss": "Ignorer",
+            "approve": "Approuver & Appliquer"
+        },
+        "actions": {
+            "cancel": "Annuler",
+            "create": "Créer le Projet",
+            "save": "Enregistrer les Modifications"
+        },
+        "leave": {
+            "title": "Quitter le Projet ?",
+            "description": "Êtes-vous sûr de vouloir quitter \"{{title}}\" ? Vous perdrez l'accès à tous les fichiers et discussions.",
+            "confirm": "Quitter le Projet",
+            "cancel": "Annuler"
+        },
+        "delete": {
+            "title": "Supprimer le Projet ?",
+            "description": "Êtes-vous sûr de vouloir supprimer \"{{title}}\" ?",
+            "warning": "Cette action est irréversible.",
+            "confirm": "Supprimer le Projet",
+            "cancel": "Annuler"
         }
     }
 }

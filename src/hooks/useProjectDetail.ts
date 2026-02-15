@@ -519,7 +519,6 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         canAccessAdminChannel,
         canViewActivityTab,
         canUseAntiGhosting,
-        canInviteMembers,
         isIdentitySelectorOpen,
         setIsIdentitySelectorOpen,
         addMemberType,

@@ -4,6 +4,7 @@ import { Palette, Sun, Moon, Lock, Layers, MousePointer2 } from 'lucide-react';
 import { UserPreferences, UIPreferences, SubscriptionPlan } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { ACCENT_PALETTES } from '../../theme/designTokens';
+import { useTranslation } from 'react-i18next';
 
 interface AppearanceSettingsProps {
     prefs: UserPreferences;
@@ -12,6 +13,7 @@ interface AppearanceSettingsProps {
 }
 
 const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConfigChange, userSubscription }) => {
+    const { t } = useTranslation();
     const { styles, accent, isLight } = useTheme();
 
     // --- THEME HIERARCHY LOGIC ---
@@ -66,7 +68,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConf
 
         return (
             <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border backdrop-blur-md shadow-sm ${badgeClasses}`}>
-                {plan}
+                {t(`plans.${plan.toLowerCase()}`)}
             </span>
         );
     };
@@ -89,29 +91,29 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConf
         <div className="space-y-10 animate-fade-in">
             {/* Theme Mode */}
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Interface Theme</h2>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.appearance.title')}</h2>
                 <div className="grid grid-cols-2 gap-4 max-w-lg">
                     <button 
                         onClick={() => onUIConfigChange('theme', 'DARK')}
                         className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-3 ${prefs.uiConfig?.theme === 'DARK' ? 'bg-zinc-800 border-white text-white shadow-lg' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
                     >
                         <Moon size={24} className={prefs.uiConfig?.theme === 'DARK' ? 'text-purple-400' : ''} />
-                        <span className="text-sm font-bold">Dark Mode</span>
+                        <span className="text-sm font-bold">{t('settings.appearance.darkMode')}</span>
                     </button>
                     <button 
                         onClick={() => onUIConfigChange('theme', 'LIGHT')}
                         className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-3 ${prefs.uiConfig?.theme === 'LIGHT' ? 'bg-white border-slate-300 text-slate-900 shadow-lg' : 'bg-white/5 border-white/10 text-zinc-500'}`}
                     >
                         <Sun size={24} className={prefs.uiConfig?.theme === 'LIGHT' ? 'text-amber-500' : ''} />
-                        <span className="text-sm font-bold">Light Mode</span>
+                        <span className="text-sm font-bold">{t('settings.appearance.lightMode')}</span>
                     </button>
                 </div>
             </div>
 
             {/* Accent Color Selection */}
             <div>
-                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>Accent Color</h2>
-                <p className={`text-sm mb-4 ${styles.text.secondary}`}>Customize the primary highlight color of your workspace.</p>
+                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>{t('settings.appearance.accentColor')}</h2>
+                <p className={`text-sm mb-4 ${styles.text.secondary}`}>{t('settings.appearance.accentDescription')}</p>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                     {DISPLAY_ORDER.map(colorKey => {
@@ -150,8 +152,8 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConf
 
             {/* Ambient Glow Selection */}
             <div>
-                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>Ambient Atmosphere</h2>
-                <p className={`text-sm mb-4 ${styles.text.secondary}`}>Choose the background glow effect.</p>
+                <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>{t('settings.appearance.atmosphere')}</h2>
+                <p className={`text-sm mb-4 ${styles.text.secondary}`}>{t('settings.appearance.atmosphereDescription')}</p>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                     {DISPLAY_ORDER.map(colorKey => {
@@ -187,14 +189,14 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConf
 
             {/* Graphical Options */}
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Graphics & Accessibility</h2>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.appearance.graphics.title')}</h2>
                 <div className="space-y-4">
                     <div className={`flex items-center justify-between p-4 rounded-xl border ${styles.bg.surface} ${styles.border.base}`}>
                         <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-lg ${styles.bg.card} ${styles.text.secondary}`}><Layers size={18}/></div>
                             <div>
-                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>Glassmorphism Intensity</h3>
-                                <p className={`text-xs ${styles.text.secondary}`}>Adjust the blur strength.</p>
+                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>{t('settings.appearance.graphics.glass.title')}</h3>
+                                <p className={`text-xs ${styles.text.secondary}`}>{t('settings.appearance.graphics.glass.description')}</p>
                             </div>
                         </div>
                         <div className={`flex gap-1 p-1 rounded-lg border ${isLight ? 'bg-slate-100 border-slate-200' : 'bg-black/40 border-white/5'}`}>
@@ -204,7 +206,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConf
                                     onClick={() => onUIConfigChange('glassIntensity', level)}
                                     className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${prefs.uiConfig?.glassIntensity === level ? 'bg-white text-black shadow-sm' : styles.text.secondary}`}
                                 >
-                                    {level}
+                                    {t(`settings.appearance.levels.${level.toLowerCase()}`)}
                                 </button>
                             ))}
                         </div>
@@ -214,8 +216,8 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConf
                         <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-lg ${styles.bg.card} ${styles.text.secondary}`}><MousePointer2 size={18}/></div>
                             <div>
-                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>Reduced Motion</h3>
-                                <p className={`text-xs ${styles.text.secondary}`}>Disable heavy animations.</p>
+                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>{t('settings.appearance.graphics.motion.title')}</h3>
+                                <p className={`text-xs ${styles.text.secondary}`}>{t('settings.appearance.graphics.motion.description')}</p>
                             </div>
                         </div>
                         <Switch checked={!!prefs.uiConfig?.reducedMotion} onChange={() => onUIConfigChange('reducedMotion', !prefs.uiConfig?.reducedMotion)} accentColor={accent} />

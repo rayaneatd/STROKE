@@ -3,6 +3,7 @@ import React from 'react';
 import { Bell, Mail, Smartphone, CalendarClock, Zap } from 'lucide-react';
 import { UserPreferences } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 interface NotificationSettingsProps {
     prefs: UserPreferences;
@@ -24,13 +25,14 @@ const Switch = ({ checked, onChange, accentColor }: { checked: boolean; onChange
 );
 
 const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prefs, onToggle, onSelectChange }) => {
+    const { t } = useTranslation();
     const { styles, accent, isLight } = useTheme();
 
     return (
         <div className="space-y-8 animate-fade-in">
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Channels</h2>
-                <p className={`text-sm mb-6 ${styles.text.secondary}`}>Choose how you want to receive alerts and updates.</p>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.notifications.channels.title')}</h2>
+                <p className={`text-sm mb-6 ${styles.text.secondary}`}>{t('settings.notifications.channels.description')}</p>
                 
                 <div className="space-y-4">
                     {/* Email */}
@@ -40,8 +42,8 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prefs, onTo
                                 <Mail size={20} />
                             </div>
                             <div>
-                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>Email Notifications</h3>
-                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>Receive weekly digests and critical alerts.</p>
+                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>{t('settings.notifications.channels.email.title')}</h3>
+                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>{t('settings.notifications.channels.email.description')}</p>
                             </div>
                         </div>
                         <Switch checked={prefs.notifications.email} onChange={() => onToggle('notifications', 'email')} accentColor={accent} />
@@ -54,8 +56,8 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prefs, onTo
                                 <Smartphone size={20} />
                             </div>
                             <div>
-                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>Push Notifications</h3>
-                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>Real-time updates in the browser.</p>
+                                <h3 className={`font-bold text-sm ${styles.text.primary}`}>{t('settings.notifications.channels.push.title')}</h3>
+                                <p className={`text-xs mt-1 ${styles.text.secondary}`}>{t('settings.notifications.channels.push.description')}</p>
                             </div>
                         </div>
                         <Switch checked={prefs.notifications.push} onChange={() => onToggle('notifications', 'push')} accentColor={accent} />
@@ -64,10 +66,10 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prefs, onTo
             </div>
 
             <div>
-                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Frequency</h2>
+                <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>{t('settings.notifications.frequency.title')}</h2>
                 <div className={`p-6 rounded-2xl border ${styles.bg.surface} ${styles.border.base}`}>
                     <h3 className={`font-bold text-sm mb-4 flex items-center gap-2 ${styles.text.primary}`}>
-                        <CalendarClock size={16} /> Digest Schedule
+                        <CalendarClock size={16} /> {t('settings.notifications.frequency.schedule')}
                     </h3>
                     
                     <div className="grid grid-cols-3 gap-3">
@@ -82,7 +84,9 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prefs, onTo
                                 }`}
                             >
                                 <div className={`text-xs font-bold ${prefs.notifications.digestFrequency === freq ? `text-${accent}-500` : styles.text.secondary}`}>
-                                    {freq}
+                                    {freq === 'DAILY' && t('settings.notifications.frequency.daily')}
+                                    {freq === 'WEEKLY' && t('settings.notifications.frequency.weekly')}
+                                    {freq === 'NEVER' && t('settings.notifications.frequency.never')}
                                 </div>
                             </button>
                         ))}
@@ -90,7 +94,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({ prefs, onTo
                     
                     <div className={`mt-4 flex items-center gap-2 text-[10px] ${styles.text.tertiary}`}>
                         <Zap size={12} className="text-amber-500" />
-                        <span>Critical alerts (security, payment) are always sent immediately.</span>
+                        <span>{t('settings.notifications.frequency.criticalAlerts')}</span>
                     </div>
                 </div>
             </div>
