@@ -3,6 +3,7 @@ import React from 'react';
 import {
     Layout, Users, Save, Loader2, Wallet, BrainCircuit, Rocket
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Project, User } from '../../types';
 import { useEditProjectModal } from '../../hooks/useEditProjectModal';
 
