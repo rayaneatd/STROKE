@@ -14,6 +14,44 @@ export type Database = {
     }
     public: {
         Tables: {
+            aurinko_work_mails: {
+                Row: {
+                    access_token: string | null
+                    created_at: string | null
+                    email: string
+                    id: string
+                    provider: string | null
+                    refresh_token: string | null
+                    user_id: string | null
+                }
+                Insert: {
+                    access_token?: string | null
+                    created_at?: string | null
+                    email: string
+                    id?: string
+                    provider?: string | null
+                    refresh_token?: string | null
+                    user_id?: string | null
+                }
+                Update: {
+                    access_token?: string | null
+                    created_at?: string | null
+                    email?: string
+                    id?: string
+                    provider?: string | null
+                    refresh_token?: string | null
+                    user_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "aurinko_work_mails_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
             candidates: {
                 Row: {
                     candidate_name: string | null
@@ -115,6 +153,51 @@ export type Database = {
                         referencedColumns: ["id"]
                     },
                 ]
+            }
+            organisation_members: {
+                Row: {
+                    org_id: string
+                    user_id: string
+                }
+                Insert: {
+                    org_id: string
+                    user_id: string
+                }
+                Update: {
+                    org_id?: string
+                    user_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "organisation_members_org_id_fkey"
+                        columns: ["org_id"]
+                        isOneToOne: false
+                        referencedRelation: "organisations"
+                        referencedColumns: ["org_id"]
+                    },
+                    {
+                        foreignKeyName: "organisation_members_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            organisations: {
+                Row: {
+                    org_id: string
+                    org_name: string
+                }
+                Insert: {
+                    org_id?: string
+                    org_name: string
+                }
+                Update: {
+                    org_id?: string
+                    org_name?: string
+                }
+                Relationships: []
             }
             profiles: {
                 Row: {
