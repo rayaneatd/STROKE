@@ -35,39 +35,39 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         queryKey: ['projects', currentUser.id],
         queryFn: async () => {
             const { data, error } = await supabase
-                .rpc('get_user_projects', { user_id: currentUser.id });
+                 .rpc('get_user_projects', { target_user_id: currentUser.id });
 
             if (error) throw error;
 
             return data.map((p: any) => ({
-                id: p.id,
-                title: p.title,
-                description: p.description || '',
-                ownerId: p.owner_id,
-                createdAt: p.created_at,
-                status: p.status,
-                settings: p.settings || {},
-                investmentBalance: Number(p.investment_balance) || 0,
-                totalInvested: Number(p.total_invested) || 0,
-                fileCount: Number(p.file_count) || 0,
-                memberCount: Number(p.member_count) || 0,
-                members: Array.isArray(p.members) ? p.members.map((m: any) => ({
-                    userId: m.userId,
-                    role: m.role as ProjectRole,
-                    permissions: m.permissions || [],
-                    scansUsed: m.scansUsed || 0,
-                    scanQuota: m.scanQuota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota),
-                    joinedAt: m.joinedAt,
-                    user: m.user ? {
-                        id: m.user.id,
-                        email: m.user.email,
-                        displayName: m.user.displayName || m.user.email?.split('@')[0] || 'Unknown',
-                        avatarUrl: m.user.avatarUrl,
-                        workMails: Array.isArray(m.user.workMails) ? m.user.workMails : [],
-                        orgNames: Array.isArray(m.user.orgNames) ? m.user.orgNames : []
-                    } : undefined
-                })) : []
-            } as Project));
+                 id: p.id,
+                 title: p.title,
+                 description: p.description || '',
+                 ownerId: p.owner_id,
+                 createdAt: p.created_at,
+                 status: p.status,
+                 settings: p.settings || {},
+                 investmentBalance: Number(p.investment_balance) || 0,
+                 totalInvested: Number(p.total_invested) || 0,
+                 fileCount: 0, // Retourné à 0 car la table project_files n'existe pas
+                 memberCount: Number(p.member_count) || 0,
+                 members: Array.isArray(p.members) ? p.members.map((m: any) => ({
+                     userId: m.userId,
+                     role: m.role as ProjectRole,
+                     permissions: m.permissions || [],
+                     scansUsed: m.scansUsed || 0,
+                     scanQuota: m.scanQuota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota),
+                     joinedAt: m.joinedAt,
+                     user: m.user ? {
+                         id: m.user.id,
+                         email: m.user.email,
+                         displayName: m.user.displayName || m.user.email?.split('@')[0] || 'Unknown',
+                         avatarUrl: m.user.avatarUrl,
+                         workMails: Array.isArray(m.user.workMails) ? m.user.workMails : [],
+                         orgNames: Array.isArray(m.user.orgNames) ? m.user.orgNames : []
+                     } : undefined
+                 })) : []
+             } as Project));
         },
         enabled: !!currentUser.id
     });
