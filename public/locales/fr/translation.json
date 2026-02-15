@@ -1,0 +1,39 @@
+{
+    "common": {
+        "loading": "Chargement...",
+        "error": "Une erreur est survenue",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "back": "Retour",
+        "next": "Suivant",
+        "confirm": "Confirmer",
+        "close": "Fermer",
+        "search": "Rechercher...",
+        "noData": "Aucune donnée disponible"
+    },
+    "nav": {
+        "dashboard": "Tableau de bord",
+        "projects": "Projets",
+        "connections": "Connexions",
+        "settings": "Paramètres",
+        "admin": "Admin",
+        "logout": "Déconnexion",
+        "profile": "Profil"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "appearance": "Apparence",
+        "language": "Langue",
+        "notifications": "Notifications",
+        "security": "Sécurité",
+        "billing": "Facturation",
+        "ai": "Configuration IA",
+        "selectLanguage": "Choisir la langue"
+    },
+    "languages": {
+        "en": "Anglais",
+        "fr": "Français"
+    }
+}

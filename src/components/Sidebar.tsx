@@ -2,6 +2,7 @@
 import React from 'react';
 import { LayoutDashboard, FolderKanban, Users, Shield, LogOut, Settings, CreditCard } from 'lucide-react';
 import { User, Role, SubscriptionPlan, UIPreferences } from '../types';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface SidebarProps {
   currentUser: User;
@@ -12,16 +13,17 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, onNavigate, uiConfig }) => {
+  const { t } = useTranslation(); // Initialize translation hook
   
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-    { id: 'projects', label: 'Projects', icon: <FolderKanban size={18} /> },
-    { id: 'connections', label: 'Connections', icon: <Users size={18} /> },
-    { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
+    { id: 'dashboard', label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
+    { id: 'projects', label: t('nav.projects'), icon: <FolderKanban size={18} /> },
+    { id: 'connections', label: t('nav.connections'), icon: <Users size={18} /> },
+    { id: 'settings', label: t('nav.settings'), icon: <Settings size={18} /> },
   ];
 
   if (currentUser.role === Role.ADMIN) {
-    navItems.push({ id: 'admin', label: 'Admin Panel', icon: <Shield size={18} /> });
+    navItems.push({ id: 'admin', label: t('nav.admin'), icon: <Shield size={18} /> });
   }
 
   // Preferences extraction

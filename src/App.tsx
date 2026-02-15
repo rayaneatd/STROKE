@@ -11,6 +11,8 @@ import GlobalBanModal from './components/modals/GlobalBanModal'; // Import the n
 import { getUser } from './services/mockData';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { useTranslation } from 'react-i18next';
+import { supabase } from './lib/supabase';
 
 
 // --- LAZY LOADED ROUTES (Code Splitting) ---
@@ -79,6 +81,34 @@ const AppContent: React.FC = () => {
     const { user, logout, updateUser, isAuthenticated, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const { i18n } = useTranslation();
+
+    // --- LANGUAGE SYNC ---
+    useEffect(() => {
+        if (!user) return;
+
+        // 1. Sync i18n with user profile language on load
+        const syncLanguage = async () => {
+            // Get latest profile data including language
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('language')
+                .eq('id', user.id)
+                .single();
+            
+            if (profile?.language && profile.language !== i18n.language) {
+                i18n.changeLanguage(profile.language);
+            } else if (!profile?.language) {
+                // If no language in DB, update DB with current detected language
+                await supabase
+                    .from('profiles')
+                    .update({ language: i18n.language })
+                    .eq('id', user.id);
+            }
+        };
+
+        syncLanguage();
+    }, [user?.id]); // Run when user ID changes (login)
 
     // --- REAL-TIME BAN ENFORCEMENT ---
     useEffect(() => {

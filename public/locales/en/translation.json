@@ -1,0 +1,39 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "back": "Back",
+        "next": "Next",
+        "confirm": "Confirm",
+        "close": "Close",
+        "search": "Search...",
+        "noData": "No data available"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "connections": "Connections",
+        "settings": "Settings",
+        "admin": "Admin",
+        "logout": "Logout",
+        "profile": "Profile"
+    },
+    "settings": {
+        "title": "Settings",
+        "appearance": "Appearance",
+        "language": "Language",
+        "notifications": "Notifications",
+        "security": "Security",
+        "billing": "Billing",
+        "ai": "AI Configuration",
+        "selectLanguage": "Select Language"
+    },
+    "languages": {
+        "en": "English",
+        "fr": "French"
+    }
+}

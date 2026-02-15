@@ -3,12 +3,13 @@ import React from 'react';
 import { User, SubscriptionPlan } from '../types';
 import {
     Bell, Shield, Save, Check, Loader2,
-    Layout, AlertCircle, BrainCircuit, Wallet, Palette
+    Layout, AlertCircle, BrainCircuit, Wallet, Palette, Globe
 } from 'lucide-react';
 import DeleteAccountModal from '../components/modals/DeleteAccountModal';
 import ThemedCard from '../components/ui/ThemedCard';
 import ThemedButton from '../components/ui/ThemedButton';
 import { useSettings } from '../hooks/useSettings';
+import LanguageSwitcher from '../components/LanguageSwitcher'; // Import LanguageSwitcher
 
 // Sub-Components
 import WorkflowSettings from '../components/settings/WorkflowSettings';
@@ -71,6 +72,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                     {[
                         { id: 'WORKFLOW', label: 'Workflow', icon: <Layout size={18} /> },
                         { id: 'APPEARANCE', label: 'Appearance', icon: <Palette size={18} /> },
+                        { id: 'LANGUAGE', label: 'Language', icon: <Globe size={18} /> }, // Added Language Tab
                         { id: 'NOTIFICATIONS', label: 'Notifications', icon: <Bell size={18} /> },
                         { id: 'AI', label: 'AI Configuration', icon: <BrainCircuit size={18} /> },
                         { id: 'BILLING', label: 'Billing Strategy', icon: <Wallet size={18} /> },
@@ -90,14 +92,45 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                 </div>
 
                 {/* Main Content Area */}
-                <ThemedCard className="lg:col-span-3 flex flex-col overflow-hidden min-h-[500px]">
-                    <div className="flex-1 p-8">
+                <div className="lg:col-span-3 flex flex-col overflow-hidden min-h-[500px]">
+                    <div className="flex-1 p-8 bg-transparent">
                         {activeTab === 'WORKFLOW' && (
                             <WorkflowSettings prefs={prefs} onToggle={handleToggle} onSelectChange={handleSelectChange} />
                         )}
 
                         {activeTab === 'APPEARANCE' && (
                             <AppearanceSettings
+                                uiConfig={prefs.uiConfig}
+                                onUIConfigChange={handleUIConfigChange}
+                            />
+                        )}
+
+                        {activeTab === 'LANGUAGE' && (
+                            <LanguageSwitcher />
+                        )}
+
+                        {activeTab === 'NOTIFICATIONS' && (
+                            <NotificationSettings prefs={prefs} onToggle={handleToggle} onSelectChange={handleSelectChange} />
+                        )}
+
+                        {activeTab === 'AI' && (
+                            <AISettings aiConfig={prefs.aiConfig} onAIConfigChange={handleAIConfigChange} />
+                        )}
+
+                        {activeTab === 'BILLING' && (
+                            <BillingSettings
+                                billingType={billingType}
+                                setBillingType={setBillingType}
+                                overageCap={overageCap}
+                                setOverageCap={setOverageCap}
+                            />
+                        )}
+
+                        {activeTab === 'SECURITY' && (
+                            <SecuritySettings onDeleteAccount={() => setIsDeleteModalOpen(true)} />
+                        )}
+                    </div>
+                </div>
                                 prefs={prefs}
                                 onUIConfigChange={handleUIConfigChange}
                                 userSubscription={user.subscriptionPlan}
