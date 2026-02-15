@@ -3,7 +3,7 @@ import React from 'react';
 import { User, ConnectionItem } from '../types';
 import { useConnections } from '../hooks/useConnections';
 import { getOrgNamesFromEmails } from '../utils/emailDomains';
-import { UserPlus, Search, UserCheck, X, Check, Trash2, Clock, Mail, ChevronDown } from 'lucide-react';
+import { UserPlus, Search, UserCheck, X, Check, Trash2, Clock, Mail, ChevronDown, Building2 } from 'lucide-react';
 
 interface ConnectionsProps {
   currentUser: User;
@@ -63,11 +63,34 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
           </div>
           <div>
             <h3 className={`font-bold text-sm transition-colors ${textPrimary} group-hover:text-${accentColor}-500`}>{otherUser.displayName}</h3>
-            <div className={`flex items-center gap-1.5 text-xs ${textSecondary}`}>
-              <Mail size={12} />
-              <span>{otherUser.email}</span>
+            <div className={`flex flex-wrap items-center gap-2 text-xs mt-1 ${textSecondary}`}>
+              <div className="flex items-center gap-1.5">
+                <Mail size={12} />
+                <span>{otherUser.email}</span>
+              </div>
+              
+              {otherUser.orgNames && otherUser.orgNames.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {otherUser.orgNames.map((org) => {
+                    const isMyOrg = currentUserOrgs.includes(org);
+                    return (
+                      <span 
+                        key={org} 
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                          isMyOrg 
+                            ? (isLight ? `bg-${accentColor}-50 text-${accentColor}-600 border-${accentColor}-200` : `bg-${accentColor}-500/10 text-${accentColor}-400 border-${accentColor}-500/20`)
+                            : (isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/5 text-zinc-400 border-white/10')
+                        }`}
+                      >
+                        <Building2 size={8} />
+                        {org}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <p className={`text-[10px] mt-1 flex items-center gap-1 font-mono ${isLight ? 'text-slate-400' : 'text-zinc-600'}`}>
+            <p className={`text-[10px] mt-1.5 flex items-center gap-1 font-mono ${isLight ? 'text-slate-400' : 'text-zinc-600'}`}>
               <Clock size={10} />
               {status === 'CONNECTED' ? 'Since' : 'Date'}: {date}
             </p>
