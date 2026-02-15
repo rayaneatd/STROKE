@@ -65,15 +65,45 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
             color: ${isLight ? 'white' : 'inherit'};
         }
         
+        /* Global Scrollbar Styling */
+        ::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+        
+        /* Custom Scrollbar Utility Override */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+
         ${isLight ? `
-          ::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; 
-            border: 2px solid #FAFAFA;
+          /* Light Theme Scrollbars */
+          ::-webkit-scrollbar-track, .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f8fafc;
           }
-          ::-webkit-scrollbar-thumb:hover {
+          ::-webkit-scrollbar-thumb, .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; 
+            border-radius: 5px;
+            border: 2px solid #f8fafc;
+          }
+          ::-webkit-scrollbar-thumb:hover, .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background-color: #94a3b8;
           }
-        ` : ''}
+        ` : `
+          /* Dark Theme Scrollbars */
+          ::-webkit-scrollbar-track, .custom-scrollbar::-webkit-scrollbar-track {
+            background: #09090b;
+          }
+          ::-webkit-scrollbar-thumb, .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #27272a; 
+            border-radius: 5px;
+            border: 2px solid #09090b;
+          }
+          ::-webkit-scrollbar-thumb:hover, .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #3f3f46;
+          }
+        `}
 
         ${uiConfig.reducedMotion ? `
              *, *::before, *::after {

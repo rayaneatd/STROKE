@@ -149,7 +149,10 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
           <p className={`text-sm mt-1 ${textSecondary}`}>Grow your professional network</p>
         </div>
 
-        <div className={`p-1.5 rounded-xl border flex flex-col md:flex-row gap-2 relative ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#0e0e10] border-white/5'}`}>
+        <form 
+          onSubmit={handleSendInvite}
+          className={`p-1.5 rounded-xl border flex flex-col md:flex-row gap-2 relative ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-[#0e0e10] border-white/5'}`}
+        >
           <div className="relative flex-1">
             <Search className={`absolute left-3 top-1/2 -translate-y-1/2 ${textSecondary}`} size={16} />
             <input
@@ -161,7 +164,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
             />
           </div>
           <button
-            onClick={handleSendInvite}
+            type="submit"
             disabled={loading || !inviteEmail}
             className={`px-4 py-2 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-2 ${loading || !inviteEmail
                 ? (isLight ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white/5 text-zinc-500 cursor-not-allowed')
@@ -179,7 +182,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
               {message.text}
             </div>
           )}
-        </div>
+        </form>
       </div>
 
       {/* Tabs */}
