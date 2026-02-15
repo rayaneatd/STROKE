@@ -9,6 +9,7 @@ import {
 import { useProjects } from '../hooks/useProjects';
 import { Project, User, ProjectRole } from '../types';
 import LowCreditsBanner from '../components/LowCreditsBanner';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Modals
 import ProjectModal from '../components/modals/EditProjectModal'; // Unified modal for Edit/Create
@@ -30,7 +31,8 @@ const ProjectCard = React.memo(({
     onLeave,
     onDelete,
     isLight,
-    accentColor
+    accentColor,
+    t // Pass translation function
 }: {
     project: Project;
     currentUser: User;
@@ -45,6 +47,7 @@ const ProjectCard = React.memo(({
     onDelete: (e: React.MouseEvent, project: Project) => void;
     isLight: boolean;
     accentColor: string;
+    t: any; // Add type for t
 }) => {
     const member = project.members.find(m => m.userId === currentUser.id);
     const userRole = member?.role || ProjectRole.EMPLOYEE;
@@ -279,6 +282,7 @@ interface ProjectsProps {
 }
 
 const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavigate, onUpdateUser }) => {
+    const { t } = useTranslation(); // Initialize hook
     const {
         projects,
         searchTerm,
@@ -516,13 +520,14 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 onMenuToggle={handleMenuClick}
                                 onEdit={handleEditProject}
                                 onStatusChange={handleStatusChange}
-                                onLeave={handleLeaveProject}
-                                onDelete={handleDeleteProject}
-                                isLight={isLight}
-                                accentColor={accentColor}
-                            />
-                        ))}
-                    </div>
+                            onLeave={handleLeaveProject}
+                            onDelete={handleDeleteProject}
+                            isLight={isLight}
+                            accentColor={accentColor}
+                            t={t} // Pass t function
+                        />
+                    ))}
+                </div>
 
                     {filteredProjects.length > displayCount && (
                         <div className="flex justify-center pt-8 pb-4">

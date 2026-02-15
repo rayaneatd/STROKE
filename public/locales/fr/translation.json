@@ -35,5 +35,88 @@
     "languages": {
         "en": "Anglais",
         "fr": "Français"
+    },
+    "dashboard": {
+        "kpi": {
+            "totalUploads": "Total Candidats",
+            "processed": "traités",
+            "qualifiedCandidates": "Candidats Qualifiés",
+            "scoreAbove80": "Score > 80%",
+            "activeProjects": "Projets Actifs",
+            "recruitingNow": "Recrutement en cours",
+            "systemThroughput": "Débit Système",
+            "avgParseTime": "Temps moy. d'analyse"
+        },
+        "team": {
+            "capacity": "Capacité de l'équipe",
+            "admins": "Admins",
+            "fullAccess": "Accès Complet",
+            "partners": "Partenaires",
+            "scanAnalyze": "Scan & Analyse",
+            "scouts": "Chasseurs",
+            "sourcingOnly": "Sourcing Uniquement",
+            "analysts": "Analystes",
+            "viewOnly": "Lecture Seule"
+        },
+        "charts": {
+            "volumeQuality": {
+                "title": "Tendances Volume & Qualité",
+                "subtitle": "Flux de candidatures vs score de correspondance",
+                "volume": "Volume",
+                "avgScore": "Score Moyen"
+            },
+            "failureAnalysis": {
+                "title": "Analyse des Échecs",
+                "subtitle": "Erreurs de traitement",
+                "successRate": "100% de Réussite",
+                "allProcessed": "Tous les fichiers ont été traités avec succès."
+            }
+        }
+    },
+    "projects": {
+        "title": "Projets",
+        "subtitle": "Gérez vos campagnes de recrutement",
+        "newProject": "Nouveau Projet",
+        "searchPlaceholder": "Rechercher des projets...",
+        "filter": {
+            "all": "Tous les statuts",
+            "active": "Actif",
+            "completed": "Terminé",
+            "archived": "Archivé"
+        },
+        "role": {
+            "owner": "Propriétaire",
+            "admin": "Admin",
+            "editor": "Éditeur",
+            "viewer": "Lecteur"
+        },
+        "menu": {
+            "edit": "Modifier le projet",
+            "archive": "Archiver le projet",
+            "complete": "Marquer comme terminé",
+            "reactivate": "Réactiver",
+            "leave": "Quitter le projet",
+            "delete": "Supprimer le projet"
+        },
+        "empty": {
+            "title": "Aucun projet trouvé",
+            "subtitle": "Essayez d'ajuster vos filtres ou créez un nouveau projet."
+        }
+    },
+    "project": {
+        "created": "Créé le",
+        "budget": "Budget",
+        "balance": "Solde",
+        "overage": "Dépassement",
+        "selectSendingEmail": "Sélectionner l'email d'envoi",
+        "sendingAs": "Envoyé en tant que",
+        "noEmailsConnected": "Aucun email connecté.",
+        "tabs": {
+            "overview": "Vue d'ensemble",
+            "activityAudit": "Activité & Audit",
+            "resumes": "CVs",
+            "team": "Équipe",
+            "discussions": "Discussions"
+        }
     }
 }

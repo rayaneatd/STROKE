@@ -35,5 +35,88 @@
     "languages": {
         "en": "English",
         "fr": "French"
+    },
+    "dashboard": {
+        "kpi": {
+            "totalUploads": "Total Uploads",
+            "processed": "processed",
+            "qualifiedCandidates": "Qualified Candidates",
+            "scoreAbove80": "Score > 80%",
+            "activeProjects": "Active Projects",
+            "recruitingNow": "Recruiting now",
+            "systemThroughput": "System Throughput",
+            "avgParseTime": "Avg. parse time"
+        },
+        "team": {
+            "capacity": "Team Capacity",
+            "admins": "Admins",
+            "fullAccess": "Full Access",
+            "partners": "Partners",
+            "scanAnalyze": "Scan & Analyze",
+            "scouts": "Scouts",
+            "sourcingOnly": "Sourcing Only",
+            "analysts": "Analysts",
+            "viewOnly": "View Only"
+        },
+        "charts": {
+            "volumeQuality": {
+                "title": "Volume & Quality Trends",
+                "subtitle": "Application influx vs. match score",
+                "volume": "Volume",
+                "avgScore": "Avg Score"
+            },
+            "failureAnalysis": {
+                "title": "Failure Analysis",
+                "subtitle": "Processing errors",
+                "successRate": "100% Success Rate",
+                "allProcessed": "All files processed successfully."
+            }
+        }
+    },
+    "projects": {
+        "title": "Projects",
+        "subtitle": "Manage your recruitment campaigns",
+        "newProject": "New Project",
+        "searchPlaceholder": "Search projects...",
+        "filter": {
+            "all": "All Status",
+            "active": "Active",
+            "completed": "Completed",
+            "archived": "Archived"
+        },
+        "role": {
+            "owner": "Owner",
+            "admin": "Admin",
+            "editor": "Editor",
+            "viewer": "Viewer"
+        },
+        "menu": {
+            "edit": "Edit Project",
+            "archive": "Archive Project",
+            "complete": "Mark as Completed",
+            "reactivate": "Reactivate",
+            "leave": "Leave Project",
+            "delete": "Delete Project"
+        },
+        "empty": {
+            "title": "No projects found",
+            "subtitle": "Try adjusting your filters or create a new project."
+        }
+    },
+    "project": {
+        "created": "Created",
+        "budget": "Budget",
+        "balance": "Balance",
+        "overage": "Overage",
+        "selectSendingEmail": "Select Sending Email",
+        "sendingAs": "Sending as",
+        "noEmailsConnected": "No emails connected.",
+        "tabs": {
+            "overview": "Overview",
+            "activityAudit": "Activity & Audit",
+            "resumes": "Resumes",
+            "team": "Team",
+            "discussions": "Discussions"
+        }
     }
 }

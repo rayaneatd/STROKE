@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { User as UserType } from '../types';
 import { useProjectDetail } from '../hooks/useProjectDetail';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Tab Components
 import OverviewTab from './project-tabs/OverviewTab';
@@ -34,6 +35,7 @@ interface ProjectDetailProps {
 }
 
 const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deductScans, currentUser, onNavigate, onUpdateUser }) => {
+    const { t } = useTranslation(); // Initialize hook
     const {
         project,
         activeTab,
@@ -180,19 +182,19 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
 
                         <div className={`flex flex-wrap items-center gap-4 mt-2 text-xs font-medium ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
                             <div className="flex items-center gap-1.5">
-                                <Clock size={12} /> Created {new Date(project.createdAt).toLocaleDateString()}
+                                <Clock size={12} /> {t('project.created')} {new Date(project.createdAt).toLocaleDateString()}
                             </div>
 
                             {isInvestmentMode ? (
                                 <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${displayBalance === 0 ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
                                     <Coins size={10} className="fill-current" />
-                                    Budget: {displayBalance}
+                                    {t('project.budget')}: {displayBalance}
                                 </div>
                             ) : (
                                 projectOwner && (
                                     <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${displayBalance < 0 ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : `bg-${accentColor}-500/10 text-${accentColor}-500 border-${accentColor}-500/20`}`}>
                                         <Zap size={10} className="fill-current" />
-                                        {displayBalance < 0 ? `Overage: ${displayBalance}` : `Balance: ${displayBalance}`}
+                                        {displayBalance < 0 ? `${t('project.overage')}: ${displayBalance}` : `${t('project.balance')}: ${displayBalance}`}
                                     </div>
                                 )
                             )}
@@ -219,13 +221,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                                             }`}
                                     >
                                         <AtSign size={10} />
-                                        {activeEmail ? <span className="truncate max-w-[150px]">{activeEmail.emailAddress}</span> : 'Select Sending Email'}
+                                        {activeEmail ? <span className="truncate max-w-[150px]">{activeEmail.emailAddress}</span> : t('project.selectSendingEmail')}
                                         <ChevronDown size={10} />
                                     </button>
 
                                     {isIdentitySelectorOpen && (
                                         <div onClick={e => e.stopPropagation()} className={`absolute top-full left-0 mt-2 w-64 rounded-xl shadow-xl border z-50 overflow-hidden animate-fade-in-up p-2 ${isLight ? 'bg-white border-slate-100' : 'bg-[#18181b] border-white/10'}`}>
-                                            <div className={`px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider mb-1 ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Sending as:</div>
+                                            <div className={`px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider mb-1 ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>{t('project.sendingAs')}:</div>
                                             <div className="space-y-1">
                                                 {currentUser.emailIntegrations.length > 0 ? (
                                                     currentUser.emailIntegrations.map(email => (
@@ -243,7 +245,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                                                     ))
                                                 ) : (
                                                     <div className="p-2 text-center">
-                                                        <p className={`text-xs mb-2 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>No emails connected.</p>
+                                                        <p className={`text-xs mb-2 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('project.noEmailsConnected')}</p>
                                                         <button
                                                             onClick={() => onNavigate('profile')}
                                                             className={`text-xs font-bold flex items-center justify-center gap-1 w-full py-1.5 rounded bg-${accentColor}-600 text-white hover:bg-${accentColor}-500`}
@@ -299,7 +301,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         onClick={() => setActiveTab('overview')}
                         className={`pb-3 px-1 text-sm font-bold transition-all relative whitespace-nowrap flex items-center gap-2 ${tabClass(activeTab === 'overview')}`}
                     >
-                        <BarChart2 size={16} /> Overview
+                        <BarChart2 size={16} /> {t('project.tabs.overview')}
                     </button>
                 )}
 
@@ -308,7 +310,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         onClick={() => setActiveTab('activity')}
                         className={`pb-3 px-1 text-sm font-bold transition-all relative whitespace-nowrap flex items-center gap-2 ${tabClass(activeTab === 'activity')}`}
                     >
-                        <Activity size={16} /> Activity & Audit
+                        <Activity size={16} /> {t('project.tabs.activityAudit')}
                     </button>
                 )}
 
@@ -317,7 +319,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         onClick={() => setActiveTab('resumes')}
                         className={`pb-3 px-1 text-sm font-bold transition-all relative whitespace-nowrap flex items-center gap-2 ${tabClass(activeTab === 'resumes')}`}
                     >
-                        <FileText size={16} /> Resumes
+                        <FileText size={16} /> {t('project.tabs.resumes')}
                         <span className={`px-1.5 py-0.5 rounded text-[10px] ${tabBadgeClass}`}>{files.length}</span>
                     </button>
                 )}
@@ -326,7 +328,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                     onClick={() => setActiveTab('team')}
                     className={`pb-3 px-1 text-sm font-bold transition-all relative whitespace-nowrap flex items-center gap-2 ${tabClass(activeTab === 'team')}`}
                 >
-                    <Briefcase size={16} /> Team
+                    <Briefcase size={16} /> {t('project.tabs.team')}
                     <span className={`px-1.5 py-0.5 rounded text-[10px] ${tabBadgeClass}`}>{project.members.length}</span>
                 </button>
 
@@ -334,7 +336,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                     onClick={() => setActiveTab('discussions')}
                     className={`pb-3 px-1 text-sm font-bold transition-all relative whitespace-nowrap flex items-center gap-2 ${tabClass(activeTab === 'discussions')}`}
                 >
-                    <MessageSquare size={16} /> Discussions
+                    <MessageSquare size={16} /> {t('project.tabs.discussions')}
                 </button>
             </div>
 

@@ -11,6 +11,7 @@ import {
 import { useDashboard } from '../hooks/useDashboard';
 import { User, Role } from '../types';
 import LowCreditsBanner from '../components/LowCreditsBanner';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface DashboardProps {
     currentUser: User;
@@ -85,6 +86,8 @@ const CustomChartTooltip = ({ active, payload, label, isLight }: any) => {
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
+    const { t } = useTranslation(); // Initialize hook
+
     const {
         loading,
         data,
@@ -218,39 +221,39 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
             {/* --- BUSINESS KPI ROW --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KpiCard
-                    title="Total Uploads"
+                    title={t('dashboard.kpi.totalUploads')}
                     value={data.kpi.totalCandidates}
                     trendValue={data.kpi.candidateTrend}
                     icon={<FileStack />}
                     color="bg-blue-500"
-                    subtext={`${data.kpi.analyzedCount} processed`}
+                    subtext={`${data.kpi.analyzedCount} ${t('dashboard.kpi.processed')}`}
                     isLight={isLight}
                 />
                 <KpiCard
-                    title="Qualified Candidates"
+                    title={t('dashboard.kpi.qualifiedCandidates')}
                     value={`${data.kpi.qualifiedRate}%`}
                     trendValue={data.kpi.qualifiedTrend}
                     icon={<Target />}
                     color="bg-emerald-500"
-                    subtext="Score > 80%"
+                    subtext={t('dashboard.kpi.scoreAbove80')}
                     isLight={isLight}
                 />
                 <KpiCard
-                    title="Active Projects"
+                    title={t('dashboard.kpi.activeProjects')}
                     value={data.kpi.activeProjects}
                     trendValue="-"
                     icon={<Star />}
                     color="bg-amber-500"
-                    subtext="Recruiting now"
+                    subtext={t('dashboard.kpi.recruitingNow')}
                     isLight={isLight}
                 />
                 <KpiCard
-                    title="System Throughput"
+                    title={t('dashboard.kpi.systemThroughput')}
                     value={data.kpi.avgTimeProcessing}
                     trendValue=""
                     icon={<Activity />}
                     color="bg-violet-500"
-                    subtext="Avg. parse time"
+                    subtext={t('dashboard.kpi.avgParseTime')}
                     isLight={isLight}
                 />
             </div>
@@ -258,19 +261,19 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
             {/* --- TEAM COMPOSITION ROW (COMPACT GRID) --- */}
             <div className={`${cardContainerClass} rounded-2xl p-6 border`}>
                 <div className="flex items-center justify-between mb-4 px-1">
-                    <h3 className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Team Capacity</h3>
+                    <h3 className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>{t('dashboard.team.capacity')}</h3>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                     <TeamRoleCard
-                        title="Admins"
+                        title={t('dashboard.team.admins')}
                         count={data.teamStats.admins}
                         icon={<Shield />}
                         color="bg-zinc-500"
-                        desc="Full Access"
+                        desc={t('dashboard.team.fullAccess')}
                         isLight={isLight}
                     />
                     <TeamRoleCard
-                        title="Partners"
+                        title={t('dashboard.team.partners')}
                         count={data.teamStats.partners}
                         icon={<Briefcase />}
                         color="bg-purple-500"
@@ -278,19 +281,19 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                         isLight={isLight}
                     />
                     <TeamRoleCard
-                        title="Scouts"
+                        title={t('dashboard.team.scouts')}
                         count={data.teamStats.scouts}
                         icon={<Search />}
                         color={`bg-${accentColor}-500`}
-                        desc="Sourcing Only"
+                        desc={t('dashboard.team.sourcingOnly')}
                         isLight={isLight}
                     />
                     <TeamRoleCard
-                        title="Analysts"
+                        title={t('dashboard.team.analysts')}
                         count={data.teamStats.analysts}
                         icon={<BarChart2 />}
                         color="bg-blue-500"
-                        desc="View Only"
+                        desc={t('dashboard.team.viewOnly')}
                         isLight={isLight}
                     />
                 </div>
@@ -303,12 +306,12 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                 <div className={`lg:col-span-2 p-6 rounded-2xl border flex flex-col ${cardContainerClass}`}>
                     <div className="flex justify-between items-center mb-8">
                         <div>
-                            <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>Volume & Quality Trends</h3>
-                            <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Application influx vs. match score</p>
+                            <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{t('dashboard.charts.volumeQuality.title')}</h3>
+                            <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.charts.volumeQuality.subtitle')}</p>
                         </div>
                         <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wide">
-                            <div className="flex items-center gap-1.5"><div className={`w-2.5 h-2.5 rounded-full ${isLight ? 'bg-slate-300' : 'bg-zinc-700'}`}></div><span className={isLight ? 'text-slate-500' : 'text-zinc-400'}>Volume</span></div>
-                            <div className="flex items-center gap-1.5"><div className={`w-2.5 h-2.5 rounded-full bg-${accentColor}-500`}></div><span className={isLight ? 'text-slate-500' : 'text-zinc-400'}>Avg Score</span></div>
+                            <div className="flex items-center gap-1.5"><div className={`w-2.5 h-2.5 rounded-full ${isLight ? 'bg-slate-300' : 'bg-zinc-700'}`}></div><span className={isLight ? 'text-slate-500' : 'text-zinc-400'}>{t('dashboard.charts.volumeQuality.volume')}</span></div>
+                            <div className="flex items-center gap-1.5"><div className={`w-2.5 h-2.5 rounded-full bg-${accentColor}-500`}></div><span className={isLight ? 'text-slate-500' : 'text-zinc-400'}>{t('dashboard.charts.volumeQuality.avgScore')}</span></div>
                         </div>
                     </div>
                     <div className="h-72 w-full">
@@ -330,8 +333,8 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                 <div className={`p-6 rounded-2xl border flex flex-col ${cardContainerClass}`}>
                     <div className="mb-4 flex justify-between items-start">
                         <div>
-                            <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>Failure Analysis</h3>
-                            <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Processing errors</p>
+                            <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{t('dashboard.charts.failureAnalysis.title')}</h3>
+                            <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.charts.failureAnalysis.subtitle')}</p>
                         </div>
                         {failedFileCount > 0 && (
                             <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[10px] font-bold">
@@ -347,8 +350,8 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isLight ? 'bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
                                     <CheckCircle size={28} />
                                 </div>
-                                <h4 className={`font-bold text-sm ${isLight ? 'text-slate-800' : 'text-white'}`}>100% Success Rate</h4>
-                                <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>All files processed successfully.</p>
+                                <h4 className={`font-bold text-sm ${isLight ? 'text-slate-800' : 'text-white'}`}>{t('dashboard.charts.failureAnalysis.successRate')}</h4>
+                                <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.charts.failureAnalysis.allProcessed')}</p>
                             </div>
                         ) : (
                             <>
