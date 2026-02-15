@@ -156,14 +156,16 @@ const AppContent: React.FC = () => {
     // 1. Unauthenticated State
     if (!isAuthenticated || !user) {
         return (
-            <Suspense fallback={<PageLoader />}>
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/terms-of-service" element={<TermsOfService />} />
-                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route path="*" element={<Navigate to="/login" replace />} />
-                </Routes>
-            </Suspense>
+            <ThemeProvider>
+                <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/terms-of-service" element={<TermsOfService />} />
+                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                        <Route path="*" element={<Navigate to="/login" replace />} />
+                    </Routes>
+                </Suspense>
+            </ThemeProvider>
         );
     }
 

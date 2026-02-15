@@ -2,6 +2,7 @@
 import React from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import Logo from '../ui/Logo';
 
 interface SecuritySettingsProps {
     onDeleteAccount: () => void;
@@ -25,7 +26,7 @@ const SecuritySettings: React.FC<SecuritySettingsProps> = ({
                         <div>
                             <h3 className={`font-bold text-lg ${isLight ? 'text-slate-900' : 'text-white'}`}>Delete Account</h3>
                             <p className={`text-sm mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-                                Permanently remove your Personal Account and all of its contents from the STROKE platform. This action is not reversible, so please continue with caution.
+                                Permanently remove your Personal Account and all of its contents from the <Logo variant="text" height={14} className="inline-block align-middle mx-1" /> platform. This action is not reversible, so please continue with caution.
                             </p>
                         </div>
                     </div>

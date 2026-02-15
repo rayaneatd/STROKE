@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Briefcase, Search, BarChart2, User, CheckCircle, X, ShieldCheck } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
 import { DemoteTarget } from '../../types';
+import { useBulkAccessModal } from '../../hooks/useBulkAccessModal';
 
 interface BulkAccessModalProps {
     isOpen: boolean;
@@ -17,35 +17,45 @@ const BulkAccessModal: React.FC<BulkAccessModalProps> = ({
     selectedCount, 
     onConfirm 
 }) => {
-    const { isLight, accent } = useTheme();
-    const [selectedRole, setSelectedRole] = useState<DemoteTarget>('PARTNER');
+    const { 
+        selectedRole, 
+        setSelectedRole, 
+        handleConfirm, 
+        isLight, 
+        accent 
+    } = useBulkAccessModal({
+        isOpen,
+        onClose,
+        selectedCount,
+        onConfirm
+    });
 
     if (!isOpen) return null;
 
-    const ROLES: { id: DemoteTarget; label: string; icon: any; desc: string; perms: string }[] = [
+    const ROLES = [
         { 
-            id: 'PARTNER', 
+            id: 'PARTNER' as DemoteTarget, 
             label: 'Talent Partner', 
             icon: Briefcase, 
             desc: 'Full access to scan resumes, analyze data, and manage candidates.',
             perms: 'Scan & Analyze'
         },
         { 
-            id: 'SCOUT', 
+            id: 'SCOUT' as DemoteTarget, 
             label: 'Talent Scout', 
             icon: Search, 
             desc: 'Focused on sourcing. Can upload and scan resumes but cannot view aggregate analytics.',
             perms: 'Scan Only'
         },
         { 
-            id: 'ANALYST', 
+            id: 'ANALYST' as DemoteTarget, 
             label: 'Talent Analyst', 
             icon: BarChart2, 
             desc: 'View-only access to dashboards and reports. Cannot consume scans.',
             perms: 'Analyze Only'
         },
         { 
-            id: 'VISITOR', 
+            id: 'VISITOR' as DemoteTarget, 
             label: 'Visitor', 
             icon: User, 
             desc: 'Read-only access to project details. Cannot scan or view deep analytics.',
@@ -56,7 +66,7 @@ const BulkAccessModal: React.FC<BulkAccessModalProps> = ({
     const modalBg = isLight ? 'bg-white' : 'bg-[#18181b]';
     const borderColor = isLight ? 'border-slate-200' : 'border-white/10';
     const textPrimary = isLight ? 'text-slate-900' : 'text-white';
-    const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-400';
+    const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
 
     return (
         <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in ${isLight ? 'bg-slate-900/30' : 'bg-black/80'}`} onClick={onClose}>
@@ -99,30 +109,36 @@ const BulkAccessModal: React.FC<BulkAccessModalProps> = ({
                                     </div>
                                     {isSelected && <CheckCircle size={20} className={`text-${accent}-500`} />}
                                 </div>
-                                <h4 className={`font-bold text-sm mb-1 ${textPrimary}`}>{role.label}</h4>
-                                <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${isSelected ? `text-${accent}-600` : textSecondary}`}>
+                                
+                                <h4 className={`font-bold mb-1 ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>{role.label}</h4>
+                                <p className={`text-xs mb-3 h-8 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{role.desc}</p>
+                                
+                                <div className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                    isSelected 
+                                    ? `bg-${accent}-500/20 text-${accent}-500` 
+                                    : isLight 
+                                        ? 'bg-slate-100 text-slate-500' 
+                                        : 'bg-white/5 text-zinc-500'
+                                }`}>
                                     {role.perms}
                                 </div>
-                                <p className={`text-xs leading-relaxed ${textSecondary}`}>
-                                    {role.desc}
-                                </p>
                             </div>
                         );
                     })}
                 </div>
 
-                <div className={`p-6 border-t flex justify-end gap-3 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.02] border-white/5'}`}>
+                <div className={`p-6 border-t flex justify-end gap-3 ${borderColor}`}>
                     <button 
                         onClick={onClose}
-                        className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-colors ${isLight ? 'text-slate-500 hover:bg-slate-200' : 'text-zinc-400 hover:bg-white/10 hover:text-white'}`}
+                        className={`px-5 py-2.5 rounded-xl font-bold transition-colors ${isLight ? 'text-slate-500 hover:bg-slate-100' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}
                     >
                         Cancel
                     </button>
                     <button 
-                        onClick={() => onConfirm(selectedRole)}
-                        className={`px-8 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg transition-all transform active:scale-95 bg-${accent}-600 hover:bg-${accent}-500 shadow-${accent}-500/20`}
+                        onClick={handleConfirm}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-white shadow-lg transition-all active:scale-95 bg-${accent}-600 hover:bg-${accent}-500 shadow-${accent}-900/20`}
                     >
-                        Update {selectedCount} Members
+                        Update Access
                     </button>
                 </div>
             </div>

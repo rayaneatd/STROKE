@@ -3,6 +3,7 @@ import { useLogin } from '../hooks/useLogin';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Loader2, Mail, Check, ArrowRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/ui/Logo';
 
 const Login: React.FC = () => {
     const {
@@ -31,12 +32,10 @@ const Login: React.FC = () => {
             <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="w-full max-w-md bg-[#0A0A0A] border border-white/5 rounded-2xl p-8 shadow-2xl relative z-10">
+            <div className="w-full max-w-md bg-[#0A0A0A] border border-white/5 rounded-2xl px-8 pb-8 pt-0 shadow-2xl relative z-10">
                 {/* Header / Branding */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent mb-2 tracking-tight">
-                        STROKE
-                    </h1>
+                <div className="text-center mb-8 flex flex-col items-center">
+                    <Logo variant="full" height={120} className="mb-4" />
                     <p className="text-zinc-400">Welcome back</p>
                 </div>
 

@@ -4,6 +4,8 @@ import { Gavel, LogOut, Lock, AlertOctagon } from 'lucide-react';
 import { User } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 
+import Logo from '../ui/Logo';
+
 interface GlobalBanModalProps {
     user: User;
     onLogout: () => void;
@@ -29,7 +31,7 @@ const GlobalBanModal: React.FC<GlobalBanModalProps> = ({ user, onLogout }) => {
                 <h1 className={`text-2xl font-black mb-2 ${textPrimary}`}>Account Suspended</h1>
                 
                 <p className={`text-sm mb-6 leading-relaxed ${textSecondary}`}>
-                    Your account has been suspended by an administrator. You no longer have access to the STROKE platform or your projects.
+                    Your account has been suspended by an administrator. You no longer have access to the <Logo variant="text" height={14} className="inline-block align-middle mx-1" /> platform or your projects.
                 </p>
 
                 {(user.banReason || user.banExpiresAt) && (

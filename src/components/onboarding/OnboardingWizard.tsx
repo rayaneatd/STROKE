@@ -8,6 +8,7 @@ import {
 import { updateUser as updateUserMock } from '../../services/mockData';
 import { INDUSTRIES } from '../../constants';
 import SearchableSelect from '../ui/SearchableSelect';
+import Logo from '../ui/Logo';
 
 interface OnboardingWizardProps {
   user: User;
@@ -165,10 +166,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ user, onComplete })
             <div className="bg-[#18181b] border-r border-white/5 w-full md:w-64 p-6 md:p-8 flex flex-col justify-between shrink-0 relative overflow-hidden">
                 <div className="relative z-10">
                     <div className="flex items-center gap-2.5 mb-8 md:mb-10">
-                        <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white shadow-lg">
-                            <Rocket size={16} className="fill-current" />
-                        </div>
-                        <span className="font-bold text-white tracking-tight text-lg">STROKE</span>
+                        <Logo variant="full" width={140} />
                     </div>
                     
                     <div className="space-y-1">

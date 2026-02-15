@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-    X, Edit2, Layout, Users, Save, Loader2, Wallet, BrainCircuit, Rocket
+    Layout, Users, Save, Loader2, Wallet, BrainCircuit, Rocket
 } from 'lucide-react';
-import { Project, User, ProjectRole, SubscriptionPlan, EmployeeAddPermission, OutreachStrategy } from '../../types';
-import { runProjectDiagnostics, CalibrationResult } from '../../services/aiCalibrationEngine';
-import { useTheme } from '../../context/ThemeContext';
+import { Project, User } from '../../types';
+import { useEditProjectModal } from '../../hooks/useEditProjectModal';
 
 // Tabs
 import GeneralTab from './project-settings/GeneralTab';
@@ -25,8 +24,6 @@ interface ProjectModalProps {
     withdrawProjectFunds: (params: { amount: number }) => void;
 }
 
-type TabType = 'GENERAL' | 'TEAM' | 'BILLING' | 'AI_DIAGNOSTICS';
-
 const ProjectModal: React.FC<ProjectModalProps> = ({
     isOpen,
     onClose,
@@ -38,95 +35,43 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
     fundProject,
     withdrawProjectFunds
 }) => {
-    const { isLight, accent } = useTheme();
-    const [activeTab, setActiveTab] = useState<TabType>('GENERAL');
-    const [formData, setFormData] = useState<Partial<Project>>({});
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Determine Mode
-    const mode = project ? 'EDIT' : 'CREATE';
-
-    // Billing States
-    const [fundAmount, setFundAmount] = useState<number | ''>('');
-    const [isProcessingFunds, setIsProcessingFunds] = useState(false);
-    const [fundMessage, setFundMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-
-    // AI Diagnostics States
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisStep, setAnalysisStep] = useState<string>('');
-    const [analysisResult, setAnalysisResult] = useState<CalibrationResult | null>(null);
-
-    useEffect(() => {
-        if (isOpen) {
-            if (project) {
-                // EDIT MODE: Load existing data
-                setFormData({
-                    id: project.id,
-                    ownerId: project.ownerId,
-                    title: project.title,
-                    description: project.description,
-                    status: project.status,
-                    investmentBalance: project.investmentBalance || 0,
-                    settings: { ...project.settings },
-                    members: [...project.members]
-                });
-            } else {
-                // CREATE MODE: Load defaults
-                setFormData({
-                    title: '',
-                    description: '',
-                    ownerId: currentUser.id, // Explicitly set owner for new project
-                    status: 'ACTIVE',
-                    investmentBalance: currentUser.preferences?.defaultInvestmentBudget || 0,
-                    settings: {
-                        employeeAddPermission: currentUser.preferences?.defaultInvitationPermission || EmployeeAddPermission.ALL,
-                        quickDemoteTarget: currentUser.preferences?.defaultQuickDemoteTarget || 'VISITOR',
-                        analystAccessOnlyForCompleted: currentUser.preferences?.defaultAnalystAccessOnlyForCompleted || false,
-                        adminCanChangeStatus: currentUser.preferences?.defaultAdminCanChangeStatus || false,
-                        adminCanManageQuotas: currentUser.preferences?.defaultAdminCanManageQuotas || false,
-                        analystCanViewActivity: currentUser.preferences?.defaultAnalystCanViewActivity !== undefined ? currentUser.preferences?.defaultAnalystCanViewActivity : true,
-                        analystCanUseGhosting: currentUser.preferences?.defaultAnalystCanUseGhosting || false,
-                        scoutCanUseGhosting: currentUser.preferences?.defaultScoutCanUseGhosting || false,
-                        defaultScanQuota: currentUser.preferences?.defaultScanQuota || 'UNLIMITED',
-                        billingMode: currentUser.preferences?.defaultBillingMode || 'OWNER_WALLET',
-                        outreachStrategy: currentUser.preferences?.defaultOutreachStrategy || OutreachStrategy.INDIVIDUAL_IDENTITY,
-                        ownerOutreachEmailId: currentUser.preferences?.defaultOwnerOutreachEmailId
-                    },
-                    members: [{
-                        userId: currentUser.id,
-                        role: ProjectRole.OWNER,
-                        permissions: ['SCAN', 'ANALYZE'],
-                        scansUsed: 0,
-                        scanQuota: 'UNLIMITED',
-                        joinedAt: new Date().toISOString()
-                    }]
-                });
-            }
-
-            // Reset temporary states
-            setFundAmount('');
-            setFundMessage(null);
-            setAnalysisResult(null);
-            setActiveTab('GENERAL');
-        }
-    }, [isOpen, project, currentUser.preferences, currentUser.id]);
+    const {
+        activeTab,
+        setActiveTab,
+        formData,
+        setFormData,
+        isLoading,
+        mode,
+        fundAmount,
+        setFundAmount,
+        isProcessingFunds,
+        fundMessage,
+        isAnalyzing,
+        analysisStep,
+        analysisResult,
+        setAnalysisResult,
+        isOwner,
+        canChangeStatus,
+        userHasPlan,
+        canAccessInvestment,
+        handleSubmit,
+        handleFundAction,
+        handleRunDiagnostics,
+        applyOptimization,
+        applySimulationResult,
+        isLight,
+        accent
+    } = useEditProjectModal({
+        isOpen,
+        onClose,
+        project,
+        currentUser,
+        onSave,
+        fundProject,
+        withdrawProjectFunds
+    });
 
     if (!isOpen) return null;
-
-    // Permissions Logic
-    let isOwner = true;
-    let canChangeStatus = true;
-
-    if (mode === 'EDIT' && project) {
-        const memberRecord = project.members.find(m => m.userId === currentUser.id);
-        const userRole = memberRecord?.role || ProjectRole.EMPLOYEE;
-        const isAdmin = userRole === ProjectRole.ADMIN;
-        isOwner = userRole === ProjectRole.OWNER;
-        canChangeStatus = isOwner || (isAdmin && project.settings.adminCanChangeStatus);
-    }
-
-    const userHasPlan = currentUser.subscriptionPlan === SubscriptionPlan.TEAM || currentUser.subscriptionPlan === SubscriptionPlan.ELITE;
-    const canAccessInvestment = currentUser.subscriptionPlan !== SubscriptionPlan.ESSENTIAL;
 
     // Theme Logic
     const modalBg = isLight ? 'bg-white' : 'bg-[#18181b]';
@@ -137,94 +82,6 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
     const borderClass = isLight ? 'border-slate-200' : 'border-white/5';
     const sidebarActive = isLight ? `bg-white text-slate-900 shadow-sm border border-slate-200` : 'bg-white/10 text-white shadow-sm border border-white/5';
     const sidebarInactive = isLight ? 'text-slate-500 hover:bg-slate-100 hover:text-slate-800' : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300';
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-        setTimeout(() => {
-            onSave(e, formData);
-            setIsLoading(false);
-        }, 600);
-    };
-
-    const handleFundAction = (action: 'DEPOSIT' | 'WITHDRAW') => {
-        if (mode === 'CREATE' || !project) return;
-        const amount = Number(fundAmount);
-        if (amount <= 0) return;
-
-        setIsProcessingFunds(true);
-        setFundMessage(null);
-
-        const onSettled = () => {
-            setIsProcessingFunds(false);
-            setFundAmount('');
-        };
-
-        if (action === 'DEPOSIT') {
-            fundProject({ amount });
-        } else {
-            withdrawProjectFunds({ amount });
-        }
-
-        // Since mutations are async via react-query, we'll clear local loading for now
-        // Real-time updates or onSettled callbacks in useProjectDetail will handle the rest
-        setTimeout(onSettled, 600);
-    };
-
-    const handleRunDiagnostics = () => {
-        // In create mode, we pass the temporary formData as the project
-        // Ensure members is present to avoid undefined error in forEach
-        const targetProject = (project || formData) as Project;
-
-        if (!targetProject.members) {
-            // Fallback if members is somehow missing
-            targetProject.members = [];
-        }
-
-        setIsAnalyzing(true);
-        setAnalysisStep('Analyzing upload velocity...');
-
-        setTimeout(() => setAnalysisStep('Calculating member burn rates...'), 600);
-        setTimeout(() => setAnalysisStep('Forecasting monthly budget...'), 1200);
-        setTimeout(() => setAnalysisStep('Generating optimization plan...'), 1800);
-
-        setTimeout(() => {
-            const result = runProjectDiagnostics(targetProject, currentUser);
-            setAnalysisResult(result);
-            setIsAnalyzing(false);
-        }, 2400);
-    };
-
-    const applyOptimization = () => {
-        if (!analysisResult) return;
-        const recs = analysisResult.recommendations;
-        setFormData(prev => ({
-            ...prev,
-            investmentBalance: recs.billingMode === 'PROJECT_INVESTMENT'
-                ? Math.max(prev.investmentBalance || 0, recs.budget)
-                : prev.investmentBalance,
-            settings: {
-                ...prev.settings!,
-                billingMode: recs.billingMode,
-                defaultScanQuota: recs.quota
-            }
-        }));
-        setAnalysisResult(null);
-        setActiveTab('BILLING');
-    };
-
-    const applySimulationResult = (budget: number, quota: number | 'UNLIMITED', billingMode: any) => {
-        setFormData(prev => ({
-            ...prev,
-            investmentBalance: budget,
-            settings: {
-                ...prev.settings!,
-                billingMode: billingMode,
-                defaultScanQuota: quota
-            }
-        }));
-        setActiveTab('BILLING');
-    };
 
     return (
         <div className={`fixed inset-0 z-[60] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in ${isLight ? 'bg-slate-900/30' : 'bg-black/60'}`} onClick={onClose}>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Zap, Plus, Crown, Briefcase, User as UserIcon, Sparkles } from 'lucide-react';
 import { User, SubscriptionPlan, UIPreferences } from '../types';
+import Logo from './ui/Logo';
 
 interface HeaderProps {
   user: User;
@@ -48,8 +49,6 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
     : `bg-[#0e0e10]/80 border-${accentColor}-500/30 text-${accentColor}-400 hover:border-${accentColor}-500/60 hover:text-${accentColor}-300 shadow-${accentColor}-900/20`;
   
   const glowClass = `from-${accentColor}-500/20 via-transparent to-transparent`;
-  const logoGradient = `from-${accentColor}-600 to-${accentColor}-400`; 
-  const logoColor = `text-${accentColor}-500`;
 
   return (
     <header 
@@ -59,13 +58,7 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
       
       {/* Left: Logo */}
       <div className="flex items-center gap-3 z-10 w-48 group cursor-pointer">
-        <div className="relative">
-            <div className={`absolute -inset-2 bg-gradient-to-r ${logoGradient} rounded-full blur opacity-20 group-hover:opacity-40 transition duration-500`}></div>
-            <div className={`relative w-8 h-8 rounded-lg flex items-center justify-center border shadow-xl ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#0e0e10] border-white/10'}`}>
-                <Zap className={`${logoColor} fill-current transition-colors`} size={18} />
-            </div>
-        </div>
-        <span className={`text-base font-bold tracking-tight transition-colors ${isLight ? 'text-slate-900 group-hover:text-slate-700' : 'text-white group-hover:text-zinc-200'}`}>STROKE</span>
+        <Logo variant="full" height={64} />
       </div>
 
       {/* Center: Premium Plan Indicator */}

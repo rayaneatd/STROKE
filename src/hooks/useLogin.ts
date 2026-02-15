@@ -124,15 +124,30 @@ export const useLogin = () => {
         }
         setMagicLinkLoading(true);
         try {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            let redirectTo = isLocalhost 
+                ? (import.meta.env.VITE_LOCALHOST_URL || window.location.origin)
+                : window.location.origin;
+            
+            // Ensure no double slashes if env var has trailing slash
+            redirectTo = redirectTo.replace(/\/$/, '');
+
             const { error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
                     shouldCreateUser: true,
-                    emailRedirectTo: `${window.location.origin}/`,
+                    emailRedirectTo: `${redirectTo}/`,
                     captchaToken,
                 }
             });
             if (error) throw error;
+
+            if (isLocalhost) {
+                // On localhost, open Inbucket to let the user click the link immediately
+                window.open('http://localhost:54324', '_blank');
+                return;
+            }
+
             setMagicLinkSuccess(true);
         } catch (err: any) {
             setError(err.message || "Failed to send magic link");
