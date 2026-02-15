@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Project, User, ProjectRole, ProjectId } from '../types';
 import { supabase } from '../lib/supabase';
+import { getOrgNamesFromEmails } from '../utils/emailDomains';
 
 const PROJECTS_PER_PAGE = 12;
 
@@ -20,6 +21,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'ARCHIVED' | 'COMPLETED'>('ALL');
     const [dateFilter, setDateFilter] = useState<'ALL' | 'LAST_7' | 'LAST_30' | 'LAST_90'>('ALL');
     const [ownerFilter, setOwnerFilter] = useState<'ALL' | 'ME'>('ALL');
+    const [orgFilter, setOrgFilter] = useState<string>('ALL');
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
     const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -68,7 +70,9 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                         id: m.user.id,
                         email: m.user.email,
                         displayName: m.user.display_name || m.user.email.split('@')[0],
-                        avatarUrl: m.user.avatar_url
+                        avatarUrl: m.user.avatar_url,
+                        workMails: Array.isArray(m.user.work_mails) ? m.user.work_mails : [],
+                        orgNames: getOrgNamesFromEmails(Array.isArray(m.user.work_mails) ? m.user.work_mails : [])
                     } : undefined
                 }))
             } as Project));
@@ -109,7 +113,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
     // Reset display count on filter change
     useEffect(() => {
         setDisplayCount(PROJECTS_PER_PAGE);
-    }, [debouncedSearchTerm, statusFilter, dateFilter, ownerFilter]);
+    }, [debouncedSearchTerm, statusFilter, dateFilter, ownerFilter, orgFilter]);
 
     // Mutations
     const createMutation = useMutation({
@@ -181,6 +185,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         statusFilter !== 'ALL',
         dateFilter !== 'ALL',
         ownerFilter !== 'ALL',
+        orgFilter !== 'ALL',
         searchTerm !== ''
     ].filter(Boolean).length;
 
@@ -188,6 +193,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         setStatusFilter('ALL');
         setDateFilter('ALL');
         setOwnerFilter('ALL');
+        setOrgFilter('ALL');
         setSearchTerm('');
     };
 
@@ -223,8 +229,24 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
             });
         }
 
+        if (orgFilter !== 'ALL') {
+            result = result.filter(project =>
+                project.members.some(m => m.user?.orgNames?.includes(orgFilter))
+            );
+        }
+
         return result;
-    }, [projects, debouncedSearchTerm, statusFilter, dateFilter, ownerFilter]);
+    }, [projects, debouncedSearchTerm, statusFilter, dateFilter, ownerFilter, orgFilter]);
+
+    const orgOptions = useMemo(() => {
+        const set = new Set<string>();
+        projects.forEach(project => {
+            project.members.forEach(m => {
+                (m.user?.orgNames || []).forEach((org) => set.add(org));
+            });
+        });
+        return Array.from(set.values());
+    }, [projects]);
 
     const visibleProjects = useMemo(() => {
         return filteredProjects.slice(0, displayCount);
@@ -356,6 +378,9 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         setDateFilter,
         ownerFilter,
         setOwnerFilter,
+        orgFilter,
+        setOrgFilter,
+        orgOptions,
         activeMenuId,
         setActiveMenuId,
         isProjectModalOpen,

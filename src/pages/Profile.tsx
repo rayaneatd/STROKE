@@ -48,7 +48,13 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
         isSavingPrimary,
         emailError,
         emailSuccess,
-        handleUpdateProfileEmail
+        handleUpdateProfileEmail,
+        isWorkEmailModalOpen,
+        setIsWorkEmailModalOpen,
+        workEmailError,
+        workEmailSuccess,
+        handleRemoveWorkMail,
+        handleConnectAurinko
     } = useProfile({ user: initialUser, onUpdateUser, onNavigate });
 
     // Use the fetched user or fallback to initial
@@ -264,42 +270,42 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                         </div>
                         
                         <div className="space-y-3 mb-6">
-                            {/* Current Work Email (if any) */}
-                            {currentUser.workEmail ? (
-                                <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
-                                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                                        <img src={`https://ui-avatars.com/api/?name=${currentUser.workEmail}&background=random`} className="w-6 h-6 rounded-full shrink-0" alt="" />
-                                        <div className="min-w-0 flex-1">
-                                            <p className={`text-sm font-bold truncate ${textPrimary}`}>{currentUser.workEmail}</p>
-                                            <p className={`text-[10px] ${textSecondary}`}>Primary Work Email</p>
-                                        </div>
-                                    </div>
-                                    <button className={`text-xs font-bold px-2 py-1 rounded-lg ${isLight ? 'bg-slate-100 text-slate-600' : 'bg-white/5 text-zinc-400'}`}>
-                                        Edit
-                                    </button>
+                            {workEmailError || workEmailSuccess ? (
+                                <div className={`text-xs px-3 py-2 rounded-lg flex items-center gap-2 ${workEmailSuccess ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                                    {workEmailSuccess ? <Check size={12} /> : <AlertCircle size={12} />}
+                                    {workEmailSuccess || workEmailError}
                                 </div>
+                            ) : null}
+
+                            {(currentUser.workMails || []).length > 0 ? (
+                                (currentUser.workMails || []).map((email) => (
+                                    <div key={email} className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
+                                        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                                            <img src={`https://ui-avatars.com/api/?name=${email}&background=random`} className="w-6 h-6 rounded-full shrink-0" alt="" />
+                                            <div className="min-w-0 flex-1">
+                                                <p className={`text-sm font-bold truncate ${textPrimary}`}>{email}</p>
+                                                <p className={`text-[10px] ${textSecondary}`}>Work Email</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleRemoveWorkMail(email)}
+                                            className={`text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 ${isLight ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}
+                                        >
+                                            <Trash2 size={12} /> Remove
+                                        </button>
+                                    </div>
+                                ))
                             ) : (
                                 <div className={`text-xs text-center py-4 border border-dashed rounded-xl ${isLight ? 'border-slate-200 text-slate-400' : 'border-white/10 text-zinc-500'}`}>
                                     No work emails connected
                                 </div>
                             )}
-
-                            {/* Placeholder for secondary work email to show "multiple" capability */}
-                            {currentUser.workEmail && (
-                                <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 opacity-60 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
-                                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                                        <div className="w-6 h-6 rounded-full border border-dashed border-zinc-500 flex items-center justify-center">
-                                            <Plus size={10} className={textSecondary} />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className={`text-sm font-bold truncate ${textSecondary}`}>Add another email...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
-                        <button className={`w-full py-2.5 rounded-xl border-2 border-dashed font-bold text-sm transition-all flex items-center justify-center gap-2 ${isLight ? 'border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50' : 'border-white/10 text-zinc-400 hover:border-indigo-500/30 hover:text-indigo-400 hover:bg-indigo-500/10'}`}>
+                        <button
+                            onClick={() => setIsWorkEmailModalOpen(true)}
+                            className={`w-full py-2.5 rounded-xl border-2 border-dashed font-bold text-sm transition-all flex items-center justify-center gap-2 ${isLight ? 'border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50' : 'border-white/10 text-zinc-400 hover:border-indigo-500/30 hover:text-indigo-400 hover:bg-indigo-500/10'}`}
+                        >
                             <Plus size={16} /> Add Work Email
                         </button>
                     </div>
@@ -340,6 +346,42 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
 
                 </div>
             </div>
+            {isWorkEmailModalOpen && (
+                <div className={`fixed inset-0 z-[70] flex items-center justify-center p-4 backdrop-blur-sm ${isLight ? 'bg-slate-900/30' : 'bg-black/70'}`}>
+                    <div className={`w-full max-w-md rounded-2xl border shadow-2xl ${cardBg}`}>
+                        <div className="flex items-center justify-between p-5 border-b border-white/5">
+                            <div>
+                                <h3 className={`text-lg font-bold ${textPrimary}`}>Connect Work Email</h3>
+                                <p className={`text-xs ${textSecondary}`}>Link a professional mailbox using Aurinko</p>
+                            </div>
+                            <button
+                                onClick={() => setIsWorkEmailModalOpen(false)}
+                                className={`p-2 rounded-full transition-colors ${isLight ? 'text-slate-400 hover:text-slate-600 hover:bg-slate-100' : 'text-zinc-500 hover:text-white hover:bg-white/10'}`}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="p-5 space-y-4">
+                            <div className={`p-4 rounded-xl border text-xs leading-relaxed ${isLight ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white/5 border-white/10 text-zinc-400'}`}>
+                                We will use Aurinko to connect your mailbox so you can send follow-ups and enable anti-ghosting.
+                            </div>
+                            <button
+                                onClick={handleConnectAurinko}
+                                className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isLight ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-white text-black hover:bg-zinc-200'}`}
+                            >
+                                <Link size={16} /> Connect with Aurinko
+                            </button>
+                            <button
+                                onClick={() => setIsWorkEmailModalOpen(false)}
+                                className={`w-full py-2 text-xs font-bold transition-colors ${isLight ? 'text-slate-500 hover:text-slate-700' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

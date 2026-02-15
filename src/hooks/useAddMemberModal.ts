@@ -3,6 +3,7 @@ import { Project, User as UserType, ProjectRole, EmployeeAddPermission, Role, Su
 import { useTheme } from '../context/ThemeContext';
 import { useConnections } from './useConnections';
 import { supabase } from '../lib/supabase';
+import { getOrgNamesFromEmails } from '../utils/emailDomains';
 
 export interface UseAddMemberModalProps {
     project: Project;
@@ -24,6 +25,7 @@ export const useAddMemberModal = ({
     const { isLight, accent } = useTheme();
     const [selectedUsersToAdd, setSelectedUsersToAdd] = useState<string[]>([]);
     const [selectedEmployeeSubRole, setSelectedEmployeeSubRole] = useState<'PARTNER' | 'SCOUT' | 'ANALYST'>('PARTNER');
+    const [orgFilter, setOrgFilter] = useState<string>('ALL');
 
     // Real Data State
     const { data: network, loading: isConnectionsLoading } = useConnections({ currentUser });
@@ -58,7 +60,9 @@ export const useAddMemberModal = ({
                             purchasedScans: u.purchased_scans || 0,
                             billingType: u.billing_type as BillingType || BillingType.PREPAID,
                             overageCap: 0,
-                            emailIntegrations: []
+                            emailIntegrations: [],
+                            workMails: Array.isArray(u.work_mails) ? u.work_mails : [],
+                            orgNames: getOrgNamesFromEmails(Array.isArray(u.work_mails) ? u.work_mails : [])
                         }));
                         setOwnerConnections(mappedUsers);
                     }
@@ -98,8 +102,20 @@ export const useAddMemberModal = ({
         }
 
         // Filter out users who are already members
-        return Array.from(uniqueUsers.values()).filter(u => !project.members.some(m => m.userId === (u.id as unknown as string)));
-    }, [network?.connections, ownerConnections, project.members, currentUserRole, project.settings.employeeAddPermission]);
+        let result = Array.from(uniqueUsers.values()).filter(u => !project.members.some(m => m.userId === (u.id as unknown as string)));
+        if (orgFilter !== 'ALL') {
+            result = result.filter((u) => (u.orgNames || []).includes(orgFilter));
+        }
+        return result;
+    }, [network?.connections, ownerConnections, project.members, currentUserRole, project.settings.employeeAddPermission, orgFilter]);
+
+    const orgOptions = useMemo(() => {
+        const set = new Set<string>();
+        availableUsers.forEach((u) => {
+            (u.orgNames || []).forEach((org) => set.add(org));
+        });
+        return Array.from(set.values());
+    }, [availableUsers]);
 
     const toggleUserSelection = (userId: string) => {
         setSelectedUsersToAdd(prev =>
@@ -149,6 +165,9 @@ export const useAddMemberModal = ({
         handleConfirm,
         isLoading,
         isLight,
-        accent
+        accent,
+        orgFilter,
+        setOrgFilter,
+        orgOptions
     };
 };

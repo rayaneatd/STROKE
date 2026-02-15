@@ -209,7 +209,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     };
 
     // Anti-Ghosting Check
-    const canSendEmails = currentUser.nylasConnected && !!currentUser.workEmail;
+    const canSendEmails = currentUser.nylasConnected && (currentUser.workMails?.length || 0) > 0;
 
     // STRICT STEP 1: Generate Drafts ONLY for candidates who DON'T have one.
     const handleGhostingKiller = () => {

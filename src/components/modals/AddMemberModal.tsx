@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UserPlus, X, Briefcase, Search, BarChart2, Check, Info, Loader2 } from 'lucide-react';
+import { UserPlus, X, Briefcase, Search, BarChart2, Check, Info, Loader2, ChevronDown } from 'lucide-react';
 import { Project, User as UserType, ProjectRole } from '../../types';
 import { useAddMemberModal } from '../../hooks/useAddMemberModal';
 
@@ -30,7 +30,10 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
         handleConfirm,
         isLoading,
         isLight,
-        accent
+        accent,
+        orgFilter,
+        setOrgFilter,
+        orgOptions
     } = useAddMemberModal({
         project,
         currentUser,
@@ -59,6 +62,23 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                     </div>
                     <button onClick={onClose} className={`p-1 rounded-full transition-colors ${isLight ? 'text-slate-400 hover:text-slate-600 hover:bg-slate-100' : 'text-zinc-500 hover:text-white hover:bg-white/10'}`}><X size={20} /></button>
                 </div>
+                {orgOptions.length > 0 && (
+                    <div className={`px-6 py-4 border-b ${sectionBg} ${borderColor}`}>
+                        <div className="relative">
+                            <select
+                                value={orgFilter}
+                                onChange={(e) => setOrgFilter(e.target.value)}
+                                className={`w-full pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${isLight ? 'bg-white border-slate-200 text-slate-700' : 'bg-[#18181b] border-white/10 text-zinc-300'}`}
+                            >
+                                <option className={isLight ? 'bg-white' : 'bg-[#18181b]'} value="ALL">All Organizations</option>
+                                {orgOptions.map((org) => (
+                                    <option key={org} className={isLight ? 'bg-white' : 'bg-[#18181b]'} value={org}>{org}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
+                        </div>
+                    </div>
+                )}
 
                 {isLoading && (
                     <div className="absolute inset-x-0 top-[88px] bottom-0 bg-black/10 backdrop-blur-[1px] z-50 flex items-center justify-center">

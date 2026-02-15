@@ -2,7 +2,8 @@
 import React from 'react';
 import { User, ConnectionItem } from '../types';
 import { useConnections } from '../hooks/useConnections';
-import { UserPlus, Search, UserCheck, X, Check, Trash2, Clock, Mail } from 'lucide-react';
+import { getOrgNamesFromEmails } from '../utils/emailDomains';
+import { UserPlus, Search, UserCheck, X, Check, Trash2, Clock, Mail, ChevronDown } from 'lucide-react';
 
 interface ConnectionsProps {
   currentUser: User;
@@ -14,6 +15,9 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
     setActiveTab,
     inviteEmail,
     setInviteEmail,
+    orgFilter,
+    setOrgFilter,
+    getOrgOptions,
     loading,
     message,
     data,
@@ -30,9 +34,16 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
   const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-100';
   const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
   const inputBg = isLight ? 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-brand-500' : 'bg-black/20 border-white/5 text-zinc-300 placeholder:text-zinc-600 focus:bg-black/40 focus:border-brand-500/50';
+  const orgOptions = getOrgOptions();
+  const currentUserOrgs = getOrgNamesFromEmails(currentUser.workMails);
+  const activeList = getActiveList().filter((item) => {
+    if (orgFilter === 'ALL') return true;
+    return (item.otherUser.orgNames || []).includes(orgFilter);
+  });
 
   const renderCard = (item: ConnectionItem) => {
     const { otherUser, status, date, id } = item;
+    const sameOrg = (otherUser.orgNames || []).some((org) => currentUserOrgs.includes(org));
 
     return (
       <div key={id} className={`${cardBg} p-5 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in transition-all group`}>
@@ -63,10 +74,13 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
         <div className="flex items-center gap-2 w-full md:w-auto">
           {status === 'CONNECTED' && (
             <button
-              onClick={() => handleAction(id, 'REMOVE')}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors"
+              onClick={() => {
+                if (!sameOrg) handleAction(id, 'REMOVE');
+              }}
+              disabled={sameOrg}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium border rounded-lg transition-colors ${sameOrg ? (isLight ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-white/5 text-zinc-600 border-white/10 cursor-not-allowed') : 'text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20'}`}
             >
-              <Trash2 size={14} /> Remove
+              <Trash2 size={14} /> {sameOrg ? 'Same Org' : 'Remove'}
             </button>
           )}
 
@@ -143,7 +157,8 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
       </div>
 
       {/* Tabs */}
-      <div className={`flex p-1 border rounded-xl w-fit ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/5 border-white/5'}`}>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className={`flex p-1 border rounded-xl w-fit ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/5 border-white/5'}`}>
         {[
           { id: 'connections', label: 'My Connections', count: data.connections.length },
           { id: 'received', label: 'Received', count: data.received.length },
@@ -168,11 +183,28 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
             )}
           </button>
         ))}
+        </div>
+
+        {orgOptions.length > 0 && (
+          <div className="relative">
+            <select
+              value={orgFilter}
+              onChange={(e) => setOrgFilter(e.target.value)}
+              className={`pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${isLight ? 'bg-white border-slate-200 text-slate-700' : 'bg-[#0e0e10] border-white/10 text-zinc-300'}`}
+            >
+              <option className={isLight ? 'bg-white' : 'bg-[#18181b]'} value="ALL">All Organizations</option>
+              {orgOptions.map((org) => (
+                <option key={org} className={isLight ? 'bg-white' : 'bg-[#18181b]'} value={org}>{org}</option>
+              ))}
+            </select>
+            <ChevronDown size={12} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
+          </div>
+        )}
       </div>
 
       {/* List */}
       <div className="space-y-3">
-        {getActiveList().length === 0 ? (
+        {activeList.length === 0 ? (
           <div className={`text-center py-20 rounded-xl border border-dashed ${isLight ? 'bg-white border-slate-200' : 'bg-[#0e0e10] border-white/5'}`}>
             <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${isLight ? 'bg-slate-50 text-slate-400' : 'bg-white/5 text-zinc-600'}`}>
               <UserCheck size={24} />
@@ -189,7 +221,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
             </p>
           </div>
         ) : (
-          getActiveList().map(item => renderCard(item))
+          activeList.map(item => renderCard(item))
         )}
       </div>
     </div>

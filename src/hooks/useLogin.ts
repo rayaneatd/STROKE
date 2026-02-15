@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { MOCK_USERS } from '../services/mockData';
+import { classifyEmailDomain, EmailType } from '../utils/emailDomains';
 
 export const useLogin = () => {
     const navigate = useNavigate();
@@ -21,6 +22,14 @@ export const useLogin = () => {
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [magicLinkSuccess, setMagicLinkSuccess] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const storedError = localStorage.getItem('login_error');
+        if (storedError) {
+            setError(storedError);
+            localStorage.removeItem('login_error');
+        }
+    }, []);
 
     const generatePassword = () => {
         const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
@@ -51,6 +60,11 @@ export const useLogin = () => {
         setLoading(true);
 
         try {
+            if (classifyEmailDomain(email) !== EmailType.PUBLIC) {
+                setError("Work emails are not allowed for login. Please use a personal email.");
+                setLoading(false);
+                return;
+            }
             if (isRegistering) {
                 if (!displayName) throw new Error("Name is required");
 
@@ -120,6 +134,10 @@ export const useLogin = () => {
         }
         if (!captchaToken) {
             setError("Please complete the captcha challenge");
+            return;
+        }
+        if (classifyEmailDomain(email) !== EmailType.PUBLIC) {
+            setError("Work emails are not allowed for login. Please use a personal email.");
             return;
         }
         setMagicLinkLoading(true);

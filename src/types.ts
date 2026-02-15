@@ -158,6 +158,8 @@ export interface User {
   // Dual Identity & Owner Override
   primaryEmail?: string | null;
   workEmail?: string | null;
+  workMails?: string[];
+  orgNames?: string[];
   isOwner?: boolean;
   nylasConnected?: boolean;
 }

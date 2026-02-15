@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { User, ConnectionItem, Role, SubscriptionPlan, BillingType } from '../types';
 import { supabase } from '../lib/supabase';
+import { getOrgNamesFromEmails } from '../utils/emailDomains';
 
 interface UseConnectionsProps {
     currentUser: User;
@@ -13,6 +14,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
     const [inviteEmail, setInviteEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [orgFilter, setOrgFilter] = useState<string>('ALL');
 
     // Subscribe to Real-time changes
     React.useEffect(() => {
@@ -83,7 +85,9 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
                     purchasedScans: otherPartyData.purchased_scans || 0,
                     billingType: otherPartyData.billing_type as BillingType || BillingType.PREPAID,
                     overageCap: 0,
-                    emailIntegrations: []
+                    emailIntegrations: [],
+                    workMails: Array.isArray(otherPartyData.work_mails) ? otherPartyData.work_mails : [],
+                    orgNames: getOrgNamesFromEmails(Array.isArray(otherPartyData.work_mails) ? otherPartyData.work_mails : [])
                 };
 
                 let mappedStatus = item.status;
@@ -194,12 +198,22 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
     };
 
     const getActiveList = () => network[activeTab];
+    const getOrgOptions = () => {
+        const orgs = new Set<string>();
+        network.connections.forEach((c) => {
+            (c.otherUser.orgNames || []).forEach((o) => orgs.add(o));
+        });
+        return Array.from(orgs.values());
+    };
 
     return {
         activeTab,
         setActiveTab,
         inviteEmail,
         setInviteEmail,
+        orgFilter,
+        setOrgFilter,
+        getOrgOptions,
         loading: isLoading || sendInviteMutation.isPending || actionMutation.isPending,
         message,
         data: network,

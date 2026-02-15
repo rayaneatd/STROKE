@@ -292,6 +292,9 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
         setDateFilter,
         ownerFilter,
         setOwnerFilter,
+        orgFilter,
+        setOrgFilter,
+        orgOptions,
         activeMenuId,
         setActiveMenuId,
         isProjectModalOpen,
@@ -423,6 +426,22 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                             </select>
                             <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                         </div>
+
+                        {orgOptions.length > 0 && (
+                            <div className="relative group">
+                                <select
+                                    value={orgFilter}
+                                    onChange={(e) => setOrgFilter(e.target.value)}
+                                    className={`pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${selectClass}`}
+                                >
+                                    <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="ALL">All Orgs</option>
+                                    {orgOptions.map((org) => (
+                                        <option key={org} className={isLight ? "bg-white" : "bg-[#18181b]"} value={org}>{org}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
+                            </div>
+                        )}
 
                         {activeFiltersCount > 0 && (
                             <button

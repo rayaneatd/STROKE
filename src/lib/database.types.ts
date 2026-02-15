@@ -134,6 +134,7 @@ export type Database = {
                     signup_date: string | null
                     subscription_plan: string | null
                     work_email: string | null
+                    work_mails: Json | null
                     is_owner: boolean | null
                     nylas_connected: boolean | null
                 }
@@ -154,6 +155,7 @@ export type Database = {
                     signup_date?: string | null
                     subscription_plan?: string | null
                     work_email?: string | null
+                    work_mails?: Json | null
                     is_owner?: boolean | null
                     nylas_connected?: boolean | null
                 }
@@ -174,10 +176,88 @@ export type Database = {
                     signup_date?: string | null
                     subscription_plan?: string | null
                     work_email?: string | null
+                    work_mails?: Json | null
                     is_owner?: boolean | null
                     nylas_connected?: boolean | null
                 }
                 Relationships: []
+            }
+            organisations: {
+                Row: {
+                    org_id: string
+                    org_name: string
+                }
+                Insert: {
+                    org_id?: string
+                    org_name: string
+                }
+                Update: {
+                    org_id?: string
+                    org_name?: string
+                }
+                Relationships: []
+            }
+            organisation_members: {
+                Row: {
+                    org_id: string
+                    user_id: string
+                    created_at: string | null
+                }
+                Insert: {
+                    org_id: string
+                    user_id: string
+                    created_at?: string | null
+                }
+                Update: {
+                    org_id?: string
+                    user_id?: string
+                    created_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "organisation_members_org_id_fkey"
+                        columns: ["org_id"]
+                        isOneToOne: false
+                        referencedRelation: "organisations"
+                        referencedColumns: ["org_id"]
+                    },
+                    {
+                        foreignKeyName: "organisation_members_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            aurinko_work_mails: {
+                Row: {
+                    id: string
+                    user_id: string
+                    work_email: string
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    work_email: string
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    work_email?: string
+                    created_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "aurinko_work_mails_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             project_members: {
                 Row: {

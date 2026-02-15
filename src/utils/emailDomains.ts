@@ -49,3 +49,21 @@ export const classifyEmailDomain = (email: string): EmailType => {
   
   return EmailType.CUSTOM;
 };
+
+export const getOrgNameFromEmail = (email: string): string | null => {
+  if (!email || !email.includes('@')) return null;
+  const domain = email.split('@')[1]?.toLowerCase() || '';
+  if (!domain) return null;
+  const org = domain.split('.')[0];
+  return org || null;
+};
+
+export const getOrgNamesFromEmails = (emails?: string[] | null): string[] => {
+  if (!emails || emails.length === 0) return [];
+  const set = new Set<string>();
+  emails.forEach((email) => {
+    const org = getOrgNameFromEmail(email);
+    if (org) set.add(org);
+  });
+  return Array.from(set.values());
+};

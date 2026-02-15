@@ -40,7 +40,8 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
 
             // Dual Identity Logic
             let primaryEmail = profile.primary_email;
-            let workEmail = profile.work_email;
+            const workMails = Array.isArray(profile.work_mails) ? (profile.work_mails as unknown as string[]) : [];
+            let workEmail = profile.work_email || workMails[0] || null;
             const isOwner = profile.is_owner || false;
             const nylasConnected = profile.nylas_connected || false;
 
@@ -73,6 +74,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 newEmail: authUser.new_email,
                 primaryEmail,
                 workEmail,
+                workMails,
                 isOwner,
                 nylasConnected
             } as unknown as User & { company?: string, industry?: string };
@@ -96,6 +98,9 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
     const [isSavingPrimary, setIsSavingPrimary] = useState(false);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+    const [isWorkEmailModalOpen, setIsWorkEmailModalOpen] = useState(false);
+    const [workEmailError, setWorkEmailError] = useState<string | null>(null);
+    const [workEmailSuccess, setWorkEmailSuccess] = useState<string | null>(null);
 
     // Sync form with user data when loaded
     useEffect(() => {
@@ -247,6 +252,39 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         }
     };
 
+    const handleRemoveWorkMail = async (email: string) => {
+        setWorkEmailError(null);
+        setWorkEmailSuccess(null);
+        try {
+            if (!user?.id) throw new Error("User ID not found");
+            const current = user.workMails || [];
+            const next = current.filter((item) => item.toLowerCase() !== email.toLowerCase());
+            const { error } = await supabase
+                .from('profiles')
+                .update({ work_mails: next })
+                .eq('id', user.id);
+            if (error) throw error;
+            await queryClient.invalidateQueries({ queryKey: ['profile'] });
+            setWorkEmailSuccess('Work email removed.');
+        } catch (err: any) {
+            setWorkEmailError(err.message || "Failed to remove work email");
+        }
+    };
+
+    const handleConnectAurinko = () => {
+        setWorkEmailError(null);
+        setWorkEmailSuccess(null);
+        const apiUrl = import.meta.env.VITE_AURINKO_API_URL;
+        const clientId = import.meta.env.VITE_AURINKO_CLIENT_ID;
+        if (!apiUrl || !clientId) {
+            setWorkEmailError('Aurinko is not configured.');
+            return;
+        }
+        const redirectUri = `${window.location.origin}/#/profile`;
+        const url = `${apiUrl.replace(/\/$/, '')}/oauth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=mail.read`;
+        window.location.href = url;
+    };
+
     // UI/Theme Helpers (same as before)
     const isLight = user?.preferences?.uiConfig?.theme === 'LIGHT';
     const accentColor = user?.preferences?.uiConfig?.accentColor || 'slate';
@@ -290,6 +328,12 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         isSavingPrimary,
         emailError,
         emailSuccess,
-        handleUpdateProfileEmail
+        handleUpdateProfileEmail,
+        isWorkEmailModalOpen,
+        setIsWorkEmailModalOpen,
+        workEmailError,
+        workEmailSuccess,
+        handleRemoveWorkMail,
+        handleConnectAurinko
     };
 };

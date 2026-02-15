@@ -29,7 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (data) {
                 // Dual Identity Logic
                 let primaryEmail = data.primary_email;
-                let workEmail = data.work_email;
+                const workMails = Array.isArray(data.work_mails) ? data.work_mails : [];
+                let workEmail = data.work_email || workMails[0] || null;
                 const isOwner = data.is_owner || false;
                 const nylasConnected = data.nylas_connected || false;
 
@@ -62,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     newEmail: authUser.new_email,
                     primaryEmail,
                     workEmail,
+                    workMails,
                     isOwner,
                     nylasConnected
                 } as unknown as User;
@@ -73,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Optimistic Fallback: Return skeleton user from Auth Metadata 
         // to prevent redirect loops or "Loading" hangs
         const type = classifyEmailDomain(authUser.email || '');
+        const fallbackWorkMails = type === EmailType.CUSTOM && authUser.email ? [authUser.email] : [];
         return {
             id: userId,
             email: authUser.email || '',
@@ -90,6 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             newEmail: authUser.new_email,
             primaryEmail: type === EmailType.PUBLIC ? authUser.email : null,
             workEmail: type === EmailType.CUSTOM ? authUser.email : null,
+            workMails: fallbackWorkMails,
             isOwner: false,
             nylasConnected: false
         } as unknown as User;
@@ -104,6 +108,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const handleAuthChange = async (session: any) => {
             if (session?.user) {
+                const emailType = classifyEmailDomain(session.user.email || '');
+                if (emailType === EmailType.CUSTOM) {
+                    localStorage.setItem('login_error', 'Work emails are not allowed for login. Please use a personal email.');
+                    await supabase.auth.signOut();
+                    if (isMounted) {
+                        setUser(null);
+                        setLoading(false);
+                    }
+                    return;
+                }
                 const profile = await fetchProfile(session.user.id, session.user);
                 if (isMounted) {
                     setUser(profile);
