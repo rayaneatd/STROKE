@@ -17,7 +17,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
     setInviteEmail,
     orgFilter,
     setOrgFilter,
-    getOrgOptions,
+    orgOptions,
     loading,
     message,
     data,
@@ -34,7 +34,6 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
   const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-100';
   const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
   const inputBg = isLight ? 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-brand-500' : 'bg-black/20 border-white/5 text-zinc-300 placeholder:text-zinc-600 focus:bg-black/40 focus:border-brand-500/50';
-  const orgOptions = getOrgOptions();
   const currentUserOrgs = getOrgNamesFromEmails(currentUser.workMails);
   const activeList = getActiveList().filter((item) => {
     if (orgFilter === 'ALL') return true;

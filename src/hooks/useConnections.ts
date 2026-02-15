@@ -198,20 +198,34 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
     };
 
     const getActiveList = () => network[activeTab];
-    const getOrgOptions = () => {
-        const orgs = new Set<string>();
+    
+    // Memoize org options to ensure stable references and reactivity
+    const orgOptions = React.useMemo(() => {
+        const allConnectionOrgs = new Set<string>();
         network.connections.forEach((c) => {
-            (c.otherUser.orgNames || []).forEach((o) => orgs.add(o));
+            (c.otherUser.orgNames || []).forEach((o) => allConnectionOrgs.add(o));
         });
         
-        // Add 'EXTERNAL' option if the current user belongs to at least one organization
         const currentUserOrgs = getOrgNamesFromEmails(currentUser.workMails);
+        
+        // If user is part of organizations, we switch to "My Orgs vs External" view
         if (currentUserOrgs.length > 0) {
-            return ['EXTERNAL', ...Array.from(orgs.values())];
+            // Filter list should primarily show My Orgs + External
+            // We can also include other orgs if we want mixed mode, but user request implies strict separation
+            // "l'org est également retirée dynamiquement de son filtre" -> implies list follows membership
+            return ['EXTERNAL', ...currentUserOrgs];
         }
         
-        return Array.from(orgs.values());
-    };
+        // Fallback: If no orgs, show all available connection organizations
+        return Array.from(allConnectionOrgs.values());
+    }, [network.connections, currentUser.workMails]);
+
+    // Effect to reset filter if the selected option is no longer available
+    React.useEffect(() => {
+        if (orgFilter !== 'ALL' && !orgOptions.includes(orgFilter)) {
+            setOrgFilter('ALL');
+        }
+    }, [orgOptions, orgFilter]);
 
     return {
         activeTab,
@@ -220,7 +234,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
         setInviteEmail,
         orgFilter,
         setOrgFilter,
-        getOrgOptions,
+        orgOptions,
         loading: isLoading || sendInviteMutation.isPending || actionMutation.isPending,
         message,
         data: network,
