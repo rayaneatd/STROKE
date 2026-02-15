@@ -203,6 +203,13 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
         network.connections.forEach((c) => {
             (c.otherUser.orgNames || []).forEach((o) => orgs.add(o));
         });
+        
+        // Add 'EXTERNAL' option if the current user belongs to at least one organization
+        const currentUserOrgs = getOrgNamesFromEmails(currentUser.workMails);
+        if (currentUserOrgs.length > 0) {
+            return ['EXTERNAL', ...Array.from(orgs.values())];
+        }
+        
         return Array.from(orgs.values());
     };
 

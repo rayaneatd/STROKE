@@ -38,6 +38,14 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
   const currentUserOrgs = getOrgNamesFromEmails(currentUser.workMails);
   const activeList = getActiveList().filter((item) => {
     if (orgFilter === 'ALL') return true;
+    
+    // Logic for External (Non-Org) connections
+    if (orgFilter === 'EXTERNAL') {
+        const otherOrgs = item.otherUser.orgNames || [];
+        // If the other user has NO common orgs with current user
+        return !otherOrgs.some(org => currentUserOrgs.includes(org));
+    }
+    
     return (item.otherUser.orgNames || []).includes(orgFilter);
   });
 

@@ -32,7 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const workMails = Array.isArray(data.work_mails) ? data.work_mails : [];
                 let workEmail = data.work_email || workMails[0] || null;
                 const isOwner = data.is_owner || false;
-                const nylasConnected = data.nylas_connected || false;
 
                 if (!primaryEmail && !workEmail && authUser.email) {
                     const type = classifyEmailDomain(authUser.email);
@@ -64,8 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     primaryEmail,
                     workEmail,
                     workMails,
-                    isOwner,
-                    nylasConnected
+                    isOwner
                 } as unknown as User;
             }
         } catch (err) {

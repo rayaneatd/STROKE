@@ -43,7 +43,6 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             const workMails = Array.isArray(profile.work_mails) ? (profile.work_mails as unknown as string[]) : [];
             let workEmail = profile.work_email || workMails[0] || null;
             const isOwner = profile.is_owner || false;
-            const nylasConnected = profile.nylas_connected || false;
 
             if (!primaryEmail && !workEmail && authUser.email) {
                 const type = classifyEmailDomain(authUser.email);
@@ -75,8 +74,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 primaryEmail,
                 workEmail,
                 workMails,
-                isOwner,
-                nylasConnected
+                isOwner
             } as unknown as User & { company?: string, industry?: string };
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
