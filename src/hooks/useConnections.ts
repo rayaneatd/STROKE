@@ -120,11 +120,9 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
 
     const sendInviteMutation = useMutation({
         mutationFn: async (email: string) => {
-            // 1. Find the profile by email
+            // 1. Find the profile by email using secure function
             const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('email', email)
+                .rpc('find_profile_by_email', { search_email: email })
                 .maybeSingle();
 
             if (profileError) throw profileError;
