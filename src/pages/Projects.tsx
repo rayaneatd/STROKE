@@ -20,7 +20,7 @@ import DeleteProjectModal from '../components/modals/DeleteProjectModal';
 
 const ProjectCard = React.memo(({
     project,
-    currentUser,
+    currentUserId,
     viewMode,
     density,
     isMenuOpen,
@@ -31,12 +31,10 @@ const ProjectCard = React.memo(({
     onLeave,
     onDelete,
     isLight,
-    accentColor,
-    t, // Pass translation function
-    currentLanguage // Pass current language for dates
+    accentColor
 }: {
     project: Project;
-    currentUser: User;
+    currentUserId: string;
     viewMode: 'grid' | 'list';
     density: 'COMFORTABLE' | 'COMPACT';
     isMenuOpen: boolean;
@@ -48,10 +46,10 @@ const ProjectCard = React.memo(({
     onDelete: (e: React.MouseEvent, project: Project) => void;
     isLight: boolean;
     accentColor: string;
-    t: any; // Add type for t
-    currentLanguage: string;
 }) => {
-    const member = project.members.find(m => m.userId === currentUser.id);
+    const { t, i18n } = useTranslation();
+    const currentLanguage = i18n.language;
+    const member = project.members.find(m => m.userId === currentUserId);
     const userRole = member?.role || ProjectRole.EMPLOYEE;
     const owner = MOCK_USERS.find(u => u.id === project.ownerId);
 
@@ -514,7 +512,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                             <ProjectCard
                                 key={project.id}
                                 project={project}
-                                currentUser={currentUser}
+                                currentUserId={currentUser.id}
                                 viewMode={viewMode}
                                 density={density}
                                 isMenuOpen={activeMenuId === project.id}
@@ -522,14 +520,12 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 onMenuToggle={handleMenuClick}
                                 onEdit={handleEditProject}
                                 onStatusChange={handleStatusChange}
-                            onLeave={handleLeaveProject}
-                            onDelete={handleDeleteProject}
-                            isLight={isLight}
-                            accentColor={accentColor}
-                            t={t}
-                            currentLanguage={i18n.language}
-                        />
-                    ))}
+                                onLeave={handleLeaveProject}
+                                onDelete={handleDeleteProject}
+                                isLight={isLight}
+                                accentColor={accentColor}
+                            />
+                        ))}
                 </div>
 
                     {filteredProjects.length > displayCount && (
