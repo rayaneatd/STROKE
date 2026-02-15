@@ -31,15 +31,10 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         queryKey: ['project', projectId],
         queryFn: async () => {
             const { data, error } = await supabase
-                .from('projects')
-                .select(`
-                    *,
-                    members:project_members(
-                        *,
-                        user:profiles(*)
-                    )
-                `)
-                .eq('id', projectId)
+                .rpc('get_user_project', { 
+                    target_user_id: currentUser.id, 
+                    target_project_id: projectId 
+                })
                 .single();
 
             if (error) throw error;
@@ -55,21 +50,21 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 settings: projectData.settings || {},
                 investmentBalance: projectData.investment_balance || 0,
                 totalInvested: projectData.total_invested || 0,
-                members: projectData.members.map((m: any) => ({
-                    userId: m.user_id,
+                members: Array.isArray(projectData.members) ? projectData.members.map((m: any) => ({
+                    userId: m.userId,
                     role: m.role as ProjectRole,
                     permissions: m.permissions || [],
-                    scansUsed: m.scans_used || 0,
-                    scanQuota: m.scan_quota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scan_quota),
-                    joinedAt: m.joined_at,
+                    scansUsed: m.scansUsed || 0,
+                    scanQuota: m.scanQuota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota),
+                    joinedAt: m.joinedAt,
                     user: m.user ? {
                         id: m.user.id,
                         email: m.user.email,
-                        displayName: m.user.display_name || m.user.email.split('@')[0],
-                        avatarUrl: m.user.avatar_url,
+                        displayName: m.user.displayName || m.user.email?.split('@')[0] || 'Unknown',
+                        avatarUrl: m.user.avatarUrl,
                         isBanned: m.user.role === 'BANNED'
                     } : undefined
-                }))
+                })) : []
             } as Project;
         }
     });
