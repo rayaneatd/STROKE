@@ -30,20 +30,12 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
     const [projectToLeave, setProjectToLeave] = useState<Project | null>(null);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
-    // Fetch Projects via Supabase
+    // Fetch Projects via Secure Function
     const { data: projects = [], isLoading } = useQuery({
         queryKey: ['projects', currentUser.id],
         queryFn: async () => {
             const { data, error } = await supabase
-                .from('projects')
-                .select(`
-                    *,
-                    members:project_members(
-                        *,
-                        user:profiles(*)
-                    )
-                `)
-                .order('created_at', { ascending: false });
+                .rpc('get_user_projects', { user_id: currentUser.id });
 
             if (error) throw error;
 
@@ -55,26 +47,26 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                 createdAt: p.created_at,
                 status: p.status,
                 settings: p.settings || {},
-                investmentBalance: p.investment_balance || 0,
-                totalInvested: p.total_invested || 0,
-                fileCount: 0, // Injected by a separate count or view if needed
-                memberCount: p.members?.length || 0,
-                members: p.members.map((m: any) => ({
-                    userId: m.user_id,
+                investmentBalance: Number(p.investment_balance) || 0,
+                totalInvested: Number(p.total_invested) || 0,
+                fileCount: Number(p.file_count) || 0,
+                memberCount: Number(p.member_count) || 0,
+                members: Array.isArray(p.members) ? p.members.map((m: any) => ({
+                    userId: m.userId,
                     role: m.role as ProjectRole,
                     permissions: m.permissions || [],
-                    scansUsed: m.scans_used || 0,
-                    scanQuota: m.scan_quota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scan_quota),
-                    joinedAt: m.joined_at,
+                    scansUsed: m.scansUsed || 0,
+                    scanQuota: m.scanQuota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota),
+                    joinedAt: m.joinedAt,
                     user: m.user ? {
                         id: m.user.id,
                         email: m.user.email,
-                        displayName: m.user.display_name || m.user.email.split('@')[0],
-                        avatarUrl: m.user.avatar_url,
-                        workMails: Array.isArray(m.user.work_mails) ? m.user.work_mails : [],
-                        orgNames: getOrgNamesFromEmails(Array.isArray(m.user.work_mails) ? m.user.work_mails : [])
+                        displayName: m.user.displayName || m.user.email?.split('@')[0] || 'Unknown',
+                        avatarUrl: m.user.avatarUrl,
+                        workMails: Array.isArray(m.user.workMails) ? m.user.workMails : [],
+                        orgNames: Array.isArray(m.user.orgNames) ? m.user.orgNames : []
                     } : undefined
-                }))
+                })) : []
             } as Project));
         },
         enabled: !!currentUser.id

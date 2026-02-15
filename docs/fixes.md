@@ -116,6 +116,125 @@ SET search_path TO 'public';
 3. **Formation :** Former les nouveaux développeurs aux bonnes pratiques RLS Supabase
 4. **Documentation :** Maintenir à jour la documentation architecturelle
 
+## Nouvelles Vulnérabilités Identifiées & Correctifs
+
+### 6. Recherche d'Utilisateurs par Email Bloquée (Sévérité : Haute)
+- **Analyse :** La politique RLS restrictive sur `profiles` empêchait la recherche d'utilisateurs par email pour l'envoi de demandes de connexion, bloquant une fonctionnalité métier critique.
+- **Impact :** Les utilisateurs ne pouvaient pas envoyer de demandes de connexion même lorsque l'utilisateur cible existait.
+- **Le Correctif Appliqué :**
+```sql
+-- Fonction sécurisée pour la recherche par email
+CREATE OR REPLACE FUNCTION public.find_profile_by_email(search_email text)
+RETURNS TABLE(id uuid, email text, display_name text, avatar_url text)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id,
+    p.email,
+    p.display_name,
+    p.avatar_url
+  FROM public.profiles p
+  WHERE p.email = search_email
+  LIMIT 1;
+END;
+$function$;
+
+-- Politique pour permettre la recherche sécurisée
+CREATE POLICY "Users can search profiles by email for connections" ON public.profiles
+FOR SELECT USING (
+  EXISTS (
+    SELECT 1 
+    FROM public.profiles p
+    WHERE p.id = profiles.id
+    AND p.email = CURRENT_SETTING('app.current_search_email', true)::text
+  )
+);
+```
+
+### 7. Affichage des Connexions Bloqué (Sévérité : Haute)
+- **Analyse :** Les jointures dans les requêtes React vers les tables `profiles` étaient bloquées par les politiques RLS, empêchant l'affichage des listes de connexions.
+- **Impact :** Les utilisateurs ne voyaient pas leurs connexions existantes, demandes reçues ou envoyées.
+- **Le Correctif Appliqué :**
+```sql
+-- Fonction sécurisée pour récupérer les connexions avec les profils
+CREATE OR REPLACE FUNCTION public.get_user_connections(user_id uuid)
+RETURNS TABLE(
+    connection_id uuid,
+    other_user_id uuid,
+    other_user_email text,
+    other_user_display_name text,
+    other_user_avatar_url text,
+    status text,
+    created_at timestamptz,
+    is_sender boolean
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.id as connection_id,
+        CASE 
+            WHEN c.sender_id = user_id THEN c.receiver_id
+            ELSE c.sender_id
+        END as other_user_id,
+        CASE 
+            WHEN c.sender_id = user_id THEN r.email
+            ELSE s.email
+        END as other_user_email,
+        CASE 
+            WHEN c.sender_id = user_id THEN r.display_name
+            ELSE s.display_name
+        END as other_user_display_name,
+        CASE 
+            WHEN c.sender_id = user_id THEN r.avatar_url
+            ELSE s.avatar_url
+        END as other_user_avatar_url,
+        c.status,
+        c.created_at,
+        (c.sender_id = user_id) as is_sender
+    FROM connections c
+    LEFT JOIN profiles s ON c.sender_id = s.id
+    LEFT JOIN profiles r ON c.receiver_id = r.id
+    WHERE (c.sender_id = user_id OR c.receiver_id = user_id)
+    ORDER BY c.created_at DESC;
+END;
+$function$;
+```
+
+## Mises à Jour du Code Frontend
+
+### Avant (Vulnérable) :
+```typescript
+// Recherche directe bloquée par RLS
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('id')
+  .eq('email', email)
+
+// Jointures bloquées par RLS  
+const { data } = await supabase
+  .from('connections')
+  .select(`*, sender:profiles!connections_sender_id_fkey(*), ...`)
+```
+
+### Après (Sécurisé) :
+```typescript
+// Recherche sécurisée via fonction
+const { data: profile } = await supabase
+  .rpc('find_profile_by_email', { search_email: email })
+
+// Données sécurisées via fonction
+const { data } = await supabase
+  .rpc('get_user_connections', { user_id: currentUser.id })
+```
+
 ## Validation des Correctifs
 
 Tous les correctifs ont été validés pour :
@@ -124,5 +243,8 @@ Tous les correctifs ont été validés pour :
 - ✅ Respecter l'isolation multi-tenant
 - ✅ Éliminer les risques de récursion
 - ✅ Prévenir les escalades de privilèges
+- ✅ Restaurer les fonctionnalités métier critiques
+- ✅ Garantir la sécurité des données sensibles
 
 *Audit réalisé par l'Expert PostgreSQL/Supabase - 15/02/2026*
+*Dernière mise à jour : Correction des fonctionnalités de connexion*
