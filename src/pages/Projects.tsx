@@ -337,10 +337,10 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
         : 'bg-[#18181b] border-white/10 text-zinc-300 focus:ring-2 focus:ring-white/5';
 
     // Dual Identity Constraint
-    const canCreateProject = currentUser.isOwner || !!currentUser.primaryEmail;
+    const canCreateProject = currentUser && (currentUser.isOwner || !!currentUser.primaryEmail);
 
     if (!currentUser) {
-        return <div className="p-8 text-center text-zinc-500">Loading user data...</div>;
+        return <div className="p-8 text-center text-zinc-500">{t('common.loading')}</div>;
     }
 
     return (

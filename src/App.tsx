@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext'; // Import ThemeProvider
 import { Loader2 } from 'lucide-react';
+import ErrorBoundary from './components/ErrorBoundary';
 import { User, SubscriptionPlan, UIPreferences } from './types';
 import OnboardingWizard from './components/onboarding/OnboardingWizard';
 import GlobalBanModal from './components/modals/GlobalBanModal'; // Import the new modal
@@ -227,12 +228,14 @@ const AppContent: React.FC = () => {
                         <Route path="/" element={<Dashboard currentUser={user} onNavigate={handleNavigate} />} />
 
                         <Route path="/projects" element={
-                            <Projects
-                                currentUser={user}
-                                onProjectClick={handleProjectClick}
-                                onNavigate={handleNavigate}
-                                onUpdateUser={handleUpdateUser}
-                            />
+                            <ErrorBoundary className="m-8">
+                                <Projects
+                                    currentUser={user}
+                                    onProjectClick={handleProjectClick}
+                                    onNavigate={handleNavigate}
+                                    onUpdateUser={handleUpdateUser}
+                                />
+                            </ErrorBoundary>
                         } />
 
                         <Route path="/projects/:id" element={
