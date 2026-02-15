@@ -201,17 +201,13 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
     
     // Memoize org options to ensure stable references and reactivity
     const orgOptions = React.useMemo(() => {
-        const allOrgs = new Set<string>();
-        network.connections.forEach((c) => {
-            (c.otherUser.orgNames || []).forEach((o) => allOrgs.add(o));
-        });
-        getOrgNamesFromEmails(currentUser.workMails).forEach((org) => allOrgs.add(org));
-        return Array.from(allOrgs.values());
-    }, [network.connections, currentUser.workMails]);
+        // Only show orgs that the current user belongs to
+        return getOrgNamesFromEmails(currentUser.workMails);
+    }, [currentUser.workMails]);
 
     // Effect to reset filter if the selected option is no longer available
     React.useEffect(() => {
-        if (orgFilter !== 'ALL' && !orgOptions.includes(orgFilter)) {
+        if (orgFilter !== 'ALL' && orgFilter !== 'EXTERNAL' && !orgOptions.includes(orgFilter)) {
             setOrgFilter('ALL');
         }
     }, [orgOptions, orgFilter]);

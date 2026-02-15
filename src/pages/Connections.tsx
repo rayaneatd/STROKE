@@ -37,6 +37,10 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
   const currentUserOrgs = getOrgNamesFromEmails(currentUser.workMails);
   const activeList = getActiveList().filter((item) => {
     if (orgFilter === 'ALL') return true;
+    if (orgFilter === 'EXTERNAL') {
+      const userOrgs = item.otherUser.orgNames || [];
+      return !userOrgs.some((org) => currentUserOrgs.includes(org));
+    }
     return (item.otherUser.orgNames || []).includes(orgFilter);
   });
 
@@ -195,6 +199,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
               {orgOptions.map((org) => (
                 <option key={org} className={isLight ? 'bg-white' : 'bg-[#18181b]'} value={org}>{org}</option>
               ))}
+              <option className={isLight ? 'bg-white' : 'bg-[#18181b]'} value="EXTERNAL">External Contacts</option>
             </select>
             <ChevronDown size={12} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
           </div>
