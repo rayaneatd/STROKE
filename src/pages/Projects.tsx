@@ -88,19 +88,20 @@ const ProjectCard = React.memo(({
 
     // Grid View
     if (viewMode === 'grid') {
+        const status = project.status || 'ACTIVE';
         return (
             <div
                 onClick={() => onProjectClick(project.id)}
-                className={`group rounded-2xl border transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col ${cardBg} ${isCompact ? 'p-4' : 'p-6'} ${project.status !== 'ACTIVE' ? 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100' : ''}`}
+                className={`group rounded-2xl border transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col ${cardBg} ${isCompact ? 'p-4' : 'p-6'} ${status !== 'ACTIVE' ? 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100' : ''}`}
             >
                 {/* Accent line on hover */}
-                <div className={`absolute top-0 left-0 w-1 h-full bg-${accentColor}-500 opacity-0 group-hover:opacity-100 transition-opacity ${project.status !== 'ACTIVE' ? 'bg-zinc-500' : ''}`} />
+                <div className={`absolute top-0 left-0 w-1 h-full bg-${accentColor}-500 opacity-0 group-hover:opacity-100 transition-opacity ${status !== 'ACTIVE' ? 'bg-zinc-500' : ''}`} />
 
                 <div className={`flex justify-between items-start ${isCompact ? 'mb-2' : 'mb-4'}`}>
-                    <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border flex items-center gap-1.5 ${getStatusColor(project.status)}`}>
-                        {project.status === 'COMPLETED' && <CheckCircle size={10} />}
-                        {project.status === 'ARCHIVED' && <Archive size={10} />}
-                        {t(`projects.filter.${project.status.toLowerCase()}`)}
+                    <div className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border flex items-center gap-1.5 ${getStatusColor(status)}`}>
+                        {status === 'COMPLETED' && <CheckCircle size={10} />}
+                        {status === 'ARCHIVED' && <Archive size={10} />}
+                        {t(`projects.filter.${status.toLowerCase()}`)}
                     </div>
 
                     <div className="relative">
@@ -179,10 +180,11 @@ const ProjectCard = React.memo(({
     }
 
     // List View
+    const status = project.status || 'ACTIVE';
     return (
         <div
             onClick={() => onProjectClick(project.id)}
-            className={`group rounded-xl border hover:shadow-md transition-all cursor-pointer grid grid-cols-1 md:grid-cols-12 gap-4 items-center relative ${cardBg} ${isCompact ? 'p-2.5' : 'p-4'} ${project.status !== 'ACTIVE' ? 'opacity-60' : ''}`}
+            className={`group rounded-xl border hover:shadow-md transition-all cursor-pointer grid grid-cols-1 md:grid-cols-12 gap-4 items-center relative ${cardBg} ${isCompact ? 'p-2.5' : 'p-4'} ${status !== 'ACTIVE' ? 'opacity-60' : ''}`}
         >
             <div className="col-span-1 md:col-span-4 min-w-0">
                 <div className="flex items-center gap-3">
@@ -197,10 +199,10 @@ const ProjectCard = React.memo(({
             </div>
 
             <div className="col-span-1 md:col-span-2">
-                <div className={`w-fit px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border flex items-center gap-1.5 ${getStatusColor(project.status)}`}>
-                    {project.status === 'COMPLETED' && <CheckCircle size={10} />}
-                    {project.status === 'ARCHIVED' && <Archive size={10} />}
-                    {t(`projects.filter.${project.status.toLowerCase()}`)}
+                <div className={`w-fit px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border flex items-center gap-1.5 ${getStatusColor(status)}`}>
+                    {status === 'COMPLETED' && <CheckCircle size={10} />}
+                    {status === 'ARCHIVED' && <Archive size={10} />}
+                    {t(`projects.filter.${status.toLowerCase()}`)}
                 </div>
             </div>
 
@@ -336,6 +338,10 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
 
     // Dual Identity Constraint
     const canCreateProject = currentUser.isOwner || !!currentUser.primaryEmail;
+
+    if (!currentUser) {
+        return <div className="p-8 text-center text-zinc-500">Loading user data...</div>;
+    }
 
     return (
         <div className="space-y-6 animate-fade-in relative">
