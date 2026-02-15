@@ -51,13 +51,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
         queryKey: ['network', currentUser.id],
         queryFn: async () => {
             const { data, error } = await supabase
-                .from('connections')
-                .select(`
-                    *,
-                    sender:profiles!connections_sender_id_fkey(*),
-                    receiver:profiles!connections_receiver_id_fkey(*)
-                `)
-                .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+                .rpc('get_user_connections', { user_id: currentUser.id });
 
             if (error) throw error;
 
@@ -66,37 +60,30 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
             const sent: ConnectionItem[] = [];
 
             data.forEach((item: any) => {
-                const otherPartyData = item.sender_id === currentUser.id ? item.receiver : item.sender;
-
-                if (!otherPartyData) {
-                     // If RLS or data integrity issue hides the profile, skip this item
-                     return;
-                }
-
                 // Map the profile data to a User type
                 const otherUser: User = {
-                    id: otherPartyData.id,
-                    displayName: otherPartyData.display_name || otherPartyData.email.split('@')[0],
-                    email: otherPartyData.email,
-                    role: otherPartyData.role as Role || Role.USER,
-                    avatarUrl: otherPartyData.avatar_url || '',
-                    subscriptionPlan: otherPartyData.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
-                    scansBalance: otherPartyData.scans_balance || 0,
-                    purchasedScans: otherPartyData.purchased_scans || 0,
-                    billingType: otherPartyData.billing_type as BillingType || BillingType.PREPAID,
+                    id: item.other_user_id,
+                    displayName: item.other_user_display_name || item.other_user_email.split('@')[0],
+                    email: item.other_user_email,
+                    role: Role.USER, // Default role
+                    avatarUrl: item.other_user_avatar_url || '',
+                    subscriptionPlan: SubscriptionPlan.FREE,
+                    scansBalance: 0,
+                    purchasedScans: 0,
+                    billingType: BillingType.PREPAID,
                     overageCap: 0,
                     emailIntegrations: [],
-                    workMails: Array.isArray(otherPartyData.work_mails) ? otherPartyData.work_mails : [],
-                    orgNames: getOrgNamesFromEmails(Array.isArray(otherPartyData.work_mails) ? otherPartyData.work_mails : [])
+                    workMails: [],
+                    orgNames: []
                 };
 
                 let mappedStatus = item.status;
                 if (item.status === 'PENDING') {
-                    mappedStatus = item.sender_id === currentUser.id ? 'SENT' : 'RECEIVED';
+                    mappedStatus = item.is_sender ? 'SENT' : 'RECEIVED';
                 }
 
                 const connectionItem: ConnectionItem = {
-                    id: item.id,
+                    id: item.connection_id,
                     otherUser: otherUser,
                     status: mappedStatus as any,
                     date: item.created_at
@@ -105,7 +92,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
                 if (item.status === 'CONNECTED') {
                     connections.push(connectionItem);
                 } else if (item.status === 'PENDING') {
-                    if (item.sender_id === currentUser.id) {
+                    if (item.is_sender) {
                         sent.push(connectionItem);
                     } else {
                         received.push(connectionItem);
