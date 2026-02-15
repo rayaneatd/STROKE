@@ -353,6 +353,24 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     const isCompleted = project?.status === 'COMPLETED';
 
     const canManageTeam = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
+    
+    // Check if user can actually invite based on invitation policy
+    const canInviteMembers = useMemo(() => {
+        if (!project || !currentUserMember) return false;
+        
+        const perm = project.settings.employeeAddPermission;
+        
+        if (currentUserMember.role === ProjectRole.OWNER) {
+            return true; // Owner can always invite
+        }
+        
+        if (currentUserMember.role === ProjectRole.ADMIN) {
+            return perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS;
+        }
+        
+        return false;
+    }, [project, currentUserMember]);
+    
     const canChat = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
     const canScan = isActive;
     const canEditProject = isProjectOwner || isAdmin;
@@ -492,6 +510,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         isArchived,
         isCompleted,
         canManageTeam,
+        canInviteMembers,
         canChat,
         canScan,
         canEditProject,
@@ -500,6 +519,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         canAccessAdminChannel,
         canViewActivityTab,
         canUseAntiGhosting,
+        canInviteMembers,
         isIdentitySelectorOpen,
         setIsIdentitySelectorOpen,
         addMemberType,

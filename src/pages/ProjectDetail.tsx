@@ -162,7 +162,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
 
                         <div className="relative mt-1">
                             <p
-                                className={`max-w-2xl text-sm leading-relaxed transition-all duration-300 ${descClass} ${isDescriptionExpanded ? '' : 'line-clamp-1'}`}
+                                className={`max-w-2xl text-sm leading-relaxed transition-all duration-300 whitespace-pre-wrap ${descClass} ${isDescriptionExpanded ? '' : 'line-clamp-1'}`}
                                 title={project.description}
                             >
                                 {project.description}
@@ -392,7 +392,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         isProjectOwner={isProjectOwner}
                         canManageTeam={canManageTeam}
                         onAddMember={(role) => {
-                            if (canManageTeam) {
+                            if (canInviteMembers) {
                                 setAddMemberType(role as any);
                             } else {
                                 setIsProjectLockedModalOpen(true);
