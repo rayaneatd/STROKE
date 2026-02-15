@@ -38,11 +38,12 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 .single();
 
             if (error) throw error;
+            if (!data) throw new Error('Project not found');
 
             const projectData = data as any;
             return {
                 id: projectData.id,
-                title: projectData.title,
+                title: projectData.title || 'Untitled',
                 description: projectData.description || '',
                 ownerId: projectData.owner_id,
                 createdAt: projectData.created_at,

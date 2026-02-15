@@ -239,11 +239,13 @@ const AppContent: React.FC = () => {
                         } />
 
                         <Route path="/projects/:id" element={
-                            <ProjectDetailWrapper
-                                user={user}
-                                onNavigate={handleNavigate}
-                                onUpdateUser={handleUpdateUser}
-                            />
+                            <ErrorBoundary className="m-8">
+                                <ProjectDetailWrapper
+                                    user={user}
+                                    onNavigate={handleNavigate}
+                                    onUpdateUser={handleUpdateUser}
+                                />
+                            </ErrorBoundary>
                         } />
 
                         <Route path="/settings" element={
