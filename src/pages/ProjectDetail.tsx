@@ -56,6 +56,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
         isArchived,
         isCompleted,
         canManageTeam,
+        canInviteMembers,
         canChat,
         canScan,
         canEditProject,

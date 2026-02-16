@@ -523,16 +523,19 @@ const TeamTab: React.FC<TeamTabProps> = ({
     };
 
     const handleUpdatePermission = (perm: EmployeeAddPermission) => {
-        if (project.settings.employeeAddPermission === perm) {
+        if (project.settings?.employeeAddPermission === perm) {
             setSettingsOpen(false);
             return;
         }
         setIsSavingSettings(true);
         updateProject(
-            { settings: { ...project.settings, employeeAddPermission: perm } },
+            { settings: { ...(project.settings || {}), employeeAddPermission: perm } },
             {
                 onSuccess: () => {
                     setSettingsOpen(false);
+                },
+                onError: (error: any) => {
+                    console.error("Failed to update settings:", error);
                 },
                 onSettled: () => {
                     setIsSavingSettings(false);
@@ -583,11 +586,11 @@ const TeamTab: React.FC<TeamTabProps> = ({
                                                 ].map((opt) => (
                                                     <button
                                                         key={opt.val}
-                                                        onClick={() => handleUpdatePermission(opt.val)}
-                                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${project.settings.employeeAddPermission === opt.val ? `bg-${accentColor}-500/10 text-${accentColor}-500 font-bold border border-${accentColor}-500/20` : isLight ? 'text-slate-500 hover:bg-slate-50' : 'text-zinc-400 hover:bg-white/5'}`}
+                                                        onClick={(e) => { e.stopPropagation(); handleUpdatePermission(opt.val); }}
+                                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${project.settings?.employeeAddPermission === opt.val ? `bg-${accentColor}-500/10 text-${accentColor}-500 font-bold border border-${accentColor}-500/20` : isLight ? 'text-slate-500 hover:bg-slate-50' : 'text-zinc-400 hover:bg-white/5'}`}
                                                     >
                                                         {opt.label}
-                                                        {project.settings.employeeAddPermission === opt.val && <CheckCircle size={14} />}
+                                                        {project.settings?.employeeAddPermission === opt.val && <CheckCircle size={14} />}
                                                     </button>
                                                 ))}
                                             </div>
