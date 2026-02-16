@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Project, ProjectRole, User as UserType, ProjectFile, OutreachStrategy, FileId } from '../types';
+import { Project, ProjectRole, User as UserType, ProjectFile, OutreachStrategy, FileId, EmployeeAddPermission } from '../types';
 import { supabase } from '../lib/supabase';
 import { useFileProcessing } from './useFileProcessing';
 
@@ -357,20 +357,20 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     
     // Check if user can actually invite based on invitation policy
     const canInviteMembers = useMemo(() => {
-        if (!project || !currentUserMember) return false;
+        if (!project || !currentMemberRecord) return false;
         
         const perm = project.settings.employeeAddPermission;
         
-        if (currentUserMember.role === ProjectRole.OWNER) {
+        if (currentMemberRecord.role === ProjectRole.OWNER) {
             return true; // Owner can always invite
         }
         
-        if (currentUserMember.role === ProjectRole.ADMIN) {
+        if (currentMemberRecord.role === ProjectRole.ADMIN) {
             return perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS;
         }
         
         return false;
-    }, [project, currentUserMember]);
+    }, [project, currentMemberRecord]);
     
     const canChat = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
     const canScan = isActive;
