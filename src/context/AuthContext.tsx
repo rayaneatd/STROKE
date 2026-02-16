@@ -156,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         filter: `id=eq.${user.id}`
                     },
                     (payload) => {
+                        console.log('Realtime profile update received:', payload);
                         fetchProfile(user.id as unknown as string, {
                             email: user.email,
                             user_metadata: {

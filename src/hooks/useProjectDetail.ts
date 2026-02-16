@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Project, ProjectRole, User as UserType, ProjectFile, OutreachStrategy, FileId, EmployeeAddPermission } from '../types';
 import { supabase } from '../lib/supabase';
 import { useFileProcessing } from './useFileProcessing';
+import { useAuth } from '../context/AuthContext';
 
 interface UseProjectDetailProps {
     projectId: string;
@@ -14,6 +15,7 @@ interface UseProjectDetailProps {
 
 export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, onUpdateUser }: UseProjectDetailProps) => {
     const queryClient = useQueryClient();
+    const { refreshUser } = useAuth();
 
     // UI Local States
     const [isIdentitySelectorOpen, setIsIdentitySelectorOpen] = useState(false);
@@ -479,6 +481,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
             // Refresh Data
             queryClient.invalidateQueries({ queryKey: ['project', projectId] });
             queryClient.invalidateQueries({ queryKey: ['profile'] }); // Update user balance if OWNER_WALLET
+            if (refreshUser) refreshUser();
             
         } catch (err) {
             console.error('Scan deduction error:', err);
