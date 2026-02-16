@@ -299,9 +299,8 @@
             "magicLinkFailed": "Échec de l'envoi du lien magique",
             "enterEmailFirst": "Veuillez d'abord entrer votre adresse email"
         }
-    }
-},
-"languages": {
+    },
+    "languages": {
         "en": "Anglais",
         "fr": "Français"
     },

@@ -216,6 +216,7 @@
     "profile": {
         "title": "Profile Settings",
         "subtitle": "Manage your personal information",
+        "description": "Manage your personal information",
         "defaultName": "Member",
         "personalInfo": "Personal Information",
         "displayName": "Display Name",
@@ -299,9 +300,8 @@
             "magicLinkFailed": "Failed to send magic link",
             "enterEmailFirst": "Please enter your email address first"
         }
-    }
- },
-"languages": {
+    },
+    "languages": {
         "en": "English",
         "fr": "French"
     },

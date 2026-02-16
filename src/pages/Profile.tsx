@@ -101,7 +101,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                             <div className="flex-1 text-center sm:text-left">
                                 <h2 className={`text-xl font-bold ${textPrimary}`}>{currentUser.displayName}</h2>
                                 <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
-                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${getPlanColor(currentUser.subscriptionPlan)}`}>{t(`plans.${currentUser.subscriptionPlan.toLowerCase()}`)} {t('profile.member')}</span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full border ${getPlanColor(currentUser.subscriptionPlan)}`}>{currentUser.subscriptionPlan} {t('profile.member')}</span>
                                     <span className={`text-xs px-2 py-0.5 rounded-full border ${currentUser.role === Role.ADMIN ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/5 text-zinc-400 border-white/10'}`}>{t(`roles.${currentUser.role.toLowerCase()}`)}</span>
                                 </div>
                             </div>

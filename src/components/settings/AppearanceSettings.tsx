@@ -68,7 +68,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ prefs, onUIConf
 
         return (
             <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border backdrop-blur-md shadow-sm ${badgeClasses}`}>
-                {t(`plans.${plan.toLowerCase()}`)}
+                {plan}
             </span>
         );
     };
