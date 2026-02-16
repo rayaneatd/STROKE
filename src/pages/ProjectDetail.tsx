@@ -436,8 +436,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                 onSave={saveProjectChanges}
                 onUserUpdate={onUpdateUser}
                 onNavigate={onNavigate}
-                fundProject={fundProject}
-                withdrawProjectFunds={withdrawFunds}
+                fundProject={async (params) => fundProject(params.amount)}
+                withdrawProjectFunds={async (params) => withdrawFunds(params.amount)}
             />
 
             <UpgradePlanModal

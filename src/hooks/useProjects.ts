@@ -71,6 +71,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                                     email: m.user.email,
                                     displayName: m.user.displayName || m.user.email?.split('@')[0] || 'Unknown',
                                     avatarUrl: m.user.avatarUrl,
+                                    scansBalance: m.user.scansBalance ?? m.user.scans_balance ?? 0,
                                     workMails: Array.isArray(m.user.workMails) ? m.user.workMails : [],
                                     orgNames: Array.isArray(m.user.orgNames) ? m.user.orgNames : []
                                 } : undefined

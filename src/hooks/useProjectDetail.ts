@@ -65,6 +65,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                         email: m.user.email,
                         displayName: m.user.displayName || m.user.display_name || m.user.email?.split('@')[0] || 'Unknown',
                         avatarUrl: m.user.avatarUrl || m.user.avatar_url,
+                        scansBalance: m.user.scansBalance ?? m.user.scans_balance ?? 0,
                         isBanned: m.user.role === 'BANNED'
                     } : undefined
                 })) : []
