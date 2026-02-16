@@ -21,13 +21,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const fetchProfile = async (userId: string, authUser: any) => {
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .maybeSingle();
+            // Try RPC first to bypass potential RLS issues
+            const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_profile');
+            
+            let data = null;
+            
+            if (!rpcError && rpcData) {
+                data = rpcData;
+            } else {
+                console.warn('[AuthContext] RPC failed/empty, trying direct select:', rpcError);
+                const { data: selectData, error: selectError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .maybeSingle();
+                
+                if (selectError) console.error('[AuthContext] Select error:', selectError);
+                data = selectData;
+            }
 
             if (data) {
+                console.log(`[AuthContext] Profile loaded. Balance: ${data.scans_balance}`);
                 // Dual Identity Logic
                 let primaryEmail = data.primary_email;
                 const workMails = Array.isArray(data.work_mails) ? data.work_mails : [];
@@ -71,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Fetch profile error:', err);
         }
 
+        console.warn('[AuthContext] Using fallback profile (0 scans)');
         // Optimistic Fallback: Return skeleton user from Auth Metadata 
         // to prevent redirect loops or "Loading" hangs
         const type = classifyEmailDomain(authUser.email || '');
