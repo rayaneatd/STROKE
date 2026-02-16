@@ -650,11 +650,10 @@
                 "title": "No eligible connections found.",
                 "desc": "Connect with more people to add them here."
             },
-            "actions": {
-                "addSelected": "Add {{count}} Members",
-                "addSelected_one": "Add {{count}} Member",
-                "addSelected_zero": "Add Selected"
-            }
+            "cancel": "Cancel",
+            "addSelected": "Add Selected",
+            "addMembers": "Add {{count}} Members",
+            "addMembers_one": "Add {{count}} Member"
         },
         "editProject": {
             "title": "Edit Project",

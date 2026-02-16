@@ -782,11 +782,10 @@
                 "title": "Aucune connexion éligible trouvée.",
                 "desc": "Connectez-vous avec plus de personnes pour les ajouter ici."
             },
-            "actions": {
-                "addSelected": "Ajouter {{count}} Membres",
-                "addSelected_one": "Ajouter {{count}} Membre",
-                "addSelected_zero": "Ajouter Sélection"
-            }
+            "cancel": "Annuler",
+            "addSelected": "Ajouter Sélection",
+            "addMembers": "Ajouter {{count}} Membres",
+            "addMembers_one": "Ajouter {{count}} Membre"
         },
         "editProject": {
             "title": "Modifier le Projet",
