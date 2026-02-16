@@ -165,19 +165,17 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             }
 
             // 2. Update Profile
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    display_name: newData.displayName,
-                    avatar_url: finalAvatarUrl,
-                    // Store extra fields in preferences for now if no specific columns
-                    preferences: {
-                        ...(user?.preferences || {}),
-                        company: newData.company,
-                        industry: newData.industry
-                    } as unknown as Json
-                })
-                .eq('id', authUser.id);
+            const { error } = await supabase.rpc('update_user_profile', {
+                p_display_name: newData.displayName,
+                p_avatar_url: finalAvatarUrl,
+                p_preferences: {
+                    ...(user?.preferences || {}),
+                    company: newData.company,
+                    industry: newData.industry
+                },
+                p_company: newData.company,
+                p_industry: newData.industry
+            });
 
             if (error) throw error;
             setAvatarFile(null); // Clear file after success

@@ -98,16 +98,13 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
     // Mutation for saving settings
     const saveMutation = useMutation({
         mutationFn: async (data: { preferences: UserPreferences, billingType: BillingType, overageCap: number | 'UNLIMITED' }) => {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    preferences: data.preferences as unknown as Json,
-                    billing_type: data.billingType,
-                    overage_cap: data.overageCap === 'UNLIMITED' ? -1 : data.overageCap,
-                    company: (data.preferences as any).company,
-                    industry: (data.preferences as any).industry
-                })
-                .eq('id', user.id);
+            const { error } = await supabase.rpc('update_user_profile', {
+                p_preferences: data.preferences as unknown as Json,
+                p_billing_type: data.billingType,
+                p_overage_cap: data.overageCap === 'UNLIMITED' ? -1 : data.overageCap,
+                p_company: (data.preferences as any).company,
+                p_industry: (data.preferences as any).industry
+            });
 
             if (error) throw error;
         },

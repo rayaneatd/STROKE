@@ -162,10 +162,13 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
 
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: string, data: any }) => {
-            const { error } = await supabase
-                .from('projects')
-                .update(data)
-                .eq('id', id);
+            const { error } = await supabase.rpc('update_project', {
+                p_project_id: id,
+                p_title: data.title,
+                p_description: data.description,
+                p_status: data.status,
+                p_settings: data.settings
+            });
             if (error) throw error;
         },
         onSuccess: () => {
