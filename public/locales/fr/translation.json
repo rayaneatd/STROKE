@@ -947,6 +947,5 @@
             "description": "Seulement <1>{{percent}}%</1> du budget alloué reste. Transférez des crédits de votre portefeuille pour garder ce projet actif.",
             "allocateFunds": "Allouer Fonds"
         }
-    },
-    
+    }
 }
