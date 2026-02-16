@@ -1,0 +1,952 @@
+{
+    "common": {
+        "loading": "Chargement...",
+        "error": "Une erreur est survenue",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "back": "Retour",
+        "next": "Suivant",
+        "confirm": "Confirmer",
+        "close": "Fermer",
+        "search": "Rechercher...",
+        "noData": "Aucune donnée disponible",
+        "unknown": "Inconnu",
+        "featureSimulated": "La fonctionnalité est simulée dans cette démo.",
+        "lowCredits": {
+            "title": "Attention : Crédits Faibles",
+            "description": "Il ne vous reste que {{count}} scans. Rechargez maintenant pour éviter toute interruption.",
+            "action": "Acheter des Scans"
+        }
+    },
+    "nav": {
+        "dashboard": "Tableau de bord",
+        "projects": "Projets",
+        "connections": "Connexions",
+        "settings": "Paramètres",
+        "admin": "Admin",
+        "logout": "Déconnexion",
+        "profile": "Profil"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "subtitle": "Gérer les préférences de l'espace de travail et la sécurité du compte",
+        "save": "Enregistrer les modifications",
+        "language": "Langue",
+        "tabs": {
+            "workflow": "Flux de travail",
+            "appearance": "Apparence",
+            "language": "Langue",
+            "notifications": "Notifications",
+            "ai": "Configuration IA",
+            "billing": "Stratégie de facturation",
+            "security": "Sécurité"
+        },
+        "workflow": {
+            "outreachDefaults": {
+                "title": "Paramètres de contact",
+                "description": "Définir l'identité d'expéditeur par défaut pour les nouveaux projets.",
+                "policyTitle": "Politique d'envoi par défaut",
+                "centralized": {
+                    "title": "Centralisé (Propriétaire)",
+                    "description": "Tous les e-mails sont envoyés depuis votre compte principal. Idéal pour la cohérence de la marque."
+                },
+                "decentralized": {
+                    "title": "Décentralisé (Individuel)",
+                    "description": "Les membres envoient des e-mails depuis leurs propres comptes connectés. Idéal pour la rapidité."
+                },
+                "senderAddress": "Adresse d'expédition par défaut",
+                "noEmails": "Aucun e-mail connecté trouvé.",
+                "connect": "Connecter dans Profil",
+                "selectPlaceholder": "Sélectionner l'e-mail d'envoi par défaut..."
+            },
+            "automation": {
+                "title": "Automatisation des projets",
+                "description": "Optimisez le comportement par défaut de vos projets.",
+                "autoArchive": {
+                    "title": "Archivage automatique",
+                    "description": "Archiver automatiquement les projets après 30 jours d'inactivité."
+                },
+                "compactMode": {
+                    "title": "Densité compacte",
+                    "description": "Afficher plus d'éléments par page dans les listes de projets et les tableaux."
+                }
+            },
+            "roles": {
+                "title": "Rôles par défaut",
+                "description": "Définir les permissions par défaut pour les nouveaux membres de l'équipe.",
+                "analystPermissions": "Permissions Analyste",
+                "activityView": {
+                    "title": "Vue d'activité Analyste",
+                    "description": "Les analystes peuvent-ils voir le journal d'audit global et l'activité des utilisateurs ?"
+                },
+                "ghostingTool": {
+                    "title": "Outil Anti-Fantôme Analyste",
+                    "description": "Les analystes peuvent-ils envoyer des e-mails de réponse en masse aux candidats ?"
+                }
+            }
+        },
+        "appearance": {
+            "title": "Thème de l'interface",
+            "darkMode": "Mode Sombre",
+            "lightMode": "Mode Clair",
+            "accentColor": "Couleur d'accentuation",
+            "accentDescription": "Personnalisez la couleur principale de votre espace de travail.",
+            "atmosphere": "Ambiance",
+            "atmosphereDescription": "Choisissez l'effet de lueur en arrière-plan.",
+            "graphics": {
+                "title": "Graphismes & Accessibilité",
+                "glass": {
+                    "title": "Intensité du verre",
+                    "description": "Ajustez la force du flou."
+                },
+                "motion": {
+                    "title": "Réduire les animations",
+                    "description": "Désactiver les animations lourdes."
+                }
+            },
+            "levels": {
+                "low": "BAS",
+                "medium": "MOYEN",
+                "high": "HAUT"
+            }
+        },
+        "notifications": {
+            "channels": {
+                "title": "Canaux",
+                "description": "Choisissez comment vous souhaitez recevoir les alertes et les mises à jour.",
+                "email": {
+                    "title": "Notifications par e-mail",
+                    "description": "Recevez des résumés hebdomadaires et des alertes critiques."
+                },
+                "push": {
+                    "title": "Notifications push",
+                    "description": "Mises à jour en temps réel dans le navigateur."
+                }
+            },
+            "frequency": {
+                "title": "Fréquence",
+                "schedule": "Calendrier du résumé",
+                "daily": "Quotidien",
+                "weekly": "Hebdomadaire",
+                "never": "Jamais",
+                "criticalAlerts": "Les alertes critiques (sécurité, paiement) sont toujours envoyées immédiatement."
+            }
+        }
+    },
+    "ai": {
+        "calibration": {
+            "title": "Moteur de calibrage",
+            "description": "Configurez comment notre moteur analyse et fait correspondre les candidats.",
+            "strictness": {
+                "title": "Rigueur de correspondance",
+                "low": {
+                    "label": "Large",
+                    "description": "Privilégie le potentiel et les compétences transférables."
+                },
+                "medium": {
+                    "label": "Équilibré",
+                    "description": "Correspondance standard par mots-clés et sémantique."
+                },
+                "high": {
+                    "label": "Précis",
+                    "description": "Correspondance stricte des exigences uniquement."
+                }
+            }
+        },
+        "personality": {
+            "title": "Personnalité",
+            "tone": {
+                "title": "Ton du résumé",
+                "professional": "Professionnel",
+                "casual": "Décontracté",
+                "direct": "Direct"
+            },
+            "example": {
+                "title": "Exemple de sortie",
+                "professional": "Le candidat possède une forte maîtrise de React. Recommandé pour un premier entretien.",
+                "casual": "Ce candidat semble parfait ! Il a de solides compétences en React qui valent le détour.",
+                "direct": "Score de correspondance : 85%. Compétences clés : React (Élevé). Recommandation : Entretien."
+            }
+        }
+    },
+    "billing": {
+        "title": "Stratégie de facturation",
+        "description": "Contrôlez comment votre espace de travail gère les limites d'utilisation.",
+        "prudent": {
+            "title": "Mode Prudent",
+            "badge": "Limites strictes",
+            "description": "Le scan s'arrête immédiatement lorsque votre solde atteint zéro. Vous n'êtes jamais facturé en supplément sans approbation manuelle. Idéal pour les budgets stricts."
+        },
+        "serein": {
+            "title": "Mode Serein",
+            "badge": "Paiement à l'usage",
+            "paidPlanOnly": "FORFAIT PAYANT UNIQUEMENT",
+            "description": "Le travail continue sans interruption. Le solde négatif (dépassement) est suivi via Polar.sh et facturé automatiquement à la fin du cycle."
+        },
+        "overage": {
+            "title": "Limite de crédit (Plafond de sécurité)",
+            "unlimited": "Illimité",
+            "unlimitedDesc": "Vous serez facturé pour toute l'utilisation à la fin du cycle de facturation sans interruption.",
+            "limitedDesc": "Le scan s'arrêtera automatiquement si votre solde atteint -{{cap}} scans."
+        }
+    },
+    "security": {
+        "dangerZone": {
+            "title": "Zone de danger",
+            "deleteAccount": {
+                "title": "Supprimer le compte",
+                "description": "Supprimez définitivement votre compte personnel et tout son contenu de la plateforme <1>logo</1>. Cette action est irréversible, veuillez donc continuer avec prudence.",
+                "button": "Supprimer le compte"
+            }
+        }
+    },
+    "plans": {
+        "free": "GRATUIT",
+        "essential": "ESSENTIEL",
+        "pro": "PRO",
+        "team": "ÉQUIPE",
+        "elite": "ELITE"
+    },
+    "roles": {
+        "admin": "ADMIN",
+        "user": "UTILISATEUR",
+        "recruiter": "RECRUITER"
+    },
+    "profile": {
+        "title": "Mon Profil",
+        "description": "Gérez votre identité numérique et vos canaux de communication",
+        "defaultName": "Membre",
+        "personalInfo": "Informations Personnelles",
+        "displayName": "Nom d'affichage",
+        "professionalContext": "Contexte Professionnel",
+        "companyName": "Nom de l'entreprise",
+        "companyPlaceholder": "ex. Acme Corp",
+        "industry": "Secteur d'activité",
+        "industryPlaceholder": "Sélectionner le secteur...",
+        "saveChanges": "Enregistrer",
+        "linkedAccounts": "Comptes liés",
+        "lastSignIn": "Dernière connexion : {{date}}",
+        "active": "Actif",
+        "primaryEmail": "Email Principal",
+        "actionRequired": "Action Requise :",
+        "addEmailMessage": "Veuillez ajouter un email personnel principal pour activer la création de projets et la récupération de compte.",
+        "cancel": "Annuler",
+        "save": "Sauvegarder",
+        "edit": "Modifier",
+        "workEmails": "Emails Professionnels",
+        "workEmailsDescription": "Gérez plusieurs identités email professionnelles",
+        "workEmail": "Email Pro",
+        "remove": "Supprimer",
+        "noWorkEmails": "Aucun email professionnel connecté",
+        "addWorkEmail": "Ajouter un email pro",
+        "currentPlan": "Forfait Actuel",
+        "upgrade": "Mettre à niveau",
+        "tier": "NIVEAU {{plan}}",
+        "renewsOn": "Renouvellement le {{date}}",
+        "projects": "Projets",
+        "scansPerMonth": "Scans / Mois",
+        "remaining": "{{count}} Restants",
+        "unlimited": "Illimité",
+        "connectWorkEmail": "Connecter un email pro",
+        "connectAurinkoDescription": "Liez une boîte mail professionnelle via Aurinko",
+        "aurinkoDisclaimer": "Nous utiliserons Aurinko pour connecter votre boîte mail afin que vous puissiez envoyer des suivis et activer l'anti-ghosting.",
+        "connectAurinko": "Se connecter avec Aurinko",
+        "member": "Membre",
+        "success": {
+            "updated": "Profil mis à jour avec succès",
+            "emailUpdated": "Email principal mis à jour avec succès.",
+            "workEmailRemoved": "Email professionnel supprimé."
+        },
+        "errors": {
+            "updateFailed": "Échec de la mise à jour du profil",
+            "userIdNotFound": "ID utilisateur introuvable",
+            "emailUpdateFailed": "Échec de la mise à jour de l'email",
+            "workEmailRemoveFailed": "Échec de la suppression de l'email professionnel",
+            "aurinkoNotConfigured": "Aurinko n'est pas configuré.",
+            "notAuthenticated": "Non authentifié"
+        }
+    },
+    "auth": {
+        "title": "Bon retour",
+        "subtitle": "Connectez-vous pour accéder à votre espace",
+        "emailLabel": "Adresse Email",
+        "passwordLabel": "Mot de passe",
+        "signIn": "Se Connecter",
+        "register": "Créer un Compte",
+        "forgotPassword": "Mot de passe oublié ?",
+        "continueWith": "Ou continuer avec",
+        "noAccount": "Pas de compte ?",
+        "hasAccount": "Déjà un compte ?",
+        "magicLink": "Envoyer le Lien Magique",
+        "welcomeBack": "Bon retour",
+        "continueWithMicrosoft": "Continuer avec Microsoft",
+        "continueWithGoogle": "Continuer avec Google",
+        "orEmail": "ou continuer avec email",
+        "emailPlaceholder": "nom@entreprise.com",
+        "staySignedIn": "Rester connecté",
+        "marketingConsent": "J'accepte de recevoir des mises à jour et opportunités de STROKE",
+        "termsAgree": "En vous connectant, vous acceptez nos",
+        "terms": "Conditions d'Utilisation",
+        "and": "et",
+        "privacy": "Politique de Confidentialité",
+        "magicLinkSent": {
+            "title": "Vérifiez votre email",
+            "desc": "Nous avons envoyé un lien magique à <1>{{email}}</1>.<br/>Cliquez sur le lien pour vous connecter.",
+            "openEmail": "Ouvrir l'application Email",
+            "later": "Je le ferai plus tard"
+        },
+        "errors": {
+            "invalidEmail": "Adresse email invalide",
+            "passwordRequired": "Le mot de passe est requis",
+            "authFailed": "L'authentification a échoué. Veuillez réessayer.",
+            "workEmailRequired": "Veuillez utiliser une adresse email professionnelle.",
+            "nameRequired": "Le nom d'affichage est requis.",
+            "checkEmail": "Vérifiez votre email pour le lien de confirmation.",
+            "unexpected": "Une erreur inattendue s'est produite.",
+            "resetLinkSent": "Lien de réinitialisation du mot de passe envoyé à votre email.",
+            "socialLoginFailed": "La connexion sociale a échoué",
+            "enterEmail": "Veuillez entrer votre adresse email",
+            "completeCaptcha": "Veuillez compléter le captcha",
+            "workEmailNotAllowed": "Les emails professionnels ne sont pas autorisés pour la connexion. Veuillez utiliser un email personnel.",
+            "magicLinkFailed": "Échec de l'envoi du lien magique",
+            "enterEmailFirst": "Veuillez d'abord entrer votre adresse email"
+        }
+    },
+    "languages": {
+        "en": "Anglais",
+        "fr": "Français"
+    },
+    "dashboard": {
+        "loadingIntelligence": "Chargement de l'intelligence...",
+        "header": {
+            "title": "Aperçu des performances",
+            "subtitle": "Intelligence d'affaires en temps réel dans votre organisation"
+        },
+        "filters": {
+            "timeRange": {
+                "last7Days": "7 derniers jours",
+                "last14Days": "14 derniers jours",
+                "last30Days": "30 derniers jours",
+                "last3Months": "3 derniers mois",
+                "lastYear": "L'année dernière"
+            },
+            "status": {
+                "all": "Tous les statuts",
+                "active": "Projets actifs",
+                "completed": "Terminés",
+                "archived": "Archivés"
+            },
+            "owner": {
+                "organization": "Organisation",
+                "myProjects": "Mes projets"
+            }
+        },
+        "actions": {
+            "forceRefresh": "Forcer l'actualisation",
+            "export": "Exporter",
+            "exportCSV": "Exporter CSV",
+            "exportJSON": "Exporter JSON"
+        },
+        "kpi": {
+            "totalUploads": "Total Candidats",
+            "processed": "traités",
+            "qualifiedCandidates": "Candidats Qualifiés",
+            "scoreAbove80": "Score > 80%",
+            "activeProjects": "Projets Actifs",
+            "recruitingNow": "Recrutement en cours",
+            "systemThroughput": "Débit Système",
+            "avgParseTime": "Temps moy. d'analyse"
+        },
+        "team": {
+            "capacity": "Capacité de l'équipe",
+            "admins": "Admins",
+            "fullAccess": "Accès Complet",
+            "partners": "Partenaires",
+            "scanAnalyze": "Scan & Analyse",
+            "scouts": "Chasseurs",
+            "sourcingOnly": "Sourcing Uniquement",
+            "analysts": "Analystes",
+            "viewOnly": "Lecture Seule"
+        },
+        "charts": {
+            "volumeQuality": {
+                "title": "Tendances Volume & Qualité",
+                "subtitle": "Flux de candidatures vs score de correspondance",
+                "volume": "Volume",
+                "avgScore": "Score Moyen"
+            },
+            "failureAnalysis": {
+                "title": "Analyse des Échecs",
+                "subtitle": "Erreurs de traitement",
+                "successRate": "100% de Réussite",
+                "allProcessed": "Tous les fichiers ont été traités avec succès.",
+                "errors": "Erreurs"
+            }
+        },
+        "leaderboard": {
+            "title": "Performance des projets",
+            "subtitle": "Meilleures campagnes de recrutement",
+            "headers": {
+                "projectName": "Nom du projet",
+                "status": "Statut",
+                "candidates": "Candidats",
+                "qualified": "Qualifiés",
+                "avgScore": "Score Moy.",
+                "efficiency": "Efficacité"
+            },
+            "noProjects": "Aucun projet ne correspond à vos filtres.",
+            "conversion": "Conv."
+        }
+    },
+    "projects": {
+        "title": "Projets",
+        "subtitle": "Gérez vos campagnes de recrutement",
+        "newProject": "Nouveau Projet",
+        "createProject": "Créer un projet",
+        "searchPlaceholder": "Rechercher des projets...",
+        "errors": {
+            "noPrimaryEmail": "Ajoutez un email principal pour créer des projets",
+            "insufficientBalance": "Solde insuffisant pour le budget de ce projet.",
+            "transferFailed": "Projet créé mais le transfert de budget initial a échoué : {{error}}",
+            "createFailed": "Échec de la création du projet : {{error}}",
+            "updateFailed": "Échec de la mise à jour du projet : {{error}}"
+        },
+        "filter": {
+            "all": "Tous les statuts",
+            "active": "Actif",
+            "completed": "Terminé",
+            "archived": "Archivé",
+            "anyTime": "Tout le temps",
+            "last7": "7 derniers jours",
+            "last30": "30 derniers jours",
+            "last90": "3 derniers mois",
+            "allOwners": "Tous les propriétaires",
+            "myProjects": "Mes projets",
+            "allOrgs": "Toutes les orgs",
+            "reset": "Réinitialiser"
+        },
+        "role": {
+            "owner": "Propriétaire",
+            "admin": "Admin",
+            "editor": "Éditeur",
+            "viewer": "Lecteur"
+        },
+        "menu": {
+            "edit": "Modifier le projet",
+            "archive": "Archiver le projet",
+            "complete": "Marquer comme terminé",
+            "reactivate": "Réactiver",
+            "leave": "Quitter le projet",
+            "delete": "Supprimer le projet"
+        },
+        "list": {
+            "project": "Projet",
+            "status": "Statut",
+            "owner": "Propriétaire",
+            "stats": "Stats",
+            "created": "Créé le"
+        },
+        "view": {
+            "grid": "Vue Grille",
+            "list": "Vue Liste"
+        },
+        "empty": {
+            "title": "Aucun projet trouvé",
+            "subtitle": "Essayez d'ajuster vos filtres ou créez un nouveau projet.",
+            "clearFilters": "Effacer tous les filtres",
+            "noProjects": "Vous n'avez pas encore de projets.",
+            "noMatches": "Aucun projet ne correspond à vos filtres."
+        },
+        "actions": {
+            "loadMore": "Charger plus",
+            "remaining": "restant(s)"
+        }
+    },
+    "project": {
+        "actions": {
+            "connectEmail": "Connecter l'Email",
+            "editProject": "Modifier le Projet",
+            "dismiss": "Ignorer"
+        },
+        "errors": {
+            "scanFailed": "Scan Échoué :",
+            "insufficientBalance": "Solde insuffisant pour le budget de ce projet."
+        },
+        "created": "Créé le",
+        "budget": "Budget",
+        "balance": "Solde",
+        "overage": "Dépassement",
+        "selectSendingEmail": "Sélectionner l'email d'envoi",
+        "sendingAs": "Envoyé en tant que",
+        "noEmailsConnected": "Aucun email connecté.",
+        "tabs": {
+            "overview": "Vue d'ensemble",
+            "activityAudit": "Activité & Audit",
+            "resumes": "CVs",
+            "team": "Équipe",
+            "discussions": "Discussions"
+        },
+        "activity": {
+            "errors": {
+                "connectWorkEmail": "Veuillez connecter votre email professionnel pour utiliser cette fonctionnalité.",
+                "antiGhosting": "L'anti-ghosting est actif. Vous ne pouvez pas effectuer cette action manuellement."
+            }
+        },
+        "discussions": {
+            "channels": {
+                "title": "Canaux",
+                "general": "Général",
+                "adminOnly": "Admin Uniquement",
+                "adminDiscussion": "Discussion Admin",
+                "generalChat": "Chat Général"
+            },
+            "messages": {
+                "decrypting": "Déchiffrement des messages sécurisés...",
+                "empty": "Aucun message. Lancez la conversation !",
+                "locked": "La discussion est verrouillée",
+                "placeholder": "Message #{{channel}}..."
+            }
+        },
+        "overview": {
+            "exportReport": "Exporter le Rapport",
+            "cards": {
+                "totalResumes": "Total CVs",
+                "avgScore": "Score Moyen",
+                "teamMembers": "Membres de l'Équipe",
+                "insight": "Aperçu"
+            },
+            "stats": {
+                "analyzedPending": "{{completed}} analysés, {{pending}} en attente",
+                "basedOnCandidates": "Basé sur {{count}} candidats",
+                "contributedScans": "A contribué à {{count}} scans",
+                "analysisComplete": "Analyse terminée à {{percent}}%"
+            },
+            "insights": {
+                "excellentCandidates": "{{count}} excellents candidats trouvés avec un score > 80% !",
+                "keepUploading": "Continuez à télécharger des CVs pour trouver de meilleures correspondances."
+            },
+            "charts": {
+                "uploadActivity": "Activité de Téléchargement",
+                "topCandidates": "Meilleurs Candidats",
+                "noCandidates": "Aucun candidat analysé pour le moment."
+            }
+        },
+        "team": {
+            "title": "Équipe du Projet",
+            "subtitle": "Gérer les accès et les permissions",
+            "accessSettings": "Paramètres d'Accès",
+            "saving": "Enregistrement...",
+            "invitationPolicy": "Politique d'Invitation",
+            "invitationOptions": {
+                "ALL": "Connexions Propriétaire et Admin",
+                "OWN_CONNECTIONS": "Connexions Admin Uniquement",
+                "OWNER_CONNECTIONS": "Connexions Propriétaire Uniquement"
+            },
+            "searchPlaceholder": "Rechercher des Admins ou Employés...",
+            "roles": {
+                "owner": "Propriétaire",
+                "admin": "Admin",
+                "partner": "Partenaire Talent",
+                "scout": "Éclaireur Talent",
+                "analyst": "Analyste Talent",
+                "visitor": "Visiteur",
+                "staff": "Personnel",
+                "employee": "Employé"
+            },
+            "you": "VOUS",
+            "scansUsed": "Scans Utilisés",
+            "showMore": "Afficher {{count}} de plus",
+            "addMember": "Ajouter Membre",
+            "empty": {
+                "noMatch": "Aucun résultat pour \"{{search}}\"",
+                "noMembers": "Aucun membre dans ce groupe."
+            }
+        },
+        "resumes": {
+            "errors": {
+                "invalidFileType": "Type de fichier invalide. Veuillez télécharger des PDF, DOCX ou Images.",
+                "noCandidatesExport": "Aucun candidat à exporter dans la vue actuelle."
+            }
+        }
+    },
+    "modal": {
+        "newTitle": "Nouveau Projet",
+        "editTitle": "Paramètres du Projet",
+        "newSubtitle": "Configuration initiale",
+        "editSubtitle": "Gérer la configuration",
+        "draft": "Mode Brouillon",
+        "tabs": {
+            "general": "Général",
+            "team": "Équipe & Permissions",
+            "billing": "Facturation & Quotas",
+            "ai": "Diagnostics IA"
+        },
+        "general": {
+            "title": "Détails Généraux",
+            "projectTitle": "Titre du Projet",
+            "jobDescription": "Description du Poste",
+            "aiContext": "Contexte IA Actif",
+            "status": "Statut",
+            "active": "ACTIF",
+            "completed": "TERMINÉ",
+            "archived": "ARCHIVÉ"
+        },
+        "team": {
+            "title": "Équipe & Permissions",
+            "outreachPolicy": "Politique d'Identité de Contact",
+            "centralized": "Centralisé (Propriétaire)",
+            "centralizedDesc": "Tous les e-mails sont envoyés via le propriétaire.",
+            "decentralized": "Décentralisé (Utilisateur)",
+            "decentralizedDesc": "Les utilisateurs envoient via leur propre e-mail.",
+            "selectSender": "Sélectionner l'adresse d'envoi centralisée",
+            "noEmails": "Aucun e-mail connecté trouvé.",
+            "connectProfile": "Connecter dans le Profil",
+            "selectEmail": "Sélectionner un e-mail...",
+            "emailNote": "Cet e-mail sera utilisé pour tous les contacts du projet.",
+            "ownerNote": "Les e-mails sont envoyés via l'adresse centralisée du Propriétaire du Projet.",
+            "userNote": "Les e-mails sont envoyés via votre propre adresse personnelle connectée.",
+            "invitationPolicy": "Politique d'Invitation",
+            "invite": {
+                "all": "Connexions Propriétaire & Admin",
+                "admin": "Connexions Admin Uniquement",
+                "owner": "Connexions Propriétaire Uniquement"
+            },
+            "toggles": {
+                "analystCompleted": "Terminé Analyste Uniquement",
+                "analystCompletedDesc": "Masquer les projets terminés aux non-analystes.",
+                "adminStatus": "Contrôle Statut Admin",
+                "adminStatusDesc": "Permettre aux Admins d'archiver/terminer.",
+                "analystAudit": "Vue Audit Analyste",
+                "analystAuditDesc": "Permettre aux Analystes de voir l'onglet Activité.",
+                "analystGhost": "Outil Fantôme Analyste",
+                "analystGhostDesc": "Permettre aux Analystes d'utiliser les e-mails de masse."
+            },
+            "demoteTarget": "Cible de Rétrogradation Rapide",
+            "roles": {
+                "partner": "Partenaire Talent (Accès Complet)",
+                "scout": "Chasseur de Têtes (Scan Uniquement)",
+                "analyst": "Analyste Talent (Vue Uniquement)",
+                "visitor": "Visiteur (Lecture Seule)"
+            }
+        },
+        "billing": {
+            "title": "Facturation & Limites",
+            "sharedWallet": "Portefeuille Partagé",
+            "sharedWalletDesc": "Les scans sont déduits directement du solde personnel du Propriétaire.",
+            "dedicatedBudget": "Budget Dédié",
+            "dedicatedBudgetDesc": "Le projet a son propre budget financé par le Propriétaire. Plus sûr pour les équipes.",
+            "projectBudget": "Budget du Projet",
+            "scans": "scans",
+            "walletBalance": "Solde de votre Portefeuille",
+            "amount": "Montant",
+            "deposit": "Dépôt",
+            "withdraw": "Retrait",
+            "initialBudget": "Budget Initial du Projet",
+            "yourWallet": "Votre Portefeuille : {{balance}}",
+            "enterAmount": "Entrer le montant à transférer...",
+            "transferNote": "Les scans seront transférés de votre portefeuille vers ce projet lors de la création.",
+            "defaultQuota": "Quota Membre Par Défaut",
+            "unlimited": "Illimité",
+            "customLimit": "Limite Personnalisée",
+            "enterQuota": "Entrer le maximum de scans par membre",
+            "quotaNote": "Note : Ceci définit le quota par défaut pour les nouveaux membres. Les quotas des membres existants ne sont pas modifiés.",
+            "lockedTitle": "Facturation Avancée Verrouillée",
+            "lockedDesc": "Passez au plan Pro ou Équipe pour allouer des budgets spécifiques par projet et contrôler les quotas des membres."
+        },
+        "createProject": {
+          "title": "Créer un Nouveau Projet",
+          "subtitle": "Configurez votre nouvelle mission de recrutement",
+          "projectTitle": "Titre du Projet",
+          "placeholderTitle": "ex. Ingénieur Frontend Senior",
+          "jobDescription": "Description du Poste",
+          "aiContext": "Contexte IA Actif",
+          "placeholderDesc": "Collez la description complète du poste ici...",
+          "optimizedForAI": "Optimisé pour l'analyse IA",
+          "chars": "caractères",
+          "outreachIdentity": "Identité de Contact",
+          "centralized": "Centralisé (Propriétaire)",
+          "centralizedDesc": "E-mails envoyés via votre compte.",
+          "decentralized": "Décentralisé (Utilisateur)",
+          "decentralizedDesc": "Les membres utilisent leur propre e-mail.",
+          "selectSender": "Sélectionner l'adresse d'envoi centralisée",
+          "noEmails": "Aucun e-mail connecté trouvé.",
+          "connectProfile": "Connecter dans le Profil",
+          "emailNote": "Cet e-mail sera utilisé pour tous les contacts du projet.",
+          "initialStatus": "Statut Initial",
+          "billingStrategy": "Stratégie de Facturation",
+          "sharedWallet": "Portefeuille Partagé (Propriétaire)",
+          "dedicatedBudget": "Budget Dédié",
+           "create": "Créer le Projet",
+           "cancel": "Annuler",
+           "initialBudget": "Budget Initial du Projet",
+           "budgetNote": "Les scans seront déduits de votre solde principal ({{balance}}) et alloués à ce projet.",
+           "memberQuota": "Quota par Membre par Défaut",
+           "unlimited": "Illimité",
+           "customLimit": "Limite Personnalisée",
+           "enterLimit": "Entrer le max de scans par membre",
+           "scans": "SCANS"
+         },
+        "addMember": {
+            "title": {
+                "ADMIN": "Ajouter Admin",
+                "EMPLOYEE": "Ajouter Membre d'Équipe",
+                "VISITOR": "Ajouter Visiteur"
+            },
+            "subtitle": "Sélectionnez les connexions à ajouter à ce projet.",
+            "selectRole": "Sélectionner le Rôle",
+            "roles": {
+                "partner": {
+                    "title": "Partenaire Talent",
+                    "descTitle": "Accès Complet",
+                    "desc": "Les partenaires ont un contrôle total sur le projet. Ils peuvent télécharger des CV, lancer des analyses IA, analyser les candidats et voir les rapports détaillés."
+                },
+                "scout": {
+                    "title": "Éclaireur Talent",
+                    "descTitle": "Focus Sourcing",
+                    "desc": "Les éclaireurs peuvent télécharger des CV et effectuer des sélections initiales. Ils ne peuvent pas accéder aux analyses agrégées ou aux rapports stratégiques."
+                },
+                "analyst": {
+                    "title": "Analyste Talent",
+                    "descTitle": "Focus Insights",
+                    "desc": "Les analystes ont un accès en lecture seule aux données de recrutement et aux tableaux de bord d'analyse. Ils ne peuvent pas télécharger de fichiers ou modifier les données des candidats."
+                }
+            },
+            "emptyState": {
+                "title": "Aucune connexion éligible trouvée.",
+                "desc": "Connectez-vous avec plus de personnes pour les ajouter ici."
+            },
+            "actions": {
+                "addSelected": "Ajouter {{count}} Membres",
+                "addSelected_one": "Ajouter {{count}} Membre",
+                "addSelected_zero": "Ajouter Sélection"
+            }
+        },
+        "editProject": {
+            "title": "Modifier le Projet",
+            "subtitle": "Mettre à jour les détails et paramètres du projet",
+            "fields": {
+                "title": {
+                    "label": "Titre du Projet",
+                    "placeholder": "ex: Développeur Backend Senior"
+                },
+                "description": {
+                    "label": "Description du Poste",
+                    "aiContext": "Contexte IA Actif",
+                    "placeholder": "Collez la description complète du poste ici...",
+                    "aiOptimized": "Optimisé pour l'analyse IA",
+                    "chars": "caractères"
+                },
+                "status": {
+                    "label": "Statut du Projet",
+                    "options": {
+                        "ACTIVE": "Actif",
+                        "COMPLETED": "Terminé",
+                        "ARCHIVED": "Archivé"
+                    }
+                },
+                "invitationPolicy": {
+                    "label": "Politique d'Invitation",
+                    "options": {
+                        "ALL": "Connexions Propriétaire et Admin",
+                        "OWN_CONNECTIONS": "Connexions Admin Uniquement",
+                        "OWNER_CONNECTIONS": "Connexions Propriétaire Uniquement"
+                    }
+                },
+                "quickDemote": {
+                    "label": "Rôle Cible Rétrogradation Rapide",
+                    "options": {
+                        "PARTNER": "Partenaire Talent (Accès Complet)",
+                        "SCOUT": "Éclaireur Talent (Scan Uniquement)",
+                        "ANALYST": "Analyste Talent (Lecture Seule)",
+                        "VISITOR": "Visiteur (Lecture Seule)"
+                    }
+                }
+            },
+            "actions": {
+                "save": "Enregistrer les Modifications"
+            }
+        },
+        "globalBan": {
+             "title": "Compte Suspendu",
+             "description": "Votre compte a été suspendu par un administrateur. Vous n'avez plus accès à la plateforme <1>logo</1> ni à vos projets.",
+             "reason": "Raison",
+             "expiration": "Expiration",
+             "signOut": "Se déconnecter en toute sécurité",
+             "contactSupport": "Si vous pensez qu'il s'agit d'une erreur, veuillez contacter le support."
+         },
+        "upgrade": {
+          "title": "Débloquez un Potentiel Illimité",
+          "description": "Vous n'avez plus de scans ! Passez à <1>Pro</1> pour supprimer les limites et recruter plus vite.",
+          "features": {
+            "unlimited": "Scans de CV Illimités",
+            "advancedAI": "Analyse IA Avancée",
+            "priority": "File de Traitement Prioritaire"
+          },
+          "cta": "Mettre à Niveau",
+          "later": "Peut-être Plus Tard"
+        },
+        "ai": {
+            "title": "Moteur de Calibrage IA",
+            "description": "Exécutez une analyse statistique avancée sur la vélocité du projet pour optimiser votre budget et vos quotas.",
+            "running": "Exécution des Diagnostics...",
+            "ready": "Prêt à Optimiser ?",
+            "step1": "Analyse de la vélocité de téléchargement...",
+            "step2": "Calcul des taux de consommation des membres...",
+            "step3": "Prévision du budget mensuel...",
+            "step4": "Génération du plan d'optimisation...",
+            "intro": "Notre IA analysera 30 jours de données historiques, la variance des membres et les taux de consommation pour prévoir votre configuration idéale.",
+            "processing": "Traitement...",
+            "run": "Lancer les Diagnostics",
+            "healthScore": "Score de Santé",
+            "dailyScans": "Scans Quotidiens Moy.",
+            "projectedMonthly": "Mensuel Projeté",
+            "projectBudget": "Budget du Projet",
+            "memberQuota": "Quota Membre",
+            "dismiss": "Ignorer",
+            "approve": "Approuver & Appliquer"
+        },
+        "actions": {
+            "cancel": "Annuler",
+            "create": "Créer le Projet",
+            "save": "Enregistrer les Modifications"
+        },
+        "leave": {
+            "title": "Quitter le Projet ?",
+            "description": "Êtes-vous sûr de vouloir quitter \"{{title}}\" ? Vous perdrez l'accès à tous les fichiers et discussions.",
+            "confirm": "Quitter le Projet",
+            "cancel": "Annuler"
+        },
+        "delete": {
+            "title": "Supprimer le Projet ?",
+            "description": "Êtes-vous sûr de vouloir supprimer \"{{title}}\" ?",
+            "warning": "Cette action est irréversible.",
+            "confirm": "Supprimer le Projet",
+            "cancel": "Annuler"
+        },
+        "noScans": {
+            "title": "Plus de Scans",
+            "description": "Le propriétaire du projet, {{ownerName}}, n'a plus de scans restants. Seul le propriétaire peut acheter plus de scans.",
+            "requestSent": "Demande Envoyée",
+            "notifyManager": "Notifier le Manager"
+        },
+        "deleteAccount": {
+            "title": "Supprimer le Compte ?",
+            "description": "Vous êtes sur le point de supprimer définitivement votre compte et toutes les données associées. Cette action est irréversible.",
+            "wait": "Attendez {{count}}s pour confirmer",
+            "pleaseWait": "Veuillez patienter {{count}}s",
+            "confirm": "Oui, Supprimer Mon Compte",
+            "cancel": "Annuler"
+        },
+        "bulkAccess": {
+            "title": "Configurer l'Accès",
+            "subtitle": "Mise à jour des permissions pour {{count}} membres",
+            "roles": {
+                "partner": {
+                    "desc": "Accès complet pour scanner des CVs, analyser les données et gérer les candidats.",
+                    "perms": "Scan & Analyse"
+                },
+                "scout": {
+                    "desc": "Focalisé sur le sourcing. Peut télécharger et scanner des CVs mais ne peut pas voir les analyses agrégées.",
+                    "perms": "Scan Uniquement"
+                },
+                "analyst": {
+                    "desc": "Accès en lecture seule aux tableaux de bord et rapports. Ne peut pas consommer de scans.",
+                    "perms": "Analyse Uniquement"
+                },
+                "visitor": {
+                    "desc": "Accès en lecture seule aux détails du projet. Ne peut pas scanner ou voir les analyses approfondies.",
+                    "perms": "Lecture Seule"
+                }
+            }
+        },
+        "projectLocked": {
+            "archived": "Archivé",
+            "completed": "Terminé",
+            "title": "Le Projet est {{status}}",
+            "description": "Ce projet est en <1>Mode Lecture Seule</1>. Vous pouvez voir les détails, les fichiers et les analyses, mais vous ne pouvez pas effectuer d'actions comme scanner des CVs, ajouter des membres ou modifier les détails.",
+            "understood": "Compris"
+        },
+        "ownerBanned": {
+            "title": "Projet Suspendu",
+            "description": "Ce projet est temporairement inaccessible car le compte du propriétaire, <1>{{ownerName}}</1>, a été suspendu.",
+            "note": "Vous ne pouvez pas accéder aux fichiers, discussions ou paramètres d'équipe pour ce projet tant que le statut du propriétaire n'est pas résolu.",
+            "return": "Retour au Tableau de Bord"
+        },
+        "bulkDemote": {
+            "title": "Rétrograder les Admins",
+            "subtitle": "Sélectionner un nouveau rôle pour {{count}} membres",
+            "roles": {
+                "partner": "Conserve les capacités complètes de scan et d'analyse, mais perd les contrôles administratifs.",
+                "scout": "Peut télécharger et scanner des CVs. Pas d'accès aux analyses ou paramètres du projet.",
+                "analyst": "Accès en lecture seule aux données. Ne peut pas effectuer de scans ou gérer les paramètres.",
+                "visitor": "Accès strictement en lecture seule aux détails du projet."
+            },
+            "confirm": "Rétrograder {{count}} Membres"
+        },
+        "bulkRemove": {
+            "title": "Supprimer des Membres ?",
+            "description": "Êtes-vous sûr de vouloir supprimer <1>{{count}} membres sélectionnés</1> de ce projet ?",
+            "note": "Ils perdront l'accès immédiatement.",
+            "cancel": "Annuler",
+            "confirm": "Oui, Supprimer"
+        }
+    },
+    "connections": {
+        "title": "Connexions",
+        "growNetwork": "Développez votre réseau professionnel",
+        "searchPlaceholder": "Entrez un email pour vous connecter...",
+        "sending": "Envoi en cours...",
+        "connect": "Connecter",
+        "tabs": {
+            "myConnections": "Mes Connexions",
+            "received": "Reçues",
+            "sent": "Envoyées"
+        },
+        "filter": {
+            "allOrgs": "Toutes les organisations",
+            "external": "Contacts externes"
+        },
+        "empty": {
+            "connections": "Aucune connexion encore",
+            "connectionsDesc": "Commencez à développer votre réseau en invitant des collègues.",
+            "received": "Aucune demande en attente",
+            "receivedDesc": "Les demandes de connexion entrantes apparaîtront ici.",
+            "sent": "Aucune invitation envoyée",
+            "sentDesc": "Les demandes que vous envoyez seront listées ici."
+        },
+        "actions": {
+            "sameOrg": "Même organisation",
+            "remove": "Supprimer",
+            "cancel": "Annuler la demande",
+            "decline": "Refuser",
+            "accept": "Accepter"
+        },
+        "errors": {
+             "userNotFound": "Aucun utilisateur trouvé avec cette adresse e-mail.",
+             "selfInvite": "Vous ne pouvez pas vous inviter vous-même.",
+             "alreadyExists": "Une connexion ou une invitation existe déjà avec cet utilisateur.",
+             "sendFailed": "Échec de l'envoi de l'invitation : {{error}}",
+             "actionFailed": "Action échouée : {{error}}"
+        },
+        "success": {
+             "inviteSent": "Invitation envoyée avec succès !"
+        },
+        "since": "Depuis",
+        "date": "Date"
+    },
+    "projectBudget": {
+        "critical": {
+            "title": "Critique : Fonds Projet & Portefeuille Faibles",
+            "description": "Le budget du projet est à <1>{{percent}}%</1> et votre portefeuille est presque vide. Pour éviter toute interruption, veuillez acheter des crédits et allouer des fonds.",
+            "buyCredits": "Acheter Crédits",
+            "fundProject": "Financer Projet"
+        },
+        "warning": {
+            "title": "Budget Projet Épuisé",
+            "description": "Seulement <1>{{percent}}%</1> du budget alloué reste. Transférez des crédits de votre portefeuille pour garder ce projet actif.",
+            "allocateFunds": "Allouer Fonds"
+        }
+    }
+}

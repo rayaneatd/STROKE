@@ -1,0 +1,958 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "back": "Back",
+        "next": "Next",
+        "confirm": "Confirm",
+        "close": "Close",
+        "search": "Search...",
+        "noData": "No data available",
+        "unknown": "Unknown",
+        "featureSimulated": "Feature is simulated in this demo.",
+        "lowCredits": {
+            "title": "Low Credits Warning",
+            "description": "You have only {{count}} scans remaining. Top up now to avoid interruption.",
+            "action": "Buy Scans"
+        }
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "connections": "Connections",
+        "settings": "Settings",
+        "admin": "Admin",
+        "logout": "Logout",
+        "profile": "Profile"
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage workspace preferences and account security",
+        "save": "Save Changes",
+        "language": "Language",
+        "tabs": {
+            "workflow": "Workflow",
+            "appearance": "Appearance",
+            "language": "Language",
+            "notifications": "Notifications",
+            "ai": "AI Configuration",
+            "billing": "Billing Strategy",
+            "security": "Security"
+        },
+        "workflow": {
+            "outreachDefaults": {
+                "title": "Outreach Defaults",
+                "description": "Set the default sender identity for new projects.",
+                "policyTitle": "Default Sender Policy",
+                "centralized": {
+                    "title": "Centralized (Owner)",
+                    "description": "All emails are sent from your primary account. Ideal for brand consistency."
+                },
+                "decentralized": {
+                    "title": "Decentralized (Individual)",
+                    "description": "Members send emails from their own connected accounts. Best for speed."
+                },
+                "senderAddress": "Default Sender Address",
+                "noEmails": "No connected emails found.",
+                "connect": "Connect in Profile",
+                "selectPlaceholder": "Select default sending email..."
+            },
+            "automation": {
+                "title": "Project Automation",
+                "description": "Streamline how your projects behave by default.",
+                "autoArchive": {
+                    "title": "Auto-Archive Projects",
+                    "description": "Automatically archive projects after 30 days of inactivity."
+                },
+                "compactMode": {
+                    "title": "Compact Density",
+                    "description": "Show more items per page in project lists and tables."
+                }
+            },
+            "roles": {
+                "title": "Role Defaults",
+                "description": "Set default permissions for new team members.",
+                "analystPermissions": "Analyst Permissions",
+                "activityView": {
+                    "title": "Analyst Activity View",
+                    "description": "Can analysts see the global audit log and user activity?"
+                },
+                "ghostingTool": {
+                    "title": "Analyst Ghosting Tool",
+                    "description": "Can analysts send mass response emails to candidates?"
+                }
+            }
+        },
+        "appearance": {
+            "title": "Interface Theme",
+            "darkMode": "Dark Mode",
+            "lightMode": "Light Mode",
+            "accentColor": "Accent Color",
+            "accentDescription": "Customize the primary highlight color of your workspace.",
+            "atmosphere": "Ambient Atmosphere",
+            "atmosphereDescription": "Choose the background glow effect.",
+            "graphics": {
+                "title": "Graphics & Accessibility",
+                "glass": {
+                    "title": "Glassmorphism Intensity",
+                    "description": "Adjust the blur strength."
+                },
+                "motion": {
+                    "title": "Reduced Motion",
+                    "description": "Disable heavy animations."
+                }
+            },
+            "levels": {
+                "low": "LOW",
+                "medium": "MEDIUM",
+                "high": "HIGH"
+            }
+        },
+        "notifications": {
+            "channels": {
+                "title": "Channels",
+                "description": "Choose how you want to receive alerts and updates.",
+                "email": {
+                    "title": "Email Notifications",
+                    "description": "Receive weekly digests and critical alerts."
+                },
+                "push": {
+                    "title": "Push Notifications",
+                    "description": "Real-time updates in the browser."
+                }
+            },
+            "frequency": {
+                "title": "Frequency",
+                "schedule": "Digest Schedule",
+                "daily": "Daily",
+                "weekly": "Weekly",
+                "never": "Never",
+                "criticalAlerts": "Critical alerts (security, payment) are always sent immediately."
+            }
+        }
+    },
+    "ai": {
+        "calibration": {
+            "title": "Calibration Engine",
+            "description": "Configure how our engine analyzes and matches candidates.",
+            "strictness": {
+                "title": "Matching Strictness",
+                "low": {
+                    "label": "Broad",
+                    "description": "Prioritizes potential & transferable skills."
+                },
+                "medium": {
+                    "label": "Balanced",
+                    "description": "Standard keyword & semantic matching."
+                },
+                "high": {
+                    "label": "Precise",
+                    "description": "Strict requirement matching only."
+                }
+            }
+        },
+        "personality": {
+            "title": "Personality",
+            "tone": {
+                "title": "Summary Tone",
+                "professional": "Professional",
+                "casual": "Casual",
+                "direct": "Direct"
+            },
+            "example": {
+                "title": "Example Output",
+                "professional": "Candidate possesses strong proficiency in React. Recommended for initial screening.",
+                "casual": "This candidate looks like a great fit! They've got solid React skills worth a chat.",
+                "direct": "Match Score: 85%. Key Skills: React (High). Recommendation: Interview."
+            }
+        }
+    },
+    "billing": {
+        "title": "Billing Strategy",
+        "description": "Control how your workspace handles usage limits.",
+        "prudent": {
+            "title": "Prudent Mode",
+            "badge": "Strict Limits",
+            "description": "Scanning stops immediately when your balance hits zero. You are never charged extra without manual approval. Ideal for strict budgets."
+        },
+        "serein": {
+            "title": "Serein Mode",
+            "badge": "Pay-as-you-go",
+            "paidPlanOnly": "PAID PLAN ONLY",
+            "description": "Work continues seamlessly. Negative balance (overage) is tracked via Polar.sh and billed automatically at the end of the cycle."
+        },
+        "overage": {
+            "title": "Credit Limit (Safety Cap)",
+            "unlimited": "Unlimited",
+            "unlimitedDesc": "You will be billed for all usage at the end of the billing cycle without interruption.",
+            "limitedDesc": "Scanning will automatically stop if your balance reaches -{{cap}} scans."
+        }
+    },
+    "security": {
+        "dangerZone": {
+            "title": "Danger Zone",
+            "deleteAccount": {
+                "title": "Delete Account",
+                "description": "Permanently remove your Personal Account and all of its contents from the <1>logo</1> platform. This action is not reversible, so please continue with caution.",
+                "button": "Delete Account"
+            }
+        }
+    },
+    "plans": {
+        "free": "FREE",
+        "essential": "ESSENTIAL",
+        "pro": "PRO",
+        "team": "TEAM",
+        "elite": "ELITE"
+    },
+    "roles": {
+        "admin": "ADMIN",
+        "user": "USER",
+        "recruiter": "RECRUITER"
+    },
+    "profile": {
+        "title": "Profile Settings",
+        "subtitle": "Manage your personal information",
+        "description": "Manage your personal information",
+        "defaultName": "Member",
+        "personalInfo": "Personal Information",
+        "displayName": "Display Name",
+        "professionalContext": "Professional Context",
+        "companyName": "Company Name",
+        "companyPlaceholder": "e.g. Acme Corp",
+        "industry": "Primary Industry",
+        "industryPlaceholder": "Select Industry...",
+        "saveChanges": "Save Changes",
+        "linkedAccounts": "Linked Accounts",
+        "lastSignIn": "Last sign in: {{date}}",
+        "active": "Active",
+        "primaryEmail": "Primary Email",
+        "actionRequired": "Action Required:",
+        "addEmailMessage": "Please add a personal primary email to enable project creation and account recovery.",
+        "cancel": "Cancel",
+        "save": "Save",
+        "edit": "Edit",
+        "workEmails": "Work Emails",
+        "workEmailsDescription": "Manage multiple professional email identities",
+        "workEmail": "Work Email",
+        "remove": "Remove",
+        "noWorkEmails": "No work emails connected",
+        "addWorkEmail": "Add Work Email",
+        "currentPlan": "Current Plan",
+        "upgrade": "Upgrade",
+        "tier": "{{plan}} TIER",
+        "renewsOn": "Renews on {{date}}",
+        "projects": "Projects",
+        "scansPerMonth": "Scans / Mo",
+        "remaining": "{{count}} Remaining",
+        "unlimited": "Unlimited",
+        "connectWorkEmail": "Connect Work Email",
+        "connectAurinkoDescription": "Link a professional mailbox using Aurinko",
+        "aurinkoDisclaimer": "We will use Aurinko to connect your mailbox so you can send follow-ups and enable anti-ghosting.",
+        "connectAurinko": "Connect with Aurinko",
+        "member": "Member",
+        "success": {
+            "updated": "Profile updated successfully",
+            "emailUpdated": "Primary email updated successfully.",
+            "workEmailRemoved": "Work email removed."
+        },
+        "errors": {
+            "updateFailed": "Failed to update profile",
+            "userIdNotFound": "User ID not found",
+            "emailUpdateFailed": "Failed to update email",
+            "workEmailRemoveFailed": "Failed to remove work email",
+            "aurinkoNotConfigured": "Aurinko is not configured.",
+            "notAuthenticated": "Not authenticated"
+        }
+    },
+    "auth": {
+        "title": "Welcome Back",
+        "subtitle": "Sign in to access your workspace",
+        "emailLabel": "Email Address",
+        "passwordLabel": "Password",
+        "signIn": "Sign In",
+        "register": "Create Account",
+        "forgotPassword": "Forgot Password?",
+        "continueWith": "Or continue with",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?",
+        "magicLink": "Send Magic Link",
+        "welcomeBack": "Welcome back",
+        "continueWithMicrosoft": "Continue with Microsoft",
+        "continueWithGoogle": "Continue with Google",
+        "orEmail": "or continue with email",
+        "emailPlaceholder": "name@company.com",
+        "staySignedIn": "Stay signed in",
+        "marketingConsent": "I agree to receive updates and network opportunities from STROKE",
+        "termsAgree": "By signing in, you agree to our",
+        "terms": "Terms of Service",
+        "and": "and",
+        "privacy": "Privacy Policy",
+        "magicLinkSent": {
+            "title": "Check your email",
+            "desc": "We've sent a magic link to <1>{{email}}</1>.<br/>Click the link to sign in.",
+            "openEmail": "Open Email App",
+            "later": "I'll do it later"
+        },
+        "errors": {
+            "invalidEmail": "Invalid email address",
+            "passwordRequired": "Password is required",
+            "authFailed": "Authentication failed. Please try again.",
+            "workEmailRequired": "Please use a work email address.",
+            "nameRequired": "Display name is required.",
+            "checkEmail": "Check your email for the confirmation link.",
+            "unexpected": "An unexpected error occurred.",
+            "resetLinkSent": "Password reset link sent to your email.",
+            "socialLoginFailed": "Social login failed",
+            "enterEmail": "Please enter your email address",
+            "completeCaptcha": "Please complete the captcha challenge",
+            "workEmailNotAllowed": "Work emails are not allowed for login. Please use a personal email.",
+            "magicLinkFailed": "Failed to send magic link",
+            "enterEmailFirst": "Please enter your email address first"
+        }
+    },
+    "languages": {
+        "en": "English",
+        "fr": "French"
+    },
+    "dashboard": {
+        "loadingIntelligence": "Loading Intelligence...",
+        "header": {
+            "title": "Performance Overview",
+            "subtitle": "Real-time business intelligence across your organization"
+        },
+        "filters": {
+            "timeRange": {
+                "last7Days": "Last 7 Days",
+                "last14Days": "Last 14 Days",
+                "last30Days": "Last 30 Days",
+                "last3Months": "Last 3 Months",
+                "lastYear": "Last Year"
+            },
+            "status": {
+                "all": "All Statuses",
+                "active": "Active Projects",
+                "completed": "Completed",
+                "archived": "Archived"
+            },
+            "owner": {
+                "organization": "Organization",
+                "myProjects": "My Projects"
+            }
+        },
+        "actions": {
+            "forceRefresh": "Force Refresh Data",
+            "export": "Export",
+            "exportCSV": "Export CSV",
+            "exportJSON": "Export JSON"
+        },
+        "kpi": {
+            "totalUploads": "Total Uploads",
+            "processed": "processed",
+            "qualifiedCandidates": "Qualified Candidates",
+            "scoreAbove80": "Score > 80%",
+            "activeProjects": "Active Projects",
+            "recruitingNow": "Recruiting now",
+            "systemThroughput": "System Throughput",
+            "avgParseTime": "Avg. parse time"
+        },
+        "team": {
+            "capacity": "Team Capacity",
+            "admins": "Admins",
+            "fullAccess": "Full Access",
+            "partners": "Partners",
+            "scanAnalyze": "Scan & Analyze",
+            "scouts": "Scouts",
+            "sourcingOnly": "Sourcing Only",
+            "analysts": "Analysts",
+            "viewOnly": "View Only"
+        },
+        "charts": {
+            "volumeQuality": {
+                "title": "Volume & Quality Trends",
+                "subtitle": "Application influx vs. match score",
+                "volume": "Volume",
+                "avgScore": "Avg Score"
+            },
+            "failureAnalysis": {
+                "title": "Failure Analysis",
+                "subtitle": "Processing errors",
+                "successRate": "100% Success Rate",
+                "allProcessed": "All files processed successfully.",
+                "errors": "Errors"
+            }
+        },
+        "leaderboard": {
+            "title": "Project Performance",
+            "subtitle": "Top performing recruitment campaigns",
+            "headers": {
+                "projectName": "Project Name",
+                "status": "Status",
+                "candidates": "Candidates",
+                "qualified": "Qualified",
+                "avgScore": "Avg. Score",
+                "efficiency": "Efficiency"
+            },
+            "noProjects": "No projects match your current filters.",
+            "conversion": "Conv."
+        }
+    },
+    "modal": {
+        "newTitle": "New Project",
+        "editTitle": "Project Settings",
+        "newSubtitle": "Setup configuration",
+        "editSubtitle": "Manage configuration",
+        "draft": "Draft Mode",
+        "tabs": {
+            "general": "General",
+            "team": "Team & Permissions",
+            "billing": "Billing & Quotas",
+            "ai": "AI Diagnostics"
+        },
+        "general": {
+            "title": "General Details",
+            "projectTitle": "Project Title",
+            "jobDescription": "Job Description",
+            "aiContext": "AI Context Active",
+            "status": "Status",
+            "active": "ACTIVE",
+            "completed": "COMPLETED",
+            "archived": "ARCHIVED"
+        },
+        "team": {
+            "title": "Team & Permissions",
+            "outreachPolicy": "Outreach Identity Policy",
+            "centralized": "Centralized (Owner)",
+            "centralizedDesc": "All emails sent via owner.",
+            "decentralized": "Decentralized (User)",
+            "decentralizedDesc": "Users send via their own email.",
+            "selectSender": "Select Centralized Sender Address",
+            "noEmails": "No connected emails found.",
+            "connectProfile": "Connect in Profile",
+            "selectEmail": "Select an email...",
+            "emailNote": "This email will be used for all project outreach.",
+            "ownerNote": "Emails are sent via the Project Owner's centralized address.",
+            "userNote": "Emails are sent via your own connected personal address.",
+            "invitationPolicy": "Invitation Policy",
+            "invite": {
+                "all": "Owner & Admin Connections",
+                "admin": "Admin's Connections Only",
+                "owner": "Owner's Connections Only"
+            },
+            "toggles": {
+                "analystCompleted": "Analyst-Only Completed",
+                "analystCompletedDesc": "Hide completed projects from non-analysts.",
+                "adminStatus": "Admin Status Control",
+                "adminStatusDesc": "Allow Admins to archive/complete.",
+                "analystAudit": "Analyst Audit View",
+                "analystAuditDesc": "Allow Analysts to see the Activity Tab.",
+                "analystGhost": "Analyst Ghosting Tool",
+                "analystGhostDesc": "Allow Analysts to use mass emails."
+            },
+            "demoteTarget": "Quick Demote Target Role",
+            "roles": {
+                "partner": "Talent Partner (Full Access)",
+                "scout": "Talent Scout (Scan Only)",
+                "analyst": "Talent Analyst (View Only)",
+                "visitor": "Visitor (Read Only)"
+            }
+        },
+        "billing": {
+            "title": "Billing & Limits",
+            "sharedWallet": "Shared Wallet",
+            "sharedWalletDesc": "Scans are deducted directly from the Owner's personal balance.",
+            "dedicatedBudget": "Dedicated Budget",
+            "dedicatedBudgetDesc": "Project has its own budget funded by the Owner. Safer for teams.",
+            "projectBudget": "Project Budget",
+            "scans": "scans",
+            "walletBalance": "Your Wallet Balance",
+            "amount": "Amount",
+            "deposit": "Deposit",
+            "withdraw": "Withdraw",
+            "initialBudget": "Initial Project Budget",
+            "yourWallet": "Your Wallet: {{balance}}",
+            "enterAmount": "Enter amount to transfer...",
+            "transferNote": "Scans will be transferred from your wallet to this project upon creation.",
+            "defaultQuota": "Default Member Quota",
+            "unlimited": "Unlimited",
+            "customLimit": "Custom Limit",
+            "enterQuota": "Enter maximum scans per member",
+            "quotaNote": "Note: This sets the default quota for new members. Existing member quotas are not changed.",
+            "lockedTitle": "Advanced Billing Locked",
+            "lockedDesc": "Upgrade to Pro or Team plan to allocate specific budgets per project and control member quotas."
+        },
+        "ai": {
+            "title": "AI Calibration Engine",
+            "description": "Run advanced statistical analysis on project velocity to optimize your budget and quotas.",
+            "running": "Running Diagnostics...",
+            "ready": "Ready to Optimize?",
+            "step1": "Analyzing upload velocity...",
+            "step2": "Calculating member burn rates...",
+            "step3": "Forecasting monthly budget...",
+            "step4": "Generating optimization plan...",
+            "intro": "Our AI will analyze 30 days of historical data, member variance, and burn rates to forecast your ideal configuration.",
+            "processing": "Processing...",
+            "run": "Run Diagnostics",
+            "healthScore": "Health Score",
+            "dailyScans": "Avg. Daily Scans",
+            "projectedMonthly": "Projected Monthly",
+            "projectBudget": "Project Budget",
+            "memberQuota": "Member Quota",
+            "dismiss": "Dismiss",
+            "approve": "Approve & Apply"
+        },
+        "actions": {
+            "cancel": "Cancel",
+            "create": "Create Project",
+            "save": "Save Changes"
+        },
+        "leave": {
+            "title": "Leave Project?",
+            "description": "Are you sure you want to leave \"{{title}}\"? You will lose access to all files and discussions.",
+            "confirm": "Leave Project",
+            "cancel": "Cancel"
+        },
+        "delete": {
+            "title": "Delete Project?",
+            "description": "Are you sure you want to delete \"{{title}}\"?",
+            "warning": "This action cannot be undone.",
+            "confirm": "Delete Project",
+            "cancel": "Cancel"
+        },
+        "createProject": {
+            "title": "Create New Project",
+            "subtitle": "Setup your new recruitment mission",
+            "projectTitle": "Project Title",
+            "placeholderTitle": "e.g. Senior Frontend Engineer",
+            "jobDescription": "Job Description",
+            "aiContext": "AI Context Active",
+            "placeholderDesc": "Paste the full job description here...",
+            "optimizedForAI": "Optimized for AI parsing",
+            "chars": "characters",
+            "outreachIdentity": "Outreach Identity",
+            "centralized": "Centralized (Owner)",
+            "centralizedDesc": "Emails sent via your account.",
+            "decentralized": "Decentralized (User)",
+            "decentralizedDesc": "Members use their own email.",
+            "selectSender": "Select Centralized Sender Address",
+            "noEmails": "No connected emails found.",
+            "connectProfile": "Connect in Profile",
+            "emailNote": "This email will be used for all project outreach.",
+            "initialStatus": "Initial Status",
+            "billingStrategy": "Billing Strategy",
+            "sharedWallet": "Shared Wallet (Owner)",
+            "dedicatedBudget": "Dedicated Budget",
+            "create": "Create Project",
+            "cancel": "Cancel",
+            "initialBudget": "Initial Project Budget",
+            "budgetNote": "Scans will be deducted from your main balance ({{balance}}) and allocated to this project.",
+            "memberQuota": "Default Member Quota",
+            "unlimited": "Unlimited",
+            "customLimit": "Custom Limit",
+            "enterLimit": "Enter maximum scans per member",
+            "scans": "SCANS"
+        },
+        "addMember": {
+            "title": {
+                "ADMIN": "Add Admin",
+                "EMPLOYEE": "Add Team Member",
+                "VISITOR": "Add Visitor"
+            },
+            "subtitle": "Select connections to add to this project.",
+            "selectRole": "Select Role",
+            "roles": {
+                "partner": {
+                    "title": "Talent Partner",
+                    "descTitle": "Full Access",
+                    "desc": "Partners have complete control over the project. They can upload resumes, run AI scans, analyze candidates, and view detailed reports."
+                },
+                "scout": {
+                    "title": "Talent Scout",
+                    "descTitle": "Sourcing Focus",
+                    "desc": "Scouts can upload resumes and perform initial screenings. They cannot access aggregated analytics or strategic reports."
+                },
+                "analyst": {
+                    "title": "Talent Analyst",
+                    "descTitle": "Insights Focus",
+                    "desc": "Analysts have read-only access to recruitment data and analytics dashboards. They cannot upload files or modify candidate data."
+                }
+            },
+            "emptyState": {
+                "title": "No eligible connections found.",
+                "desc": "Connect with more people to add them here."
+            },
+            "actions": {
+                "addSelected": "Add {{count}} Members",
+                "addSelected_one": "Add {{count}} Member",
+                "addSelected_zero": "Add Selected"
+            }
+        },
+        "editProject": {
+            "title": "Edit Project",
+            "subtitle": "Update project details and settings",
+            "fields": {
+                "title": {
+                    "label": "Project Title",
+                    "placeholder": "e.g. Senior Backend Developer"
+                },
+                "description": {
+                    "label": "Job Description",
+                    "aiContext": "AI Context Active",
+                    "placeholder": "Paste the full job description here...",
+                    "aiOptimized": "Optimized for AI parsing",
+                    "chars": "characters"
+                },
+                "status": {
+                    "label": "Project Status",
+                    "options": {
+                        "ACTIVE": "Active",
+                        "COMPLETED": "Completed",
+                        "ARCHIVED": "Archived"
+                    }
+                },
+                "invitationPolicy": {
+                    "label": "Invitation Policy",
+                    "options": {
+                        "ALL": "Owner & Admin Connections",
+                        "OWN_CONNECTIONS": "Admin's Connections Only",
+                        "OWNER_CONNECTIONS": "Owner's Connections Only"
+                    }
+                },
+                "quickDemote": {
+                    "label": "Quick Demote Target Role",
+                    "options": {
+                        "PARTNER": "Talent Partner (Full Access)",
+                        "SCOUT": "Talent Scout (Scan Only)",
+                        "ANALYST": "Talent Analyst (View Only)",
+                        "VISITOR": "Visitor (Read Only)"
+                    }
+                }
+            },
+            "actions": {
+                "save": "Save Changes"
+            }
+        },
+        "globalBan": {
+            "title": "Account Suspended",
+            "description": "Your account has been suspended by an administrator. You no longer have access to the <1>logo</1> platform or your projects.",
+            "reason": "Reason",
+            "expiration": "Expiration",
+            "signOut": "Sign Out Safely",
+            "contactSupport": "If you believe this is an error, please contact support."
+        },
+        "upgrade": {
+            "title": "Unlock Unlimited Potential",
+            "description": "You've run out of scans! Upgrade to <1>Pro</1> to remove limits and hire faster.",
+            "features": {
+                "unlimited": "Unlimited Resume Scans",
+                "advancedAI": "Advanced AI Analysis",
+                "priority": "Priority Processing Queue"
+            },
+            "cta": "Upgrade Now",
+            "later": "Maybe Later"
+        },
+        "noScans": {
+            "title": "Out of Scans",
+            "description": "The project owner, {{ownerName}}, has no scans remaining. Only the owner can purchase more scans.",
+            "requestSent": "Request Sent",
+            "notifyManager": "Notify Manager"
+        },
+        "deleteAccount": {
+            "title": "Delete Account?",
+            "description": "You are about to permanently delete your account and all associated data. This action cannot be undone.",
+            "wait": "Wait {{count}}s to confirm",
+            "pleaseWait": "Please wait {{count}}s",
+            "confirm": "Yes, Delete My Account",
+            "cancel": "Cancel"
+        },
+        "bulkAccess": {
+            "title": "Configure Access",
+            "subtitle": "Updating permissions for {{count}} members",
+            "roles": {
+                "partner": {
+                    "desc": "Full access to scan resumes, analyze data, and manage candidates.",
+                    "perms": "Scan & Analyze"
+                },
+                "scout": {
+                    "desc": "Focused on sourcing. Can upload and scan resumes but cannot view aggregate analytics.",
+                    "perms": "Scan Only"
+                },
+                "analyst": {
+                    "desc": "View-only access to dashboards and reports. Cannot consume scans.",
+                    "perms": "Analyze Only"
+                },
+                "visitor": {
+                    "desc": "Read-only access to project details. Cannot scan or view deep analytics.",
+                    "perms": "Read Only"
+                }
+            }
+        },
+        "projectLocked": {
+            "archived": "Archived",
+            "completed": "Completed",
+            "title": "Project is {{status}}",
+            "description": "This project is in <1>Read-Only mode</1>. You can view details, files, and analytics, but you cannot perform actions like scanning resumes, adding members, or editing details.",
+            "understood": "Understood"
+        },
+        "ownerBanned": {
+            "title": "Project Suspended",
+            "description": "This project is temporarily inaccessible because the project owner, <1>{{ownerName}}</1>, has had their account suspended.",
+            "note": "You cannot access files, discussions, or team settings for this project until the owner's status is resolved.",
+            "return": "Return to Dashboard"
+        },
+        "bulkDemote": {
+            "title": "Demote Admins",
+            "subtitle": "Select new role for {{count}} members",
+            "roles": {
+                "partner": "Retains full scanning and analytics capabilities, but loses administrative controls.",
+                "scout": "Can upload and scan resumes. No access to project analytics or settings.",
+                "analyst": "View-only access to data. Cannot perform scans or manage settings.",
+                "visitor": "Strictly read-only access to project details."
+            },
+            "confirm": "Demote {{count}} Members"
+        },
+        "bulkRemove": {
+            "title": "Remove Members?",
+            "description": "Are you sure you want to remove <1>{{count}} selected members</1> from this project?",
+            "note": "They will lose access immediately.",
+            "cancel": "Cancel",
+            "confirm": "Yes, Remove"
+        }
+    },
+    "activity": {
+        "alerts": {
+            "connectEmail": "Please connect your Work Email in Settings > Security to use Anti-Ghosting features."
+        }
+    },
+    "projects": {
+        "title": "Projects",
+        "subtitle": "Manage your recruitment campaigns",
+        "newProject": "New Project",
+        "createProject": "Create Project",
+        "searchPlaceholder": "Search projects...",
+        "errors": {
+            "noPrimaryEmail": "Add Primary Email to create projects",
+            "insufficientBalance": "Insufficient balance for this project budget.",
+            "transferFailed": "Project created but initial budget transfer failed: {{error}}",
+            "createFailed": "Failed to create project: {{error}}",
+            "updateFailed": "Failed to update project: {{error}}"
+        },
+        "filter": {
+            "all": "All Status",
+            "active": "Active",
+            "completed": "Completed",
+            "archived": "Archived",
+            "anyTime": "Any Time",
+            "last7": "Last 7 Days",
+            "last30": "Last 30 Days",
+            "last90": "Last 3 Months",
+            "allOwners": "All Owners",
+            "myProjects": "My Projects",
+            "allOrgs": "All Orgs",
+            "reset": "Reset"
+        },
+        "role": {
+            "owner": "Owner",
+            "admin": "Admin",
+            "editor": "Editor",
+            "viewer": "Viewer"
+        },
+        "menu": {
+            "edit": "Edit Project",
+            "archive": "Archive Project",
+            "complete": "Mark as Completed",
+            "reactivate": "Reactivate",
+            "leave": "Leave Project",
+            "delete": "Delete Project"
+        },
+        "list": {
+            "project": "Project",
+            "status": "Status",
+            "owner": "Owner",
+            "stats": "Stats",
+            "created": "Created"
+        },
+        "view": {
+            "grid": "Grid View",
+            "list": "List View"
+        },
+        "empty": {
+            "title": "No projects found",
+            "subtitle": "Try adjusting your filters or create a new project.",
+            "clearFilters": "Clear all filters",
+            "noProjects": "You don't have any projects yet.",
+            "noMatches": "No projects match your current filters."
+        },
+        "actions": {
+            "loadMore": "Load More",
+            "remaining": "remaining"
+        }
+    },
+    "project": {
+        "actions": {
+            "connectEmail": "Connect Email",
+            "editProject": "Edit Project",
+            "dismiss": "Dismiss"
+        },
+        "errors": {
+            "scanFailed": "Scan Failed:",
+            "insufficientBalance": "Insufficient balance for this project budget."
+        },
+        "created": "Created",
+        "budget": "Budget",
+        "balance": "Balance",
+        "overage": "Overage",
+        "selectSendingEmail": "Select Sending Email",
+        "sendingAs": "Sending as",
+        "noEmailsConnected": "No emails connected.",
+        "tabs": {
+            "overview": "Overview",
+            "activityAudit": "Activity & Audit",
+            "resumes": "Resumes",
+            "team": "Team",
+            "discussions": "Discussions"
+        },
+        "activity": {
+            "errors": {
+                "connectWorkEmail": "Please connect your work email to use this feature.",
+                "antiGhosting": "Anti-ghosting is active. You can't perform this action manually."
+            }
+        },
+        "discussions": {
+            "channels": {
+                "title": "Channels",
+                "general": "General",
+                "adminOnly": "Admin Only",
+                "adminDiscussion": "Admin Discussion",
+                "generalChat": "General Chat"
+            },
+            "messages": {
+                "decrypting": "Decrypting secure messages...",
+                "empty": "No messages yet. Start the conversation!",
+                "locked": "Discussion is locked",
+                "placeholder": "Message #{{channel}}..."
+            }
+        },
+        "overview": {
+            "exportReport": "Export Report",
+            "cards": {
+                "totalResumes": "Total Resumes",
+                "avgScore": "Avg. Score",
+                "teamMembers": "Team Members",
+                "insight": "Insight"
+            },
+            "stats": {
+                "analyzedPending": "{{completed}} analyzed, {{pending}} pending",
+                "basedOnCandidates": "Based on {{count}} candidates",
+                "contributedScans": "Contributed {{count}} scans",
+                "analysisComplete": "Analysis {{percent}}% complete"
+            },
+            "insights": {
+                "excellentCandidates": "{{count}} excellent candidates found with scores > 80%!",
+                "keepUploading": "Keep uploading resumes to find better matches."
+            },
+            "charts": {
+                "uploadActivity": "Upload Activity",
+                "topCandidates": "Top Candidates",
+                "noCandidates": "No analyzed candidates yet."
+            }
+        },
+        "team": {
+            "title": "Project Team",
+            "subtitle": "Manage access and permissions",
+            "accessSettings": "Access Settings",
+            "saving": "Saving...",
+            "invitationPolicy": "Invitation Policy",
+            "invitationOptions": {
+                "ALL": "Owner & Admin Connections",
+                "OWN_CONNECTIONS": "Admin Connections Only",
+                "OWNER_CONNECTIONS": "Owner Connections Only"
+            },
+            "searchPlaceholder": "Search Admins or Employees by name or email...",
+            "roles": {
+                "owner": "Owner",
+                "admin": "Admin",
+                "partner": "Talent Partner",
+                "scout": "Talent Scout",
+                "analyst": "Talent Analyst",
+                "visitor": "Visitor",
+                "staff": "Staff",
+                "employee": "Employee"
+            },
+            "you": "YOU",
+            "scansUsed": "Scans Used",
+            "showMore": "Show {{count}} more",
+            "addMember": "Add Member",
+            "empty": {
+                "noMatch": "No match found for \"{{search}}\"",
+                "noMembers": "No members in this group."
+            }
+        },
+        "resumes": {
+            "errors": {
+                "invalidFileType": "Invalid file type. Please upload PDF, DOCX, or Images.",
+                "noCandidatesExport": "No candidates to export in the current view."
+            }
+        }
+    },
+    "modal": {
+        "title": "Connections",
+        "growNetwork": "Grow your professional network",
+        "searchPlaceholder": "Enter email to connect...",
+        "sending": "Sending...",
+        "connect": "Connect",
+        "tabs": {
+            "myConnections": "My Connections",
+            "received": "Received",
+            "sent": "Sent"
+        },
+        "filter": {
+            "allOrgs": "All Organizations",
+            "external": "External Contacts"
+        },
+        "empty": {
+            "connections": "No connections yet",
+            "connectionsDesc": "Start growing your network by inviting colleagues.",
+            "received": "No pending requests",
+            "receivedDesc": "Incoming connection requests will appear here.",
+            "sent": "No sent invitations",
+            "sentDesc": "Requests you send will be listed here."
+        },
+        "actions": {
+            "sameOrg": "Same Organization",
+            "remove": "Remove",
+            "cancel": "Cancel Request",
+            "decline": "Decline",
+            "accept": "Accept"
+        },
+        "errors": {
+             "userNotFound": "No user found with this email address.",
+             "selfInvite": "You cannot invite yourself.",
+             "alreadyExists": "A connection or invite already exists with this user.",
+             "sendFailed": "Failed to send invitation: {{error}}",
+             "actionFailed": "Action failed: {{error}}"
+        },
+        "success": {
+             "inviteSent": "Invitation sent successfully!"
+        },
+        "since": "Since",
+        "date": "Date"
+    },
+    "projectBudget": {
+        "critical": {
+            "title": "Critical: Project & Wallet Funds Low",
+            "description": "Project budget is at <1>{{percent}}%</1> and your wallet is running low. To prevent interruption, please purchase credits and allocate funds.",
+            "buyCredits": "Buy Credits",
+            "fundProject": "Fund Project"
+        },
+        "warning": {
+            "title": "Project Budget Depleted",
+            "description": "Only <1>{{percent}}%</1> of the allocated budget remains. Transfer credits from your wallet to keep this project active.",
+            "allocateFunds": "Allocate Funds"
+        }
+    }
+}
