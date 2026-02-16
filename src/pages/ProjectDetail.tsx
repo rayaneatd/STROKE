@@ -402,6 +402,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         }}
                         removeMember={removeMember}
                         updateMember={updateMember}
+                        updateProject={updateProject}
                         isActionLoading={isActionLoading}
                     />
                 )}

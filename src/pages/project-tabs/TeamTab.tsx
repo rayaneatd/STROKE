@@ -357,6 +357,7 @@ interface TeamTabProps {
     onAddMember: (role: ProjectRole) => void;
     removeMember: (userId: string) => void;
     updateMember: (params: { userId: string, data: any }) => void;
+    updateProject: (data: any, options?: any) => void;
     isActionLoading: boolean;
 }
 
@@ -369,6 +370,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
     onAddMember,
     removeMember,
     updateMember,
+    updateProject,
     isActionLoading
 }) => {
     const { t } = useTranslation();
@@ -521,8 +523,22 @@ const TeamTab: React.FC<TeamTabProps> = ({
     };
 
     const handleUpdatePermission = (perm: EmployeeAddPermission) => {
-        // This will be implemented when we have updateProject mutation
-        console.log("Updating permission policy to:", perm);
+        if (project.settings.employeeAddPermission === perm) {
+            setSettingsOpen(false);
+            return;
+        }
+        setIsSavingSettings(true);
+        updateProject(
+            { settings: { ...project.settings, employeeAddPermission: perm } },
+            {
+                onSuccess: () => {
+                    setSettingsOpen(false);
+                },
+                onSettled: () => {
+                    setIsSavingSettings(false);
+                }
+            }
+        );
     };
 
     const getGridClass = (cols: number) => {

@@ -366,7 +366,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         }
         
         if (currentMemberRecord.role === ProjectRole.ADMIN) {
-            return perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS;
+            return perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS || perm === EmployeeAddPermission.OWNER_CONNECTIONS;
         }
         
         return false;
