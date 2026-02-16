@@ -12,8 +12,8 @@ export interface UseEditProjectModalProps {
     project?: Project;
     currentUser: User;
     onSave: (e: React.FormEvent, data: Partial<Project>) => void;
-    fundProject: (params: { amount: number }) => void;
-    withdrawProjectFunds: (params: { amount: number }) => void;
+    fundProject: (params: { amount: number }) => Promise<any>;
+    withdrawProjectFunds: (params: { amount: number }) => Promise<any>;
 }
 
 export const useEditProjectModal = ({
@@ -43,8 +43,11 @@ export const useEditProjectModal = ({
     const [analysisStep, setAnalysisStep] = useState<string>('');
     const [analysisResult, setAnalysisResult] = useState<CalibrationResult | null>(null);
 
+    const [error, setError] = useState<string | null>(null);
+
     useEffect(() => {
         if (isOpen) {
+            setError(null);
             if (project) {
                 // EDIT MODE: Load existing data
                 setFormData({
@@ -115,6 +118,17 @@ export const useEditProjectModal = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
+
+        // Validation: Insufficient Funds (Create Mode)
+        if (mode === 'CREATE' && formData.settings?.billingMode === 'PROJECT_INVESTMENT') {
+            const budget = formData.investmentBalance || 0;
+            if (budget > currentUser.scansBalance) {
+                setError(t('project.errors.insufficientFunds', 'Insufficient funds in your wallet'));
+                return;
+            }
+        }
+
         setIsLoading(true);
         setTimeout(() => {
             onSave(e, formData);
@@ -122,7 +136,7 @@ export const useEditProjectModal = ({
         }, 600);
     };
 
-    const handleFundAction = (action: 'DEPOSIT' | 'WITHDRAW') => {
+    const handleFundAction = async (action: 'DEPOSIT' | 'WITHDRAW') => {
         if (mode === 'CREATE' || !project) return;
         const amount = Number(fundAmount);
         if (amount <= 0) return;
@@ -130,18 +144,31 @@ export const useEditProjectModal = ({
         setIsProcessingFunds(true);
         setFundMessage(null);
 
-        const onSettled = () => {
-            setIsProcessingFunds(false);
+        try {
+            if (action === 'DEPOSIT') {
+                await fundProject({ amount });
+                setFundMessage({ type: 'success', text: t('modal.billing.depositSuccess') });
+            } else {
+                await withdrawProjectFunds({ amount });
+                setFundMessage({ type: 'success', text: t('modal.billing.withdrawSuccess') });
+            }
+            
             setFundAmount('');
-        };
+            // Refresh data in parent component will happen automatically via query invalidation
+            // But we need to update local form data if we are showing it
+            setFormData(prev => ({
+                ...prev,
+                investmentBalance: action === 'DEPOSIT' 
+                    ? (prev.investmentBalance || 0) + amount 
+                    : (prev.investmentBalance || 0) - amount
+            }));
 
-        if (action === 'DEPOSIT') {
-            fundProject({ amount });
-        } else {
-            withdrawProjectFunds({ amount });
+        } catch (error: any) {
+            console.error('Fund action error:', error);
+            setFundMessage({ type: 'error', text: error.message || t('modal.billing.error') });
+        } finally {
+            setIsProcessingFunds(false);
         }
-
-        setTimeout(onSettled, 600);
     };
 
     const handleRunDiagnostics = () => {
@@ -221,6 +248,7 @@ export const useEditProjectModal = ({
         applyOptimization,
         applySimulationResult,
         isLight,
-        accent
+        accent,
+        error
     };
 };

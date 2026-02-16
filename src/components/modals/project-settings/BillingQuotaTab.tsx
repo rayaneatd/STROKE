@@ -117,7 +117,7 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
                                             <button 
                                                 type="button" 
                                                 onClick={() => onFundAction && onFundAction('DEPOSIT')} 
-                                                disabled={!fundAmount || isProcessingFunds} 
+                                                disabled={!fundAmount || isProcessingFunds || (typeof fundAmount === 'number' && fundAmount > currentUser.scansBalance)} 
                                                 className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                             >
                                                 {isProcessingFunds ? <RefreshCw className="animate-spin" size={14}/> : t('modal.billing.deposit')}
@@ -132,6 +132,11 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
                                             </button>
                                         </div>
                                         {fundMessage && <div className={`mt-3 text-xs font-bold ${fundMessage.type === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>{fundMessage.text}</div>}
+                                        {typeof fundAmount === 'number' && fundAmount > currentUser.scansBalance && (
+                                            <div className="mt-2 text-xs font-bold text-red-400 flex items-center gap-1">
+                                                <AlertTriangle size={12} /> {t('common.error')}: {t('project.errors.insufficientFunds', 'Insufficient funds in your wallet')}
+                                            </div>
+                                        )}
                                     </>
                                 ) : (
                                     // CREATE MODE
@@ -150,6 +155,11 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
                                                 autoFocus
                                             />
                                         </div>
+                                        {(formData.investmentBalance || 0) > currentUser.scansBalance && (
+                                            <div className="mt-2 text-xs font-bold text-red-400 flex items-center gap-1">
+                                                <AlertTriangle size={12} /> {t('common.error')}: {t('project.errors.insufficientFunds', 'Insufficient funds in your wallet')}
+                                            </div>
+                                        )}
                                         <p className="text-[10px] text-zinc-500 mt-2">
                                             {t('modal.billing.transferNote')}
                                         </p>

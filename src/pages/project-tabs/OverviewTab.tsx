@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileText, TrendingUp, Briefcase, Download } from 'lucide-react';
+import { FileText, TrendingUp, Briefcase, Download, Coins } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -54,6 +54,28 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Project Budget Card - Only for Investment Mode */}
+                {project.settings?.billingMode === 'PROJECT_INVESTMENT' && (
+                     <div className={`p-5 rounded-xl border ${cardClass}`}>
+                        <div className="flex justify-between items-start mb-2">
+                            <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg border border-amber-500/20"><Coins size={18} /></div>
+                        </div>
+                        <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>{t('project.budget')}</h3>
+                        <p className={`text-2xl font-bold ${textPrimary}`}>{project.investmentBalance || 0}</p>
+                         <div className="w-full bg-amber-500/10 h-1.5 rounded-full mt-3 overflow-hidden">
+                             <div 
+                                 className="bg-amber-500 h-full rounded-full" 
+                                 style={{ width: `${Math.min(((project.investmentBalance || 0) / (project.totalInvested || 1)) * 100, 100)}%` }} 
+                             />
+                         </div>
+                        <p className={`text-[10px] ${textSecondary} mt-1`}>
+                            {t('project.overview.stats.budgetRemaining', { 
+                                percent: Math.round(((project.investmentBalance || 0) / (project.totalInvested || 1)) * 100) 
+                            })}
+                        </p>
+                    </div>
+                )}
+
                 <div className={`p-5 rounded-xl border ${cardClass}`}>
                     <div className="flex justify-between items-start mb-2">
                         <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg border border-blue-500/20"><FileText size={18} /></div>

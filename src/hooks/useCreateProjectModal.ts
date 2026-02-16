@@ -56,11 +56,22 @@ export const useCreateProjectModal = ({ currentUser, onCreate, onClose }: UseCre
         ownerOutreachEmailId: currentUser.preferences?.defaultOwnerOutreachEmailId || ''
     });
 
+    const [error, setError] = useState<string | null>(null);
+
     const hasQuotaFeature = currentUser.subscriptionPlan === SubscriptionPlan.TEAM || currentUser.subscriptionPlan === SubscriptionPlan.ELITE;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         if (!newProjectData.title || !newProjectData.description) return;
+
+        // Validation: Insufficient Funds
+        if (newProjectData.billingMode === 'PROJECT_INVESTMENT' && newProjectData.investmentBudget > 0) {
+            if (newProjectData.investmentBudget > currentUser.scansBalance) {
+                setError("Insufficient funds in your wallet to fund this project.");
+                return;
+            }
+        }
 
         // Auto-select first email if centralized is chosen but no email selected
         let finalOwnerEmailId = newProjectData.ownerOutreachEmailId;
@@ -112,6 +123,8 @@ export const useCreateProjectModal = ({ currentUser, onCreate, onClose }: UseCre
         newProjectData,
         setNewProjectData,
         handleSubmit,
+        error,
+        setError,
         hasQuotaFeature,
         isLight,
         accent

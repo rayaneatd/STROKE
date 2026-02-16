@@ -323,8 +323,28 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
         confirmDeleteProject,
         confirmLeaveProject,
         handleProjectModalSave,
-        handleLoadMore
+        handleLoadMore,
+        fundProjectMutation
     } = useProjects({ currentUser, onUpdateUser, onNavigate });
+
+    // Fund handlers wrapper
+    const handleFundProject = async (params: { amount: number }) => {
+        if (!editingProject) return;
+        await fundProjectMutation.mutateAsync({
+            projectId: editingProject.id,
+            amount: params.amount,
+            action: 'DEPOSIT'
+        });
+    };
+
+    const handleWithdrawFunds = async (params: { amount: number }) => {
+        if (!editingProject) return;
+        await fundProjectMutation.mutateAsync({
+            projectId: editingProject.id,
+            amount: params.amount,
+            action: 'WITHDRAW'
+        });
+    };
 
     // Theme & Density
     const theme = currentUser.preferences?.uiConfig?.theme || 'DARK';
@@ -556,6 +576,8 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                 onSave={handleProjectModalSave}
                 onUserUpdate={onUpdateUser}
                 onNavigate={onNavigate}
+                fundProject={handleFundProject}
+                withdrawProjectFunds={handleWithdrawFunds}
             />
 
             <LeaveProjectModal

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import {
-    Layout, Users, Save, Loader2, Wallet, BrainCircuit, Rocket
+    Layout, Users, Save, Loader2, Wallet, BrainCircuit, Rocket, AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Project, User } from '../../types';
@@ -21,8 +21,8 @@ interface ProjectModalProps {
     onSave: (e: React.FormEvent, data: Partial<Project>) => void;
     onUserUpdate?: (user: User) => void;
     onNavigate: (page: string) => void;
-    fundProject: (params: { amount: number }) => void;
-    withdrawProjectFunds: (params: { amount: number }) => void;
+    fundProject: (params: { amount: number }) => Promise<any>;
+    withdrawProjectFunds: (params: { amount: number }) => Promise<any>;
 }
 
 const ProjectModal: React.FC<ProjectModalProps> = ({
@@ -62,7 +62,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
         applyOptimization,
         applySimulationResult,
         isLight,
-        accent
+        accent,
+        error
     } = useEditProjectModal({
         isOpen,
         onClose,
@@ -178,16 +179,24 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                     </div>
 
                     {/* Footer */}
-                    <div className={`p-6 border-t flex justify-between items-center shrink-0 ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
-                        <button type="button" onClick={onClose} className={`px-6 py-3 rounded-xl font-bold transition-colors ${isLight ? 'text-slate-500 hover:bg-slate-100' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}>{t('modal.actions.cancel')}</button>
-                        <button
-                            onClick={() => document.getElementById('edit-project-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
-                            disabled={isLoading || !formData.title || !formData.description}
-                            className={`px-8 py-3 rounded-xl bg-${accent}-600 text-white font-bold hover:bg-${accent}-500 shadow-lg shadow-${accent}-900/20 hover:shadow-${accent}-500/40 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait disabled:bg-zinc-600 disabled:shadow-none`}
-                        >
-                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : mode === 'CREATE' ? <Rocket size={18} /> : <Save size={18} />}
-                            {mode === 'CREATE' ? t('modal.actions.create') : t('modal.actions.save')}
-                        </button>
+                    <div className={`p-6 border-t flex flex-col gap-4 shrink-0 ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
+                        {error && (
+                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold flex items-center gap-2 animate-fade-in">
+                                <AlertTriangle size={14} />
+                                {error}
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center w-full">
+                            <button type="button" onClick={onClose} className={`px-6 py-3 rounded-xl font-bold transition-colors ${isLight ? 'text-slate-500 hover:bg-slate-100' : 'text-zinc-400 hover:bg-white/5 hover:text-white'}`}>{t('modal.actions.cancel')}</button>
+                            <button
+                                onClick={() => document.getElementById('edit-project-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
+                                disabled={isLoading || !formData.title || !formData.description}
+                                className={`px-8 py-3 rounded-xl bg-${accent}-600 text-white font-bold hover:bg-${accent}-500 shadow-lg shadow-${accent}-900/20 hover:shadow-${accent}-500/40 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait disabled:bg-zinc-600 disabled:shadow-none`}
+                            >
+                                {isLoading ? <Loader2 className="animate-spin" size={18} /> : mode === 'CREATE' ? <Rocket size={18} /> : <Save size={18} />}
+                                {mode === 'CREATE' ? t('modal.actions.create') : t('modal.actions.save')}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

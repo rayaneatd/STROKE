@@ -1,7 +1,7 @@
 
 import React from 'react';
 import {
-    X, Rocket, Type, Sparkles, CheckCircle, ChevronDown, Shield, Users, Calculator, Infinity, Mail, AtSign, ArrowRight, Check, Ghost
+    X, Rocket, Type, Sparkles, CheckCircle, ChevronDown, Shield, Users, Calculator, Infinity, Mail, AtSign, ArrowRight, Check, Ghost, AlertTriangle
 } from 'lucide-react';
 import { User, Project, SubscriptionPlan, ProjectBillingMode, OutreachStrategy } from '../../types';
 import { useCreateProjectModal, CreateProjectState } from '../../hooks/useCreateProjectModal';
@@ -27,6 +27,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         newProjectData,
         setNewProjectData,
         handleSubmit,
+        error,
         hasQuotaFeature,
         isLight,
         accent

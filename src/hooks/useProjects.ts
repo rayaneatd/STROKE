@@ -132,17 +132,25 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
 
     // Mutations
     const createMutation = useMutation({
-        mutationFn: async (newProj: any) => {
-            const { data, error } = await supabase
-                .from('projects')
-                .insert(newProj)
-                .select()
-                .single();
+        mutationFn: async ({ projectData, ownerId, investmentAmount }: { projectData: any, ownerId: string, investmentAmount: number }) => {
+            const { data, error } = await supabase.rpc('create_project_with_funding', {
+                p_project_data: projectData,
+                p_owner_id: ownerId,
+                p_investment_amount: investmentAmount
+            });
+            
             if (error) throw error;
-            return data;
+            const result = data as { success: boolean; error?: string; new_balance?: number };
+            if (!result.success) throw new Error(result.error || 'Project creation failed');
+            
+            return result;
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            if (data.new_balance !== undefined && data.new_balance !== null && onUpdateUser) {
+                onUpdateUser({ scansBalance: data.new_balance }, true);
+            }
             setIsProjectModalOpen(false);
         },
         onError: (error: any) => {
@@ -193,6 +201,27 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
             setProjectToLeave(null);
+        }
+    });
+
+    const fundProjectMutation = useMutation({
+        mutationFn: async ({ projectId, amount, action }: { projectId: string, amount: number, action: 'DEPOSIT' | 'WITHDRAW' }) => {
+            const { data, error } = await supabase.rpc('transfer_project_funds', {
+                p_project_id: projectId,
+                p_amount: amount,
+                p_action: action
+            });
+            if (error) throw error;
+            const result = data as { success: boolean; error?: string; user_balance: number };
+            if (result && !result.success) throw new Error(result.error);
+            return result;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            if (onUpdateUser && data) {
+                onUpdateUser({ scansBalance: data.user_balance }, true);
+            }
         }
     });
 
@@ -328,52 +357,29 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                     title: projectData.title,
                     description: projectData.description,
                     status: projectData.status,
-                    settings: projectData.settings,
-                    investment_balance: projectData.investmentBalance
+                    settings: projectData.settings
+                    // investment_balance is handled via fund/withdraw actions
                 }
             });
         } else {
-            // Check budget
-            const targetBudget = projectData.investmentBalance || 0;
-            if (projectData.settings?.billingMode === 'PROJECT_INVESTMENT' && targetBudget > 0) {
-                if (currentUser.scansBalance < targetBudget) {
-                    alert(t('projects.errors.insufficientBalance'));
-                    return;
-                }
-                // Deduct balance (handled in App/Context usually, but here we sync)
-                if (onUpdateUser) {
-                    onUpdateUser({ scansBalance: currentUser.scansBalance - targetBudget }, true);
-                }
+            const targetBudget = (projectData.settings?.billingMode === 'PROJECT_INVESTMENT') 
+                ? (projectData.investmentBalance || 0) 
+                : 0;
+
+            if (targetBudget > 0 && currentUser.scansBalance < targetBudget) {
+                alert(t('projects.errors.insufficientBalance'));
+                return;
             }
 
             createMutation.mutate({
-                title: projectData.title || 'Untitled Project',
-                description: projectData.description || '',
-                owner_id: currentUser.id,
-                status: projectData.status || 'ACTIVE',
-                settings: projectData.settings,
-                investment_balance: 0, // Start at 0, transfer after creation
-                total_invested: 0
-            }, {
-                onSuccess: async (newProj) => {
-                    if (targetBudget > 0) {
-                        const { data, error } = await supabase.rpc('transfer_project_funds', {
-                            p_project_id: newProj.id,
-                            p_amount: targetBudget,
-                            p_action: 'DEPOSIT'
-                        });
-
-                        if (error) {
-                            console.error('Initial deposit failed:', error);
-                            alert(t('projects.errors.transferFailed', { error: error.message }));
-                        } else {
-                            const result = data as { success: boolean; error?: string };
-                            if (result && !result.success) {
-                                alert(t('projects.errors.transferFailed', { error: result.error }));
-                            }
-                        }
-                    }
-                }
+                projectData: {
+                    title: projectData.title || 'Untitled Project',
+                    description: projectData.description || '',
+                    status: projectData.status || 'ACTIVE',
+                    settings: projectData.settings
+                },
+                ownerId: currentUser.id,
+                investmentAmount: targetBudget
             });
         }
     };
@@ -419,6 +425,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         confirmLeaveProject,
         handleProjectModalSave,
         handleLoadMore,
+        fundProjectMutation,
         loading: isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || leaveMutation.isPending
     };
 };

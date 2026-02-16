@@ -599,8 +599,8 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         addMember: addMemberMutation.mutate,
         removeMember: removeMemberMutation.mutate,
         updateMember: updateMemberMutation.mutate,
-        fundProject: fundProjectMutation.mutate,
-        withdrawFunds: withdrawFundsMutation.mutate,
+        fundProject: fundProjectMutation.mutateAsync,
+        withdrawFunds: withdrawFundsMutation.mutateAsync,
         updateProject: updateProjectMutation.mutate,
         isActionLoading: addMemberMutation.isPending || removeMemberMutation.isPending || updateMemberMutation.isPending || fundProjectMutation.isPending || withdrawFundsMutation.isPending || markViewedMutation.isPending || markExportedMutation.isPending
     };
