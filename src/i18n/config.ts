@@ -21,6 +21,8 @@ i18n
     .init({
         fallbackLng: 'en',
         supportedLngs: ['en', 'fr'],
+        load: 'languageOnly',
+        nonExplicitSupportedLngs: true,
         
         // Language detection config
         detection: detectionOptions,
@@ -40,7 +42,7 @@ i18n
         
         // Backend config (path to translation files)
         backend: {
-            loadPath: '/locales/{{lng}}/translation.json',
+            loadPath: `${import.meta.env.BASE_URL}locales/{{lng}}/translation.json`,
         }
     });
 

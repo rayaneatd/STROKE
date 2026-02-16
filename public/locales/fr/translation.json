@@ -252,7 +252,20 @@
         "connectAurinkoDescription": "Liez une boîte mail professionnelle via Aurinko",
         "aurinkoDisclaimer": "Nous utiliserons Aurinko pour connecter votre boîte mail afin que vous puissiez envoyer des suivis et activer l'anti-ghosting.",
         "connectAurinko": "Se connecter avec Aurinko",
-        "member": "Membre"
+        "member": "Membre",
+        "success": {
+            "updated": "Profil mis à jour avec succès",
+            "emailUpdated": "Email principal mis à jour avec succès.",
+            "workEmailRemoved": "Email professionnel supprimé."
+        },
+        "errors": {
+            "updateFailed": "Échec de la mise à jour du profil",
+            "userIdNotFound": "ID utilisateur introuvable",
+            "emailUpdateFailed": "Échec de la mise à jour de l'email",
+            "workEmailRemoveFailed": "Échec de la suppression de l'email professionnel",
+            "aurinkoNotConfigured": "Aurinko n'est pas configuré.",
+            "notAuthenticated": "Non authentifié"
+        }
     },
     "auth": {
         "title": "Bon retour",
@@ -935,19 +948,5 @@
             "allocateFunds": "Allouer Fonds"
         }
     },
-    "profile": {
-        "success": {
-            "updated": "Profil mis à jour avec succès",
-            "emailUpdated": "Email principal mis à jour avec succès.",
-            "workEmailRemoved": "Email professionnel supprimé."
-        },
-        "errors": {
-            "updateFailed": "Échec de la mise à jour du profil",
-            "userIdNotFound": "ID utilisateur introuvable",
-            "emailUpdateFailed": "Échec de la mise à jour de l'email",
-            "workEmailRemoveFailed": "Échec de la suppression de l'email professionnel",
-            "aurinkoNotConfigured": "Aurinko n'est pas configuré.",
-            "notAuthenticated": "Non authentifié"
-        }
-    }
+    
 }

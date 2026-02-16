@@ -253,7 +253,20 @@
         "connectAurinkoDescription": "Link a professional mailbox using Aurinko",
         "aurinkoDisclaimer": "We will use Aurinko to connect your mailbox so you can send follow-ups and enable anti-ghosting.",
         "connectAurinko": "Connect with Aurinko",
-        "member": "Member"
+        "member": "Member",
+        "success": {
+            "updated": "Profile updated successfully",
+            "emailUpdated": "Primary email updated successfully.",
+            "workEmailRemoved": "Work email removed."
+        },
+        "errors": {
+            "updateFailed": "Failed to update profile",
+            "userIdNotFound": "User ID not found",
+            "emailUpdateFailed": "Failed to update email",
+            "workEmailRemoveFailed": "Failed to remove work email",
+            "aurinkoNotConfigured": "Aurinko is not configured.",
+            "notAuthenticated": "Not authenticated"
+        }
     },
     "auth": {
         "title": "Welcome Back",
@@ -941,19 +954,5 @@
             "allocateFunds": "Allocate Funds"
         }
     },
-    "profile": {
-        "success": {
-            "updated": "Profile updated successfully",
-            "emailUpdated": "Primary email updated successfully.",
-            "workEmailRemoved": "Work email removed."
-        },
-        "errors": {
-            "updateFailed": "Failed to update profile",
-            "userIdNotFound": "User ID not found",
-            "emailUpdateFailed": "Failed to update email",
-            "workEmailRemoveFailed": "Failed to remove work email",
-            "aurinkoNotConfigured": "Aurinko is not configured.",
-            "notAuthenticated": "Not authenticated"
-        }
-    }
+    
 }
