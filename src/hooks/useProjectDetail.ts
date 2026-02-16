@@ -442,7 +442,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         const pendingFiles = files.filter(f => f.status === 'PENDING');
         if (pendingFiles.length === 0) return;
 
-        if (displayBalance < pendingFiles.length) {
+        const cost = pendingFiles.length;
+
+        if (displayBalance < cost) {
             if (isProjectOwner) {
                 if (isInvestmentMode) {
                     setIsEditModalOpen(true);
@@ -455,8 +457,33 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
             return;
         }
 
-        // Delegate real processing to useFileProcessing or an edge function
-        queueFilesForProcessing(pendingFiles);
+        // Deduct credits via RPC
+        try {
+            const { data, error } = await supabase.rpc('deduct_scan_credits', {
+                p_project_id: projectId,
+                p_user_id: currentUser.id,
+                p_cost: cost
+            });
+
+            if (error) throw error;
+            
+            const result = data as { success: boolean; error?: string };
+            if (!result.success) {
+                setQuotaError(result.error || 'Failed to deduct credits');
+                return;
+            }
+
+            // Delegate real processing to useFileProcessing or an edge function
+            queueFilesForProcessing(pendingFiles);
+            
+            // Refresh Data
+            queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] }); // Update user balance if OWNER_WALLET
+            
+        } catch (err) {
+            console.error('Scan deduction error:', err);
+            setQuotaError('An error occurred while processing scan credits.');
+        }
     };
 
     const handleFilesAdded = (addedFiles: File[]) => {

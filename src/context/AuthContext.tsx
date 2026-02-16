@@ -9,6 +9,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     logout: () => Promise<void>;
     updateUser: (data: Partial<User>, syncWithBackend?: boolean) => void;
+    refreshUser: () => Promise<void>;
     loading: boolean;
 }
 
@@ -210,11 +211,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    const refreshUser = async () => {
+        if (!user?.id) return;
+        
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const profile = await fetchProfile(session.user.id, session.user);
+                setUser(profile);
+            }
+        } catch (err) {
+            console.error('Refresh user error:', err);
+        }
+    };
+
     const value = useMemo(() => ({
         user,
         isAuthenticated: !!user,
         logout,
         updateUser,
+        refreshUser,
         loading
     }), [user, loading]);
 

@@ -279,8 +279,8 @@ const AppContent: React.FC = () => {
                             <BuyScans
                                 onBack={() => navigate(-1)}
                                 onBuy={(amount) => {
-                                    updateUser({ scansBalance: (user.scansBalance || 0) + amount }, true);
-                                    navigate(-1);
+                                    // Local update only, backend handled by RPC in useBuyScans
+                                    updateUser({ scansBalance: (user.scansBalance || 0) + amount }); 
                                 }}
                                 currentBalance={user.scansBalance}
                             />
