@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 
 interface DeleteAccountModalProps {
@@ -17,6 +18,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   isDeleting
 }) => {
   const { isLight } = useTheme();
+  const { t } = useTranslation();
   const [deleteCountdown, setDeleteCountdown] = useState(10);
 
   useEffect(() => {
@@ -45,16 +47,16 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border ${isLight ? 'bg-red-50 border-red-100 text-red-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
                       <AlertTriangle size={32} />
                   </div>
-                  <h3 className={`text-2xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Delete Account?</h3>
+                  <h3 className={`text-2xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t('modal.deleteAccount.title')}</h3>
                   <p className={`mb-6 leading-relaxed ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-                      You are about to permanently delete your account and all associated data. This action <strong className={isLight ? "text-slate-800" : "text-white"}>cannot be undone</strong>.
+                      {t('modal.deleteAccount.description')}
                   </p>
                   
                   {/* Countdown Indicator */}
                   {deleteCountdown > 0 && (
                       <div className="mb-6 flex justify-center">
                           <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border animate-pulse ${isLight ? 'text-red-500 bg-red-50 border-red-200' : 'text-red-400 bg-red-500/10 border-red-500/20'}`}>
-                              Wait {deleteCountdown}s to confirm
+                              {t('modal.deleteAccount.wait', { count: deleteCountdown })}
                           </span>
                       </div>
                   )}
@@ -70,13 +72,13 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                           }`}
                       >
                           {isDeleting ? <Loader2 className="animate-spin" size={20} /> : <Trash2 size={20} />}
-                          {deleteCountdown > 0 ? `Please wait ${deleteCountdown}s` : 'Yes, Delete My Account'}
+                          {deleteCountdown > 0 ? t('modal.deleteAccount.pleaseWait', { count: deleteCountdown }) : t('modal.deleteAccount.confirm')}
                       </button>
                       <button 
                           onClick={onClose}
                           className={`w-full py-3.5 rounded-xl font-bold transition-colors border ${isLight ? 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50' : 'text-zinc-400 bg-white/5 border-white/5 hover:bg-white/10'}`}
                       >
-                          Cancel
+                          {t('modal.deleteAccount.cancel')}
                       </button>
                   </div>
               </div>

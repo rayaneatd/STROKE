@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Briefcase, Search, BarChart2, User, CheckCircle, X, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { DemoteTarget } from '../../types';
 import { useBulkAccessModal } from '../../hooks/useBulkAccessModal';
 
@@ -17,6 +18,7 @@ const BulkAccessModal: React.FC<BulkAccessModalProps> = ({
     selectedCount, 
     onConfirm 
 }) => {
+    const { t } = useTranslation();
     const { 
         selectedRole, 
         setSelectedRole, 
@@ -35,31 +37,31 @@ const BulkAccessModal: React.FC<BulkAccessModalProps> = ({
     const ROLES = [
         { 
             id: 'PARTNER' as DemoteTarget, 
-            label: 'Talent Partner', 
+            label: t('modal.addMember.roles.partner'), 
             icon: Briefcase, 
-            desc: 'Full access to scan resumes, analyze data, and manage candidates.',
-            perms: 'Scan & Analyze'
+            desc: t('modal.bulkAccess.roles.partner.desc'),
+            perms: t('modal.bulkAccess.roles.partner.perms')
         },
         { 
             id: 'SCOUT' as DemoteTarget, 
-            label: 'Talent Scout', 
+            label: t('modal.addMember.roles.scout'), 
             icon: Search, 
-            desc: 'Focused on sourcing. Can upload and scan resumes but cannot view aggregate analytics.',
-            perms: 'Scan Only'
+            desc: t('modal.bulkAccess.roles.scout.desc'),
+            perms: t('modal.bulkAccess.roles.scout.perms')
         },
         { 
             id: 'ANALYST' as DemoteTarget, 
-            label: 'Talent Analyst', 
+            label: t('modal.addMember.roles.analyst'), 
             icon: BarChart2, 
-            desc: 'View-only access to dashboards and reports. Cannot consume scans.',
-            perms: 'Analyze Only'
+            desc: t('modal.bulkAccess.roles.analyst.desc'),
+            perms: t('modal.bulkAccess.roles.analyst.perms')
         },
         { 
             id: 'VISITOR' as DemoteTarget, 
-            label: 'Visitor', 
+            label: t('modal.addMember.roles.visitor'), 
             icon: User, 
-            desc: 'Read-only access to project details. Cannot scan or view deep analytics.',
-            perms: 'Read Only'
+            desc: t('modal.bulkAccess.roles.visitor.desc'),
+            perms: t('modal.bulkAccess.roles.visitor.perms')
         }
     ];
 
@@ -77,8 +79,8 @@ const BulkAccessModal: React.FC<BulkAccessModalProps> = ({
                             <ShieldCheck size={24} />
                         </div>
                         <div>
-                            <h3 className={`text-lg font-bold ${textPrimary}`}>Configure Access</h3>
-                            <p className={`text-xs ${textSecondary}`}>Updating permissions for <span className="font-bold">{selectedCount}</span> members</p>
+                            <h3 className={`text-lg font-bold ${textPrimary}`}>{t('modal.bulkAccess.title')}</h3>
+                            <p className={`text-xs ${textSecondary}`}>{t('modal.bulkAccess.subtitle', { count: selectedCount })}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isLight ? 'text-slate-400 hover:bg-slate-100' : 'text-zinc-500 hover:bg-white/10 hover:text-white'}`}>

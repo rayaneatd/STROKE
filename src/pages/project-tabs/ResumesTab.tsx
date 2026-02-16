@@ -8,6 +8,7 @@ import {
     Medal, Trophy, Sparkles, User as UserIcon, Mail, Phone, MapPin, ExternalLink, Eye, GraduationCap,
     FileUp, AlertCircle, Crown, Award, Send, ThumbsUp, ThumbsDown, BrainCircuit, Wand2, Ghost, MailCheck, Edit3, Check, EyeOff, RotateCcw, AlertTriangle
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ProjectFile, User } from '../../types';
 import { useDataWorker } from '../../hooks/useDataWorker';
 import { useVirtualizer } from '../../hooks/useVirtualizer';
@@ -55,6 +56,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     onBatchUpdate,
     currentUser
 }) => {
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [showFailedDetails, setShowFailedDetails] = useState(false);
 
@@ -241,7 +243,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
             if (validFiles.length > 0) {
                 handleFilesAdded(validFiles);
             } else {
-                alert("Invalid file type. Please upload PDF, DOCX, or Images.");
+                alert(t('project.resumes.errors.invalidFileType'));
             }
         }
     };
@@ -250,7 +252,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         const candidatesToExport = filteredFiles;
 
         if (candidatesToExport.length === 0) {
-            alert("No candidates to export in the current view.");
+            alert(t('project.resumes.errors.noCandidatesExport'));
             return;
         }
 

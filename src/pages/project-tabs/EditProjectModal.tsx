@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, Edit2, Type, Sparkles, CheckCircle, Archive, ChevronDown, Users, ShieldOff, Save, Loader2 
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Project, User, ProjectRole, EmployeeAddPermission, DemoteTarget } from '../../types';
 
 interface EditProjectModalProps {
@@ -19,6 +20,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
   currentUser, 
   onSave 
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<Project>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -60,8 +62,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                         <Edit2 size={24} />
                     </div>
                     <div>
-                            <h3 className="font-bold text-slate-900 text-xl tracking-tight">Edit Project</h3>
-                            <p className="text-xs text-slate-500 font-medium">Update project details and settings</p>
+                            <h3 className="font-bold text-slate-900 text-xl tracking-tight">{t('modal.editProject.title')}</h3>
+                            <p className="text-xs text-slate-500 font-medium">{t('modal.editProject.subtitle')}</p>
                     </div>
                 </div>
                 <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-50 rounded-full transition-colors"><X size={24}/></button>
@@ -72,7 +74,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 <form id="edit-project-form" onSubmit={handleSubmit} className="p-8 space-y-8">
                     {/* Title */}
                     <div className="space-y-3">
-                        <label className="text-sm font-bold text-slate-700 flex items-center gap-2">Project Title</label>
+                        <label className="text-sm font-bold text-slate-700 flex items-center gap-2">{t('modal.editProject.fields.title.label')}</label>
                         <div className="relative group">
                             <Type className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-500 transition-colors" size={20} />
                             <input 
@@ -80,7 +82,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                             value={formData.title || ''} 
                             onChange={(e) => setFormData({...formData, title: e.target.value})}
                             className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all font-semibold text-slate-800"
-                            placeholder="e.g. Senior Backend Developer"
+                            placeholder={t('modal.editProject.fields.title.placeholder')}
                             required
                             />
                         </div>
@@ -89,10 +91,10 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                     {/* Job Description */}
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                            <label className="text-sm font-bold text-slate-700">Job Description</label>
+                            <label className="text-sm font-bold text-slate-700">{t('modal.editProject.fields.description.label')}</label>
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-violet-50 border border-violet-100 rounded-full text-violet-700">
                                 <Sparkles size={12} className="text-violet-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wide">AI Context Active</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wide">{t('modal.editProject.fields.description.aiContext')}</span>
                             </div>
                         </div>
                         <div className="group relative">
@@ -105,15 +107,15 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                                 value={formData.description || ''} 
                                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                                 className="w-full px-5 py-4 border-none focus:ring-0 h-80 resize-none text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 custom-scrollbar bg-transparent"
-                                placeholder="Paste the full job description here..."
+                                placeholder={t('modal.editProject.fields.description.placeholder')}
                                 required
                                 />
                                 <div className="px-4 py-2.5 bg-slate-50/50 border-t border-slate-100 text-[11px] font-medium text-slate-400 flex justify-between items-center">
                                     <div className="flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"></span>
-                                        <span>Optimized for AI parsing</span>
+                                        <span>{t('modal.editProject.fields.description.aiOptimized')}</span>
                                     </div>
-                                    <span>{formData.description?.length || 0} characters</span>
+                                    <span>{formData.description?.length || 0} {t('modal.editProject.fields.description.chars')}</span>
                                 </div>
                             </div>
                         </div>
@@ -124,7 +126,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                         {/* Status: Owner Only */}
                         {isOwner && (
                             <div className="space-y-3">
-                                <label className="text-sm font-bold text-slate-700">Project Status</label>
+                                <label className="text-sm font-bold text-slate-700">{t('modal.editProject.fields.status.label')}</label>
                                 <div className="relative group">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-brand-500">
                                     {formData.status === 'ACTIVE' && <CheckCircle size={20}/>}
@@ -136,9 +138,9 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                                     onChange={(e) => setFormData({...formData, status: e.target.value as any})}
                                     className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none appearance-none cursor-pointer font-medium text-slate-700 transition-all"
                                     >
-                                        <option value="ACTIVE">Active</option>
-                                        <option value="COMPLETED">Completed</option>
-                                        <option value="ARCHIVED">Archived</option>
+                                        <option value="ACTIVE">{t('modal.editProject.fields.status.options.ACTIVE')}</option>
+                                        <option value="COMPLETED">{t('modal.editProject.fields.status.options.COMPLETED')}</option>
+                                        <option value="ARCHIVED">{t('modal.editProject.fields.status.options.ARCHIVED')}</option>
                                     </select>
                                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                 </div>
@@ -148,7 +150,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                         {/* Settings (Employee Add): Owner Only */}
                         {isOwner && formData.settings && (
                                 <div className="space-y-3">
-                                <label className="text-sm font-bold text-slate-700">Invitation Policy</label>
+                                <label className="text-sm font-bold text-slate-700">{t('modal.editProject.fields.invitationPolicy.label')}</label>
                                 <div className="relative group">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-brand-500">
                                         <Users size={20} />
@@ -161,9 +163,9 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                                     })}
                                     className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none appearance-none cursor-pointer font-medium text-slate-700 transition-all"
                                     >
-                                        <option value={EmployeeAddPermission.ALL}>Owner & Admin Connections</option>
-                                        <option value={EmployeeAddPermission.OWN_CONNECTIONS}>Admin's Connections Only</option>
-                                        <option value={EmployeeAddPermission.OWNER_CONNECTIONS}>Owner's Connections Only</option>
+                                        <option value={EmployeeAddPermission.ALL}>{t('modal.editProject.fields.invitationPolicy.options.ALL')}</option>
+                                        <option value={EmployeeAddPermission.OWN_CONNECTIONS}>{t('modal.editProject.fields.invitationPolicy.options.OWN_CONNECTIONS')}</option>
+                                        <option value={EmployeeAddPermission.OWNER_CONNECTIONS}>{t('modal.editProject.fields.invitationPolicy.options.OWNER_CONNECTIONS')}</option>
                                     </select>
                                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                 </div>
@@ -173,7 +175,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                         {/* Quick Demote Role: Owner Only */}
                         {isOwner && formData.settings && (
                                 <div className="space-y-3 md:col-span-2">
-                                <label className="text-sm font-bold text-slate-700">Quick Demote Target Role</label>
+                                <label className="text-sm font-bold text-slate-700">{t('modal.editProject.fields.quickDemote.label')}</label>
                                 <div className="relative group">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-brand-500">
                                         <ShieldOff size={20} />
@@ -186,10 +188,10 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                                     })}
                                     className="w-full pl-12 pr-10 py-3.5 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none appearance-none cursor-pointer font-medium text-slate-700 transition-all"
                                     >
-                                        <option value="PARTNER">Talent Partner (Full Access)</option>
-                                        <option value="SCOUT">Talent Scout (Scan Only)</option>
-                                        <option value="ANALYST">Talent Analyst (View Only)</option>
-                                        <option value="VISITOR">Visitor (Read Only)</option>
+                                        <option value="PARTNER">{t('modal.editProject.fields.quickDemote.options.PARTNER')}</option>
+                                        <option value="SCOUT">{t('modal.editProject.fields.quickDemote.options.SCOUT')}</option>
+                                        <option value="ANALYST">{t('modal.editProject.fields.quickDemote.options.ANALYST')}</option>
+                                        <option value="VISITOR">{t('modal.editProject.fields.quickDemote.options.VISITOR')}</option>
                                     </select>
                                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                 </div>
@@ -206,7 +208,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 onClick={onClose} 
                 className="px-6 py-3 rounded-xl text-slate-600 font-bold hover:bg-slate-200 transition-colors"
                 >
-                    Cancel
+                    {t('modal.editProject.actions.cancel')}
                 </button>
                 <button 
                 onClick={() => document.getElementById('edit-project-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
@@ -214,7 +216,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 className="px-8 py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70 disabled:cursor-wait"
                 >
                     {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} 
-                    Save Changes
+                    {t('modal.editProject.actions.save')}
                 </button>
             </div>
         </div>

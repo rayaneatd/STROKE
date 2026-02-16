@@ -4,8 +4,10 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import { Loader2, Mail, Check, ArrowRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/ui/Logo';
+import { useTranslation, Trans } from 'react-i18next';
 
 const Login: React.FC = () => {
+    const { t } = useTranslation();
     const {
         email,
         setEmail,
@@ -36,7 +38,7 @@ const Login: React.FC = () => {
                 {/* Header / Branding */}
                 <div className="text-center mb-8 flex flex-col items-center">
                     <Logo variant="full" height={120} className="mb-4" />
-                    <p className="text-zinc-400">Welcome back</p>
+                    <p className="text-zinc-400">{t('auth.welcomeBack')}</p>
                 </div>
 
                 {/* Error Message */}
@@ -64,7 +66,7 @@ const Login: React.FC = () => {
                                     <path fill="#05a6f0" d="M1 12h10v10H1z"/>
                                     <path fill="#ffba08" d="M12 12h10v10H12z"/>
                                 </svg>
-                                <span>Continue with Microsoft</span>
+                                <span>{t('auth.continueWithMicrosoft')}</span>
                             </>
                         )}
                     </button>
@@ -85,7 +87,7 @@ const Login: React.FC = () => {
                                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                                 </svg>
-                                <span>Continue with Google</span>
+                                <span>{t('auth.continueWithGoogle')}</span>
                             </>
                         )}
                     </button>
@@ -97,14 +99,14 @@ const Login: React.FC = () => {
                         <div className="w-full border-t border-white/10"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-[#0A0A0A] text-zinc-500">or continue with email</span>
+                        <span className="px-2 bg-[#0A0A0A] text-zinc-500">{t('auth.orEmail')}</span>
                     </div>
                 </div>
 
                 {/* Magic Link Form */}
                 <form onSubmit={handleMagicLinkLogin} className="space-y-4">
                     <div>
-                        <label htmlFor="email" className="sr-only">Email address</label>
+                        <label htmlFor="email" className="sr-only">{t('auth.emailLabel')}</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
                                 <Mail size={18} />
@@ -114,7 +116,7 @@ const Login: React.FC = () => {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@company.com"
+                                placeholder={t('auth.emailPlaceholder')}
                                 className="w-full bg-[#111111] border border-white/10 text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent block pl-10 p-2.5 placeholder-zinc-600 transition-all outline-none"
                                 required
                             />
@@ -134,7 +136,7 @@ const Login: React.FC = () => {
                                 <div className="w-4 h-4 border border-zinc-600 rounded bg-transparent peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all"></div>
                                 <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 left-[2px] top-[2px] pointer-events-none" />
                             </div>
-                            <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Stay signed in</span>
+                            <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">{t('auth.staySignedIn')}</span>
                         </label>
 
                         <label className="flex items-start gap-2 cursor-pointer group">
@@ -149,7 +151,7 @@ const Login: React.FC = () => {
                                 <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 left-[2px] top-[2px] pointer-events-none" />
                             </div>
                             <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors leading-tight">
-                                I agree to receive updates and network opportunities from STROKE
+                                {t('auth.marketingConsent')}
                             </span>
                         </label>
                     </div>
@@ -187,7 +189,7 @@ const Login: React.FC = () => {
                             <Loader2 className="animate-spin" size={20} />
                         ) : (
                             <>
-                                <span>Send Magic Link</span>
+                                <span>{t('auth.magicLink')}</span>
                                 <ArrowRight size={18} />
                             </>
                         )}
@@ -197,13 +199,13 @@ const Login: React.FC = () => {
                 {/* Footer Legal */}
                 <div className="mt-8 text-center">
                     <p className="text-xs text-zinc-600">
-                        By signing in, you agree to our{' '}
+                        {t('auth.termsAgree')}{' '}
                         <Link to="/terms-of-service" className="text-zinc-400 hover:text-white underline decoration-zinc-700 hover:decoration-white transition-all">
-                            Terms of Service
+                            {t('auth.terms')}
                         </Link>
-                        {' '}and{' '}
+                        {' '}{t('auth.and')}{' '}
                         <Link to="/privacy-policy" className="text-zinc-400 hover:text-white underline decoration-zinc-700 hover:decoration-white transition-all">
-                            Privacy Policy
+                            {t('auth.privacy')}
                         </Link>
                     </p>
                 </div>
@@ -225,24 +227,26 @@ const Login: React.FC = () => {
                                 <Mail className="text-blue-500" size={32} />
                             </div>
                             
-                            <h3 className="text-xl font-bold text-white mb-2">Check your email</h3>
+                            <h3 className="text-xl font-bold text-white mb-2">{t('auth.magicLinkSent.title')}</h3>
                             <p className="text-zinc-400 mb-6">
-                                We've sent a magic link to <span className="text-white font-medium">{email}</span>.
-                                <br />Click the link to sign in.
+                                <Trans i18nKey="auth.magicLinkSent.desc" values={{ email }}>
+                                    We've sent a magic link to <span className="text-white font-medium">{{ email }}</span>.
+                                    <br />Click the link to sign in.
+                                </Trans>
                             </p>
                             
                             <button
                                 onClick={() => window.location.href = `mailto:`}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                             >
-                                Open Email App
+                                {t('auth.magicLinkSent.openEmail')}
                             </button>
                             
                             <button
                                 onClick={() => setMagicLinkSuccess(false)}
                                 className="mt-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
                             >
-                                I'll do it later
+                                {t('auth.magicLinkSent.later')}
                             </button>
                         </div>
                     </div>

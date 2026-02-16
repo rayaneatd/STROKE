@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 're
 import {
     Shield, Loader2, MessageSquare, Send
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ProjectMessage, ChannelType, User, Project } from '../../types';
 import { useChat } from '../../hooks/useChat';
 
@@ -22,6 +23,7 @@ const DiscussionsTab: React.FC<DiscussionsTabProps> = ({
     canAccessAdminChannel,
     isReadOnly
 }) => {
+    const { t } = useTranslation();
     const [selectedChannel, setSelectedChannel] = useState<ChannelType>('GENERAL');
 
     const {
@@ -112,7 +114,7 @@ const DiscussionsTab: React.FC<DiscussionsTabProps> = ({
         <div className={`flex flex-col lg:flex-row h-[600px] rounded-2xl border overflow-hidden animate-fade-in ${containerBg}`}>
             {/* Channels List */}
             <div className={`w-full lg:w-64 border-r flex flex-col shrink-0 ${sidebarBg}`}>
-                <div className={`p-4 font-bold text-xs uppercase tracking-wider ${textSecondary}`}>Channels</div>
+                <div className={`p-4 font-bold text-xs uppercase tracking-wider ${textSecondary}`}>{t('project.discussions.channels.title')}</div>
                 <div className="flex-1 p-2 space-y-1 overflow-y-auto">
                     <button
                         onClick={() => setSelectedChannel('GENERAL')}
@@ -121,7 +123,7 @@ const DiscussionsTab: React.FC<DiscussionsTabProps> = ({
                             : (isLight ? 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300')
                             }`}
                     >
-                        <span className="text-lg leading-none opacity-50">#</span> General
+                        <span className="text-lg leading-none opacity-50">#</span> {t('project.discussions.channels.general')}
                     </button>
                     {canAccessAdminChannel && (
                         <button
@@ -131,7 +133,7 @@ const DiscussionsTab: React.FC<DiscussionsTabProps> = ({
                                 : (isLight ? 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300')
                                 }`}
                         >
-                            <Shield size={14} /> Admin Only
+                            <Shield size={14} /> {t('project.discussions.channels.adminOnly')}
                         </button>
                     )}
                 </div>
@@ -143,7 +145,7 @@ const DiscussionsTab: React.FC<DiscussionsTabProps> = ({
                 <div className={`h-14 border-b flex items-center px-6 shrink-0 ${headerBg}`}>
                     <div className={`font-bold flex items-center gap-2 ${textPrimary}`}>
                         {selectedChannel === 'ADMIN' ? <Shield size={16} className="text-purple-500" /> : <span className={textSecondary}>#</span>}
-                        {selectedChannel === 'ADMIN' ? 'Admin Discussion' : 'General Chat'}
+                        {selectedChannel === 'ADMIN' ? t('project.discussions.channels.adminDiscussion') : t('project.discussions.channels.generalChat')}
                     </div>
                 </div>
 
@@ -155,14 +157,14 @@ const DiscussionsTab: React.FC<DiscussionsTabProps> = ({
                 >
                     {isDecrypting && (
                         <div className={`flex justify-center py-4 text-xs font-medium flex items-center gap-2 ${textSecondary}`}>
-                            <Loader2 size={14} className="animate-spin" /> Decrypting secure messages...
+                            <Loader2 size={14} className="animate-spin" /> {t('project.discussions.messages.decrypting')}
                         </div>
                     )}
 
                     {!isDecrypting && chatMessages.length === 0 && (
                         <div className={`flex flex-col items-center justify-center h-full space-y-3 ${textSecondary}`}>
                             <MessageSquare size={48} strokeWidth={1} />
-                            <p className="font-medium text-sm">No messages yet. Start the conversation!</p>
+                            <p className="font-medium text-sm">{t('project.discussions.messages.empty')}</p>
                         </div>
                     )}
 
@@ -213,7 +215,7 @@ const DiscussionsTab: React.FC<DiscussionsTabProps> = ({
                             type="text"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder={isReadOnly ? "Discussion is locked" : `Message #${selectedChannel === 'GENERAL' ? 'general' : 'admin'}...`}
+                            placeholder={isReadOnly ? t('project.discussions.messages.locked') : t('project.discussions.messages.placeholder', { channel: selectedChannel === 'GENERAL' ? 'general' : 'admin' })}
                             disabled={isReadOnly}
                             className={`w-full pl-5 pr-14 py-3.5 rounded-xl border focus:outline-none focus:border-${accentColor}-500 transition-all disabled:cursor-not-allowed disabled:opacity-50 ${inputBg}`}
                         />

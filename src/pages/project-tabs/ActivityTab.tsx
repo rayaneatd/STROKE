@@ -9,6 +9,7 @@ import {
     Crown, Medal, Award, Trophy, // Rank Icons
     ExternalLink, Eye, BrainCircuit, Mail, Sparkles, ThumbsUp, ThumbsDown, Phone, MapPin, GraduationCap, Edit3, FileCheck, EyeOff, FileEdit
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useVirtualizer } from '../../hooks/useVirtualizer';
 
 interface ActivityTabProps {
@@ -40,6 +41,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     onBatchUpdate,
     currentUser
 }) => {
+    const { t } = useTranslation();
     const [search, setSearch] = useState('');
     const [isDraftingAll, setIsDraftingAll] = useState(false);
     const [isSendingAll, setIsSendingAll] = useState(false);
@@ -214,7 +216,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     // STRICT STEP 1: Generate Drafts ONLY for candidates who DON'T have one.
     const handleGhostingKiller = () => {
         if (!canSendEmails) {
-            alert("Please connect your Work Email in Settings > Security to use Anti-Ghosting features.");
+            alert(t('project.activity.errors.connectWorkEmail'));
             return;
         }
 
@@ -241,7 +243,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     // STRICT STEP 2: Send ONLY candidates who HAVE a draft.
     const handleSendBulk = () => {
         if (!canSendEmails) {
-            alert("Please connect your Work Email in Settings > Security to use Anti-Ghosting features.");
+            alert(t('project.activity.errors.connectWorkEmail'));
             return;
         }
 
@@ -330,7 +332,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const handleExport = () => {
         const candidatesToExport = filteredFiles;
         if (candidatesToExport.length === 0) {
-            alert("No candidates to export in the current view.");
+            alert(t('project.resumes.errors.noCandidatesExport'));
             return;
         }
 

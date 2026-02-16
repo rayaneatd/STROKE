@@ -4,6 +4,7 @@ import {
     Crown, Shield, Briefcase, User, Search, ChevronUp, ChevronDown, UserPlus, Settings,
     ShieldOff, ShieldCheck, Trash2, X, CheckSquare, Square, MinusSquare, BarChart2, CheckCircle, Loader2, ArrowDown, Edit2, Calculator, Infinity, Zap
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Project, User as UserType, ProjectRole, EmployeeAddPermission, DemoteTarget, ProjectPermission, SubscriptionPlan } from '../../types';
 import BulkAccessModal from '../../components/modals/BulkAccessModal';
 import BulkDemoteModal from '../../components/modals/BulkDemoteModal';
@@ -36,6 +37,7 @@ const TeamListSection = React.memo(({
     teamSearch,
     userMap
 }: any) => {
+    const { t } = useTranslation();
     const [overflowVisible, setOverflowVisible] = useState(false);
     const [visibleCount, setVisibleCount] = useState(10);
     const { isLight, accentColor } = useTheme(currentUser);
@@ -104,7 +106,7 @@ const TeamListSection = React.memo(({
                 </div>
                 {onAdd && (
                     <button onClick={(e) => { e.stopPropagation(); onAdd(); }} className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-transparent ${isLight ? `text-${accentColor}-600 hover:bg-${accentColor}-50 hover:border-${accentColor}-100` : `text-${accentColor}-400 hover:bg-${accentColor}-500/10 hover:border-${accentColor}-500/20`}`}>
-                        <UserPlus size={14} /> {addLabel || "Add Member"}
+                        <UserPlus size={14} /> {addLabel || t('project.team.addMember')}
                     </button>
                 )}
             </div>
@@ -113,7 +115,7 @@ const TeamListSection = React.memo(({
                 <div>
                     {filteredMembers.length === 0 ? (
                         <div className={`p-8 text-center text-sm ${textSecondary}`}>
-                            {teamSearch ? `No match found for "${teamSearch}"` : `No members in this group.`}
+                            {teamSearch ? t('project.team.empty.noMatch', { search: teamSearch }) : t('project.team.empty.noMembers')}
                         </div>
                     ) : (
                         <div className={`divide-y ${dividerClass}`}>
@@ -123,15 +125,15 @@ const TeamListSection = React.memo(({
                                 const isSelf = user.id === currentUser.id;
                                 const isOwner = m.role === ProjectRole.OWNER;
 
-                                let roleLabel = "Employee";
-                                if (m.role === ProjectRole.OWNER) roleLabel = "Owner";
-                                else if (m.role === ProjectRole.ADMIN) roleLabel = "Admin";
+                                let roleLabel = t('project.team.roles.employee');
+                                if (m.role === ProjectRole.OWNER) roleLabel = t('project.team.roles.owner');
+                                else if (m.role === ProjectRole.ADMIN) roleLabel = t('project.team.roles.admin');
                                 else {
-                                    if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) roleLabel = "Talent Partner";
-                                    else if (m.permissions.includes('SCAN')) roleLabel = "Talent Scout";
-                                    else if (m.permissions.includes('ANALYZE')) roleLabel = "Talent Analyst";
-                                    else if (m.permissions.length === 0) roleLabel = "Visitor";
-                                    else roleLabel = "Staff";
+                                    if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) roleLabel = t('project.team.roles.partner');
+                                    else if (m.permissions.includes('SCAN')) roleLabel = t('project.team.roles.scout');
+                                    else if (m.permissions.includes('ANALYZE')) roleLabel = t('project.team.roles.analyst');
+                                    else if (m.permissions.length === 0) roleLabel = t('project.team.roles.visitor');
+                                    else roleLabel = t('project.team.roles.staff');
                                 }
 
                                 const isSelected = selectedMemberIds.has(m.userId);
@@ -152,7 +154,7 @@ const TeamListSection = React.memo(({
                                             <div>
                                                 <div className={`font-bold text-sm flex items-center gap-2 ${textPrimary}`}>
                                                     {user.displayName}
-                                                    {isSelf && <span className={`text-[10px] px-1.5 py-0.5 rounded border ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/10 text-zinc-400 border-white/5'}`}>YOU</span>}
+                                                    {isSelf && <span className={`text-[10px] px-1.5 py-0.5 rounded border ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/10 text-zinc-400 border-white/5'}`}>{t('project.team.you')}</span>}
                                                 </div>
                                                 <div className={`text-xs flex items-center gap-1.5 ${textSecondary}`}>
                                                     {user.email}
@@ -164,7 +166,7 @@ const TeamListSection = React.memo(({
                                         <div className="flex items-center gap-4">
                                             {showScans && (
                                                 <div className="text-right hidden sm:block">
-                                                    <div className={`text-xs font-medium uppercase ${textSecondary}`}>Scans Used</div>
+                                                    <div className={`text-xs font-medium uppercase ${textSecondary}`}>{t('project.team.scansUsed')}</div>
                                                     <div className={`font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{m.scansUsed}</div>
                                                 </div>
                                             )}
@@ -180,7 +182,7 @@ const TeamListSection = React.memo(({
                                         onClick={handleShowMore}
                                         className={`text-xs font-bold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-1 w-full ${isLight ? 'text-slate-500 hover:text-slate-800 hover:bg-slate-50' : 'text-zinc-500 hover:text-white hover:bg-white/10'}`}
                                     >
-                                        <ArrowDown size={14} /> Show {filteredMembers.length - visibleCount} more
+                                        <ArrowDown size={14} /> {t('project.team.showMore', { count: filteredMembers.length - visibleCount })}
                                     </button>
                                 </div>
                             )}
@@ -208,6 +210,7 @@ const EmployeeSubList = React.memo(({
     canEditQuota,
     projectId
 }: any) => {
+    const { t } = useTranslation();
     const [visibleCount, setVisibleCount] = useState(5);
     const [editingQuotaId, setEditingQuotaId] = useState<string | null>(null);
     const [quotaInput, setQuotaInput] = useState('');
@@ -265,10 +268,10 @@ const EmployeeSubList = React.memo(({
 
                     const isSelf = user.id === currentUser.id;
                     let roleLabel = "";
-                    if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) roleLabel = "Talent Partner";
-                    else if (m.permissions.includes('SCAN')) roleLabel = "Talent Scout";
-                    else if (m.permissions.includes('ANALYZE')) roleLabel = "Talent Analyst";
-                    else roleLabel = "Staff";
+                    if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) roleLabel = t('project.team.roles.partner');
+                    else if (m.permissions.includes('SCAN')) roleLabel = t('project.team.roles.scout');
+                    else if (m.permissions.includes('ANALYZE')) roleLabel = t('project.team.roles.analyst');
+                    else roleLabel = t('project.team.roles.staff');
 
                     const isSelected = selectedMemberIds.has(m.userId);
                     const isEditing = editingQuotaId === m.userId;
@@ -335,7 +338,7 @@ const EmployeeSubList = React.memo(({
                         onClick={() => setVisibleCount(prev => prev + 10)}
                         className={`w-full py-2 text-[10px] font-bold rounded-lg transition-colors mt-2 ${isLight ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10'}`}
                     >
-                        Load More ({members.length - visibleCount})
+                        {t('project.team.showMore', { count: members.length - visibleCount })}
                     </button>
                 )}
             </div>
@@ -368,6 +371,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
     updateMember,
     isActionLoading
 }) => {
+    const { t } = useTranslation();
     const { isLight, accentColor } = useTheme(currentUser);
 
     const [isOwnerExpanded, setIsOwnerExpanded] = useState(true);
@@ -541,25 +545,25 @@ const TeamTab: React.FC<TeamTabProps> = ({
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 className={`text-2xl font-bold ${textPrimary}`}>Project Team</h2>
-                        <p className={`${textSecondary} mt-1`}>Manage access and permissions</p>
+                        <h2 className={`text-2xl font-bold ${textPrimary}`}>{t('project.team.title')}</h2>
+                        <p className={`${textSecondary} mt-1`}>{t('project.team.subtitle')}</p>
                     </div>
                     {currentUserRole === ProjectRole.OWNER && (
                         <div className="relative z-50">
                             <button onClick={() => setSettingsOpen(!settingsOpen)} className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-bold transition-colors shadow-sm ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' : 'bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white'}`}>
                                 {isSavingSettings ? <Loader2 size={16} className="animate-spin text-brand-500" /> : <Settings size={16} />}
-                                {isSavingSettings ? 'Saving...' : 'Access Settings'}
+                                {isSavingSettings ? t('project.team.saving') : t('project.team.accessSettings')}
                             </button>
                             {settingsOpen && (
                                 <div className={`absolute right-0 top-full mt-2 w-72 rounded-xl border p-4 animate-fade-in-up ${actionMenuBg}`}>
                                     <div className="space-y-4">
                                         <div>
-                                            <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${textSecondary}`}>Invitation Policy</h4>
+                                            <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${textSecondary}`}>{t('project.team.invitationPolicy')}</h4>
                                             <div className="space-y-2">
                                                 {[
-                                                    { val: EmployeeAddPermission.ALL, label: 'Owner & Admin Connections' },
-                                                    { val: EmployeeAddPermission.OWN_CONNECTIONS, label: 'Admin Connections Only' },
-                                                    { val: EmployeeAddPermission.OWNER_CONNECTIONS, label: 'Owner Connections Only' }
+                                                    { val: EmployeeAddPermission.ALL, label: t('project.team.invitationOptions.ALL') },
+                                                    { val: EmployeeAddPermission.OWN_CONNECTIONS, label: t('project.team.invitationOptions.OWN_CONNECTIONS') },
+                                                    { val: EmployeeAddPermission.OWNER_CONNECTIONS, label: t('project.team.invitationOptions.OWNER_CONNECTIONS') }
                                                 ].map((opt) => (
                                                     <button
                                                         key={opt.val}
@@ -584,7 +588,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                         type="text"
                         value={teamSearch}
                         onChange={(e) => setTeamSearch(e.target.value)}
-                        placeholder="Search Admins or Employees by name or email..."
+                        placeholder={t('project.team.searchPlaceholder')}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 shadow-sm ${inputClass}`}
                     />
                     {teamSearch && (

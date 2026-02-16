@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Project, User, ProjectRole, ProjectId } from '../types';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { getOrgNamesFromEmails } from '../utils/emailDomains';
 
@@ -13,6 +14,7 @@ interface UseProjectsProps {
 }
 
 export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjectsProps) => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -145,7 +147,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         },
         onError: (error: any) => {
             console.error('Project creation failed:', error);
-            alert(`Failed to create project: ${error.message || 'Unknown error'}`);
+            alert(t('projects.errors.createFailed', { error: error.message || t('common.unknown') }));
         }
     });
 
@@ -164,7 +166,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         },
         onError: (error: any) => {
             console.error('Project update failed:', error);
-            alert(`Failed to update project: ${error.message || 'Unknown error'}`);
+            alert(t('projects.errors.updateFailed', { error: error.message || t('common.unknown') }));
         }
     });
 
@@ -335,7 +337,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
             const targetBudget = projectData.investmentBalance || 0;
             if (projectData.settings?.billingMode === 'PROJECT_INVESTMENT' && targetBudget > 0) {
                 if (currentUser.scansBalance < targetBudget) {
-                    alert("Insufficient balance for this project budget.");
+                    alert(t('projects.errors.insufficientBalance'));
                     return;
                 }
                 // Deduct balance (handled in App/Context usually, but here we sync)
@@ -363,11 +365,11 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
 
                         if (error) {
                             console.error('Initial deposit failed:', error);
-                            alert("Project created but initial budget transfer failed: " + error.message);
+                            alert(t('projects.errors.transferFailed', { error: error.message }));
                         } else {
                             const result = data as { success: boolean; error?: string };
                             if (result && !result.success) {
-                                alert("Project created but initial budget transfer failed: " + result.error);
+                                alert(t('projects.errors.transferFailed', { error: result.error }));
                             }
                         }
                     }

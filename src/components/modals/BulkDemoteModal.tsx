@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Briefcase, Search, BarChart2, User, CheckCircle, X, ShieldOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 import { DemoteTarget } from '../../types';
 
@@ -18,6 +19,7 @@ const BulkDemoteModal: React.FC<BulkDemoteModalProps> = ({
     onConfirm 
 }) => {
     const { isLight, accent } = useTheme();
+    const { t } = useTranslation();
     const [selectedRole, setSelectedRole] = useState<DemoteTarget>('PARTNER');
 
     if (!isOpen) return null;
@@ -25,31 +27,31 @@ const BulkDemoteModal: React.FC<BulkDemoteModalProps> = ({
     const ROLES: { id: DemoteTarget; label: string; icon: any; desc: string; perms: string }[] = [
         { 
             id: 'PARTNER', 
-            label: 'Talent Partner', 
+            label: t('modal.addMember.roles.partner'), 
             icon: Briefcase, 
-            desc: 'Retains full scanning and analytics capabilities, but loses administrative controls.',
-            perms: 'Scan & Analyze'
+            desc: t('modal.bulkDemote.roles.partner'),
+            perms: t('modal.bulkAccess.roles.partner.perms')
         },
         { 
             id: 'SCOUT', 
-            label: 'Talent Scout', 
+            label: t('modal.addMember.roles.scout'), 
             icon: Search, 
-            desc: 'Can upload and scan resumes. No access to project analytics or settings.',
-            perms: 'Scan Only'
+            desc: t('modal.bulkDemote.roles.scout'),
+            perms: t('modal.bulkAccess.roles.scout.perms')
         },
         { 
             id: 'ANALYST', 
-            label: 'Talent Analyst', 
+            label: t('modal.addMember.roles.analyst'), 
             icon: BarChart2, 
-            desc: 'View-only access to data. Cannot perform scans or manage settings.',
-            perms: 'Analyze Only'
+            desc: t('modal.bulkDemote.roles.analyst'),
+            perms: t('modal.bulkAccess.roles.analyst.perms')
         },
         { 
             id: 'VISITOR', 
-            label: 'Visitor', 
+            label: t('modal.addMember.roles.visitor'), 
             icon: User, 
-            desc: 'Strictly read-only access to project details.',
-            perms: 'Read Only'
+            desc: t('modal.bulkDemote.roles.visitor'),
+            perms: t('modal.bulkAccess.roles.visitor.perms')
         }
     ];
 
@@ -67,8 +69,8 @@ const BulkDemoteModal: React.FC<BulkDemoteModalProps> = ({
                             <ShieldOff size={24} />
                         </div>
                         <div>
-                            <h3 className={`text-lg font-bold ${textPrimary}`}>Demote Admins</h3>
-                            <p className={`text-xs ${textSecondary}`}>Select new role for <span className="font-bold">{selectedCount}</span> members</p>
+                            <h3 className={`text-lg font-bold ${textPrimary}`}>{t('modal.bulkDemote.title')}</h3>
+                            <p className={`text-xs ${textSecondary}`}>{t('modal.bulkDemote.subtitle', { count: selectedCount })}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isLight ? 'text-slate-400 hover:bg-slate-100' : 'text-zinc-500 hover:bg-white/10 hover:text-white'}`}>
@@ -116,13 +118,13 @@ const BulkDemoteModal: React.FC<BulkDemoteModalProps> = ({
                         onClick={onClose}
                         className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-colors ${isLight ? 'text-slate-500 hover:bg-slate-200' : 'text-zinc-400 hover:bg-white/10 hover:text-white'}`}
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </button>
                     <button 
                         onClick={() => onConfirm(selectedRole)}
                         className={`px-8 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg transition-all transform active:scale-95 bg-orange-600 hover:bg-orange-500 shadow-orange-500/20`}
                     >
-                        Demote {selectedCount} Members
+                        {t('modal.bulkDemote.confirm', { count: selectedCount })}
                     </button>
                 </div>
             </div>

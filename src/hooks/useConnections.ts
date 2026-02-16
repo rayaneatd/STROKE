@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { User, ConnectionItem, Role, SubscriptionPlan, BillingType } from '../types';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { getOrgNamesFromEmails } from '../utils/emailDomains';
 
@@ -9,6 +10,7 @@ interface UseConnectionsProps {
 }
 
 export const useConnections = ({ currentUser }: UseConnectionsProps) => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<'connections' | 'received' | 'sent'>('connections');
     const [inviteEmail, setInviteEmail] = useState('');
@@ -113,8 +115,8 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
                 .maybeSingle();
 
             if (profileError) throw profileError;
-            if (!profile) throw new Error("No user found with this email address.");
-            if (profile.id === currentUser.id) throw new Error("You cannot invite yourself.");
+            if (!profile) throw new Error(t('connections.errors.userNotFound'));
+            if (profile.id === currentUser.id) throw new Error(t('connections.errors.selfInvite'));
 
             // 2. Check if connection already exists
             const { data: existing } = await supabase
@@ -123,7 +125,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
                 .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${profile.id}),and(sender_id.eq.${profile.id},receiver_id.eq.${currentUser.id})`)
                 .maybeSingle();
 
-            if (existing) throw new Error("A connection or invite already exists with this user.");
+            if (existing) throw new Error(t('connections.errors.alreadyExists'));
 
             // 3. Create connection
             const { error: inviteError } = await supabase
@@ -138,7 +140,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['network'] });
-            setMessage({ type: 'success', text: "Invitation sent successfully!" });
+            setMessage({ type: 'success', text: t('connections.success.inviteSent') });
             setInviteEmail('');
         },
         onError: (err: any) => {
@@ -167,7 +169,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
             queryClient.invalidateQueries({ queryKey: ['network'] });
         },
         onError: (err: any) => {
-            alert(err.message);
+            alert(t('connections.errors.actionFailed', { error: err.message }));
         }
     });
 

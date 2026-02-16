@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserPlus, X, Briefcase, Search, BarChart2, Check, Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Project, User as UserType, ProjectRole, EmployeeAddPermission, ProjectPermission, UserId, Role, SubscriptionPlan, BillingType } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { useQuery } from '@tanstack/react-query';
@@ -22,6 +23,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
     addMember,
     isActionLoading
 }) => {
+    const { t } = useTranslation();
     const [selectedUsersToAdd, setSelectedUsersToAdd] = useState<string[]>([]);
     const [selectedEmployeeSubRole, setSelectedEmployeeSubRole] = useState<'PARTNER' | 'SCOUT' | 'ANALYST'>('PARTNER');
 
@@ -162,15 +164,15 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10 shrink-0">
                     <div>
-                        <h3 className="text-lg font-bold text-slate-900">Add {addMemberType === 'ADMIN' ? 'Admin' : addMemberType === 'EMPLOYEE' ? 'Team Member' : 'Visitor'}</h3>
-                        <p className="text-xs text-slate-500">Select connections to add to this project.</p>
+                        <h3 className="text-lg font-bold text-slate-900">{t(`modal.addMember.title.${addMemberType}`)}</h3>
+                        <p className="text-xs text-slate-500">{t('modal.addMember.subtitle')}</p>
                     </div>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
                 </div>
 
                 {addMemberType === 'EMPLOYEE' && (
                     <div className="px-6 py-6 bg-slate-50/50 border-b border-slate-100 shrink-0">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Select Role</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">{t('modal.addMember.selectRole')}</label>
                         <div className="grid grid-cols-3 gap-3">
                             <button
                                 onClick={() => setSelectedEmployeeSubRole('PARTNER')}
@@ -182,7 +184,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                                 <div className={`p-2 rounded-full transition-colors ${selectedEmployeeSubRole === 'PARTNER' ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-brand-500'}`}>
                                     <Briefcase size={20} />
                                 </div>
-                                <span className="text-xs font-bold">Talent Partner</span>
+                                <span className="text-xs font-bold">{t('modal.addMember.roles.partner.title')}</span>
                             </button>
 
                             <button
@@ -195,7 +197,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                                 <div className={`p-2 rounded-full transition-colors ${selectedEmployeeSubRole === 'SCOUT' ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-brand-500'}`}>
                                     <Search size={20} />
                                 </div>
-                                <span className="text-xs font-bold">Talent Scout</span>
+                                <span className="text-xs font-bold">{t('modal.addMember.roles.scout.title')}</span>
                             </button>
 
                             <button
@@ -208,7 +210,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                                 <div className={`p-2 rounded-full transition-colors ${selectedEmployeeSubRole === 'ANALYST' ? 'bg-brand-100 text-brand-600' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-brand-500'}`}>
                                     <BarChart2 size={20} />
                                 </div>
-                                <span className="text-xs font-bold">Talent Analyst</span>
+                                <span className="text-xs font-bold">{t('modal.addMember.roles.analyst.title')}</span>
                             </button>
                         </div>
 
@@ -220,20 +222,20 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                             <div className="font-medium">
                                 {selectedEmployeeSubRole === 'PARTNER' && (
                                     <span>
-                                        <strong className="text-blue-700 block mb-1">Full Access</strong>
-                                        Partners have complete control over the project. They can upload resumes, run AI scans, analyze candidates, and view detailed reports.
+                                        <strong className="text-blue-700 block mb-1">{t('modal.addMember.roles.partner.descTitle')}</strong>
+                                        {t('modal.addMember.roles.partner.desc')}
                                     </span>
                                 )}
                                 {selectedEmployeeSubRole === 'SCOUT' && (
                                     <span>
-                                        <strong className="text-blue-700 block mb-1">Sourcing Focus</strong>
-                                        Scouts can upload resumes and perform initial screenings. They cannot access aggregated analytics or strategic reports.
+                                        <strong className="text-blue-700 block mb-1">{t('modal.addMember.roles.scout.descTitle')}</strong>
+                                        {t('modal.addMember.roles.scout.desc')}
                                     </span>
                                 )}
                                 {selectedEmployeeSubRole === 'ANALYST' && (
                                     <span>
-                                        <strong className="text-blue-700 block mb-1">Insights Focus</strong>
-                                        Analysts have read-only access to recruitment data and analytics dashboards. They cannot upload files or modify candidate data.
+                                        <strong className="text-blue-700 block mb-1">{t('modal.addMember.roles.analyst.descTitle')}</strong>
+                                        {t('modal.addMember.roles.analyst.desc')}
                                     </span>
                                 )}
                             </div>
@@ -247,8 +249,8 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
                                 <UserPlus size={32} className="opacity-50 text-slate-400" />
                             </div>
-                            <p className="text-sm font-medium">No eligible connections found.</p>
-                            <p className="text-xs mt-1">Connect with more people to add them here.</p>
+                            <p className="text-sm font-medium">{t('modal.addMember.emptyState.title')}</p>
+                            <p className="text-xs mt-1">{t('modal.addMember.emptyState.desc')}</p>
                         </div>
                     ) : (
                         getAvailableConnectionsToAdd().filter(u => !project.members.some(m => m.userId === u.id)).map(u => {
@@ -276,14 +278,14 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({
                 </div>
 
                 <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
-                    <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+                    <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">{t('common.cancel')}</button>
                     <button
                         onClick={handleConfirm}
                         disabled={selectedUsersToAdd.length === 0}
                         className="px-6 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-lg shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all transform active:scale-95 flex items-center gap-2"
                     >
                         <UserPlus size={16} />
-                        Add {selectedUsersToAdd.length > 0 ? `${selectedUsersToAdd.length} Members` : 'Selected'}
+                        {t('modal.addMember.actions.addSelected', { count: selectedUsersToAdd.length })}
                     </button>
                 </div>
             </div>

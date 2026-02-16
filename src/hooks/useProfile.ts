@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { User, Role, SubscriptionPlan, BillingType } from '../types';
+import { useTranslation } from 'react-i18next';
 import { Tables, Json } from '../lib/database.types';
 import { classifyEmailDomain, EmailType } from '../utils/emailDomains';
 
@@ -12,6 +13,7 @@ interface UseProfileProps {
 }
 
 export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseProfileProps = {}) => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -120,7 +122,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
     const updateMutation = useMutation({
         mutationFn: async (newData: typeof formData) => {
             const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (!authUser) throw new Error('Not authenticated');
+            if (!authUser) throw new Error(t('profile.errors.notAuthenticated'));
 
             let finalAvatarUrl = newData.avatarUrl;
 
@@ -182,10 +184,10 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            setMessage({ type: 'success', text: 'Profile updated successfully' });
+            setMessage({ type: 'success', text: t('profile.success.updated') });
         },
         onError: () => {
-            setMessage({ type: 'error', text: 'Failed to update profile' });
+            setMessage({ type: 'error', text: t('profile.errors.updateFailed') });
         }
     });
 
@@ -228,7 +230,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         setIsSavingPrimary(true);
 
         try {
-            if (!user?.id) throw new Error("User ID not found");
+            if (!user?.id) throw new Error(t('profile.errors.userIdNotFound'));
 
             const { error } = await supabase
                 .from('profiles')
@@ -240,11 +242,11 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             if (error) throw error;
 
             await queryClient.invalidateQueries({ queryKey: ['profile'] });
-            setEmailSuccess('Primary email updated successfully.');
+            setEmailSuccess(t('profile.success.emailUpdated'));
             setIsEditingPrimary(false);
         } catch (err: any) {
             console.error('Update email error:', err);
-            setEmailError(err.message || "Failed to update email");
+            setEmailError(err.message || t('profile.errors.emailUpdateFailed'));
         } finally {
             setIsSavingPrimary(false);
         }
@@ -254,7 +256,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         setWorkEmailError(null);
         setWorkEmailSuccess(null);
         try {
-            if (!user?.id) throw new Error("User ID not found");
+            if (!user?.id) throw new Error(t('profile.errors.userIdNotFound'));
             const current = user.workMails || [];
             const next = current.filter((item) => item.toLowerCase() !== email.toLowerCase());
             const { error } = await supabase
@@ -263,9 +265,9 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 .eq('id', user.id);
             if (error) throw error;
             await queryClient.invalidateQueries({ queryKey: ['profile'] });
-            setWorkEmailSuccess('Work email removed.');
+            setWorkEmailSuccess(t('profile.success.workEmailRemoved'));
         } catch (err: any) {
-            setWorkEmailError(err.message || "Failed to remove work email");
+            setWorkEmailError(err.message || t('profile.errors.workEmailRemoveFailed'));
         }
     };
 
@@ -275,7 +277,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         const apiUrl = import.meta.env.VITE_AURINKO_API_URL;
         const clientId = import.meta.env.VITE_AURINKO_CLIENT_ID;
         if (!apiUrl || !clientId) {
-            setWorkEmailError('Aurinko is not configured.');
+            setWorkEmailError(t('profile.errors.aurinkoNotConfigured'));
             return;
         }
         const redirectUri = `${window.location.origin}/#/profile`;
@@ -315,8 +317,8 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         handleAvatarClick,
         handleFileChange,
         handleSubmit,
-        handleConnectNylas: () => alert("Nylas is simulated"),
-        handleDisconnectAccount: (id: string) => alert(`Nylas is simulated. Disconnecting ${id}`),
+        handleConnectNylas: () => alert(t('common.featureSimulated')),
+        handleDisconnectAccount: (id: string) => alert(t('common.featureSimulated')),
         getPlanColor,
         // Email Identity Exports
         primaryEmailInput,

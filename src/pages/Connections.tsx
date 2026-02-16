@@ -4,12 +4,14 @@ import { User, ConnectionItem } from '../types';
 import { useConnections } from '../hooks/useConnections';
 import { getOrgNamesFromEmails } from '../utils/emailDomains';
 import { UserPlus, Search, UserCheck, X, Check, Trash2, Clock, Mail, ChevronDown, Building2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ConnectionsProps {
   currentUser: User;
 }
 
 const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
+  const { t } = useTranslation();
   const {
     activeTab,
     setActiveTab,
@@ -92,7 +94,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
             </div>
             <p className={`text-[10px] mt-1.5 flex items-center gap-1 font-mono ${isLight ? 'text-slate-400' : 'text-zinc-600'}`}>
               <Clock size={10} />
-              {status === 'CONNECTED' ? 'Since' : 'Date'}: {date}
+              {status === 'CONNECTED' ? t('connections.since') : t('connections.date')}: {date}
             </p>
           </div>
         </div>
@@ -106,7 +108,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
               disabled={sameOrg}
               className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium border rounded-lg transition-colors ${sameOrg ? (isLight ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-white/5 text-zinc-600 border-white/10 cursor-not-allowed') : 'text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20'}`}
             >
-              <Trash2 size={14} /> {sameOrg ? 'Same Org' : 'Remove'}
+              <Trash2 size={14} /> {sameOrg ? t('connections.actions.sameOrg') : t('connections.actions.remove')}
             </button>
           )}
 
@@ -115,7 +117,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
               onClick={() => handleAction(id, 'CANCEL')}
               className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium border rounded-lg transition-colors ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200' : 'text-zinc-400 bg-white/5 hover:bg-white/10 border-white/5'}`}
             >
-              <X size={14} /> Cancel Request
+              <X size={14} /> {t('connections.actions.cancel')}
             </button>
           )}
 
@@ -125,13 +127,13 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
                 onClick={() => handleAction(id, 'DECLINE')}
                 className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium border rounded-lg transition-colors ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200' : 'text-zinc-400 bg-white/5 hover:bg-white/10 border-white/5'}`}
               >
-                <X size={14} /> Decline
+                <X size={14} /> {t('connections.actions.decline')}
               </button>
               <button
                 onClick={() => handleAction(id, 'ACCEPT')}
                 className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 text-xs font-bold text-white rounded-lg transition-colors shadow-lg bg-${accentColor}-600 hover:bg-${accentColor}-500 shadow-${accentColor}-900/20`}
               >
-                <Check size={14} /> Accept
+                <Check size={14} /> {t('connections.actions.accept')}
               </button>
             </>
           )}
@@ -145,8 +147,8 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
       {/* Header & Invite Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-end">
         <div>
-          <h1 className={`text-2xl font-bold tracking-tight ${textPrimary}`}>Connections</h1>
-          <p className={`text-sm mt-1 ${textSecondary}`}>Grow your professional network</p>
+          <h1 className={`text-2xl font-bold tracking-tight ${textPrimary}`}>{t('connections.title')}</h1>
+          <p className={`text-sm mt-1 ${textSecondary}`}>{t('connections.growNetwork')}</p>
         </div>
 
         <form 
@@ -159,7 +161,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="Enter email to connect..."
+              placeholder={t('connections.searchPlaceholder')}
               className={`w-full pl-9 pr-4 py-2 rounded-lg border outline-none text-sm transition-all ${inputBg}`}
             />
           </div>
@@ -171,7 +173,7 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
                 : (isLight ? `bg-${accentColor}-600 text-white hover:bg-${accentColor}-700 shadow-md` : 'bg-white text-black hover:bg-zinc-200')
               }`}
           >
-            {loading ? 'Sending...' : <><UserPlus size={14} /> Connect</>}
+            {loading ? t('connections.sending') : <><UserPlus size={14} /> {t('connections.connect')}</>}
           </button>
 
           {/* Notification Toast (Inline) */}
@@ -189,9 +191,9 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
       <div className="flex flex-wrap items-center gap-3">
         <div className={`flex p-1 border rounded-xl w-fit ${isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/5 border-white/5'}`}>
         {[
-          { id: 'connections', label: 'My Connections', count: data.connections.length },
-          { id: 'received', label: 'Received', count: data.received.length },
-          { id: 'sent', label: 'Sent', count: data.sent.length }
+          { id: 'connections', label: t('connections.tabs.myConnections'), count: data.connections.length },
+          { id: 'received', label: t('connections.tabs.received'), count: data.received.length },
+          { id: 'sent', label: t('connections.tabs.sent'), count: data.sent.length }
         ].map((tab) => (
           <button
             key={tab.id}
@@ -221,11 +223,11 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
               onChange={(e) => setOrgFilter(e.target.value)}
               className={`pl-3 pr-8 py-2 text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg border transition-colors ${isLight ? 'bg-white border-slate-200 text-slate-700' : 'bg-[#0e0e10] border-white/10 text-zinc-300'}`}
             >
-              <option className={isLight ? 'bg-white' : 'bg-[#18181b]'} value="ALL">All Organizations</option>
+              <option className={isLight ? 'bg-white' : 'bg-[#18181b]'} value="ALL">{t('connections.filter.allOrgs')}</option>
               {orgOptions.map((org) => (
                 <option key={org} className={isLight ? 'bg-white' : 'bg-[#18181b]'} value={org}>{org}</option>
               ))}
-              <option className={isLight ? 'bg-white' : 'bg-[#18181b]'} value="EXTERNAL">External Contacts</option>
+              <option className={isLight ? 'bg-white' : 'bg-[#18181b]'} value="EXTERNAL">{t('connections.filter.external')}</option>
             </select>
             <ChevronDown size={12} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
           </div>
@@ -240,14 +242,14 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
               <UserCheck size={24} />
             </div>
             <h3 className={`text-sm font-bold ${textPrimary}`}>
-              {activeTab === 'connections' && "No connections yet"}
-              {activeTab === 'received' && "No pending requests"}
-              {activeTab === 'sent' && "No sent invitations"}
+              {activeTab === 'connections' && t('connections.empty.connections')}
+              {activeTab === 'received' && t('connections.empty.received')}
+              {activeTab === 'sent' && t('connections.empty.sent')}
             </h3>
             <p className={`text-xs mt-1 ${textSecondary}`}>
-              {activeTab === 'connections' && "Start growing your network by inviting colleagues."}
-              {activeTab === 'received' && "Incoming connection requests will appear here."}
-              {activeTab === 'sent' && "Requests you send will be listed here."}
+              {activeTab === 'connections' && t('connections.empty.connectionsDesc')}
+              {activeTab === 'received' && t('connections.empty.receivedDesc')}
+              {activeTab === 'sent' && t('connections.empty.sentDesc')}
             </p>
           </div>
         ) : (

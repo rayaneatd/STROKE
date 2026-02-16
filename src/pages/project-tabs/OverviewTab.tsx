@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { FileText, TrendingUp, Briefcase, Download } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -25,6 +26,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
     handleExport,
     currentUser
 }) => {
+    const { t } = useTranslation();
     const isLight = currentUser.preferences?.uiConfig?.theme === 'LIGHT';
     const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'blue';
 
@@ -47,7 +49,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                     onClick={handleExport}
                     className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors ${btnClass}`}
                 >
-                    <Download size={14} /> Export Report
+                    <Download size={14} /> {t('project.overview.exportReport')}
                 </button>
             </div>
 
@@ -55,40 +57,43 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                 <div className={`p-5 rounded-xl border ${cardClass}`}>
                     <div className="flex justify-between items-start mb-2">
                         <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg border border-blue-500/20"><FileText size={18} /></div>
-                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Active</span>
+                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">{t('modal.editProject.fields.status.options.ACTIVE')}</span>
                     </div>
-                    <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>Total Resumes</h3>
+                    <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>{t('project.overview.cards.totalResumes')}</h3>
                     <p className={`text-2xl font-bold ${textPrimary}`}>{analytics.total}</p>
-                    <p className={`text-[10px] ${textSecondary} mt-1`}>{analytics.completed} analyzed, {analytics.pending} pending</p>
+                    <p className={`text-[10px] ${textSecondary} mt-1`}>{t('project.overview.stats.analyzedPending', { completed: analytics.completed, pending: analytics.pending })}</p>
                 </div>
 
                 <div className={`p-5 rounded-xl border ${cardClass}`}>
                     <div className="flex justify-between items-start mb-2">
                         <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg border border-purple-500/20"><TrendingUp size={18} /></div>
                     </div>
-                    <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>Avg. Score</h3>
+                    <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>{t('project.overview.cards.avgScore')}</h3>
                     <p className={`text-2xl font-bold ${textPrimary}`}>{analytics.avgScore}%</p>
-                    <p className={`text-[10px] ${textSecondary} mt-1`}>Based on {analytics.completed} candidates</p>
+                    <p className={`text-[10px] ${textSecondary} mt-1`}>{t('project.overview.stats.basedOnCandidates', { count: analytics.completed })}</p>
                 </div>
 
                 <div className={`p-5 rounded-xl border ${cardClass}`}>
                     <div className="flex justify-between items-start mb-2">
                         <div className="p-2 bg-orange-500/10 text-orange-400 rounded-lg border border-orange-500/20"><Briefcase size={18} /></div>
                     </div>
-                    <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>Team Members</h3>
+                    <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>{t('project.overview.cards.teamMembers')}</h3>
                     <p className={`text-2xl font-bold ${textPrimary}`}>{project.members.length}</p>
-                    <p className={`text-[10px] ${textSecondary} mt-1`}>Contributed {contributionData.reduce((a, b) => a + b.scans, 0)} scans</p>
+                    <p className={`text-[10px] ${textSecondary} mt-1`}>{t('project.overview.stats.contributedScans', { count: contributionData.reduce((a, b) => a + b.scans, 0) })}</p>
                 </div>
 
                 <div className={`bg-gradient-to-br from-${accentColor}-600 to-${accentColor}-700 p-5 rounded-xl shadow-lg text-white border border-white/10 relative overflow-hidden`}>
-                    <h3 className="text-white/80 text-[10px] font-bold uppercase tracking-wider mb-2 relative z-10">Insight</h3>
+                    <h3 className="text-white/80 text-[10px] font-bold uppercase tracking-wider mb-2 relative z-10">{t('project.overview.cards.insight')}</h3>
                     <p className="text-base font-bold leading-tight relative z-10">
-                        {topCandidates.length > 2 ? `${topCandidates.length} excellent candidates found with scores > 80%!` : "Keep uploading resumes to find better matches."}
+                        {topCandidates.length > 2 
+                            ? t('project.overview.insights.excellentCandidates', { count: topCandidates.length })
+                            : t('project.overview.insights.keepUploading')
+                        }
                     </p>
                     <div className="mt-4 w-full bg-black/20 h-1 rounded-full overflow-hidden relative z-10">
                         <div className="bg-white h-full rounded-full" style={{ width: `${(analytics.completed / (analytics.total || 1)) * 100}%` }} />
                     </div>
-                    <p className="text-[10px] text-white/70 mt-1 font-medium relative z-10">Analysis {Math.round((analytics.completed / (analytics.total || 1)) * 100)}% complete</p>
+                    <p className="text-[10px] text-white/70 mt-1 font-medium relative z-10">{t('project.overview.stats.analysisComplete', { percent: Math.round((analytics.completed / (analytics.total || 1)) * 100) })}</p>
 
                     {/* Decor */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
@@ -97,7 +102,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className={`lg:col-span-2 p-6 rounded-xl border ${cardClass}`}>
-                    <h3 className={`text-sm font-bold ${textPrimary} mb-6`}>Upload Activity</h3>
+                    <h3 className={`text-sm font-bold ${textPrimary} mb-6`}>{t('project.overview.charts.uploadActivity')}</h3>
                     <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={analytics.timelineData}>
@@ -121,7 +126,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                 </div>
 
                 <div className={`p-6 rounded-xl border ${cardClass}`}>
-                    <h3 className={`text-sm font-bold ${textPrimary} mb-4`}>Top Candidates</h3>
+                    <h3 className={`text-sm font-bold ${textPrimary} mb-4`}>{t('project.overview.charts.topCandidates')}</h3>
                     <div className="space-y-2">
                         {topCandidates.map((c, i) => (
                             <div key={c.id} className={`flex items-center justify-between p-2 rounded-lg transition-colors border border-transparent ${isLight ? 'hover:bg-slate-50' : 'hover:bg-white/5'}`}>
@@ -135,7 +140,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                 <div className="text-right"><span className="text-sm font-bold text-emerald-400">{c.score}%</span></div>
                             </div>
                         ))}
-                        {topCandidates.length === 0 && <div className={`text-xs text-center py-4 ${textTertiary}`}>No analyzed candidates yet.</div>}
+                        {topCandidates.length === 0 && <div className={`text-xs text-center py-4 ${textTertiary}`}>{t('project.overview.charts.noCandidates')}</div>}
                     </div>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
+import { useTranslation, Trans } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
 
 interface BulkRemoveMemberModalProps {
@@ -17,6 +18,7 @@ const BulkRemoveMemberModal: React.FC<BulkRemoveMemberModalProps> = ({
     onConfirm 
 }) => {
     const { isLight } = useTheme();
+    const { t } = useTranslation();
 
     if (!isOpen) return null;
 
@@ -27,24 +29,28 @@ const BulkRemoveMemberModal: React.FC<BulkRemoveMemberModalProps> = ({
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border ${isLight ? 'bg-red-50 border-red-100 text-red-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
                         <AlertTriangle size={32} />
                     </div>
-                    <h3 className={`text-xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Remove Members?</h3>
+                    <h3 className={`text-xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t('modal.bulkRemove.title')}</h3>
                     <p className={`mb-6 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-                        Are you sure you want to remove <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>{selectedCount} selected members</span> from this project? 
+                        <Trans
+                            i18nKey="modal.bulkRemove.description"
+                            values={{ count: selectedCount }}
+                            components={{ 1: <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`} /> }}
+                        />
                         <br/>
-                        <span className="text-xs opacity-70 block mt-2">They will lose access immediately.</span>
+                        <span className="text-xs opacity-70 block mt-2">{t('modal.bulkRemove.note')}</span>
                     </p>
                     <div className="flex gap-3 justify-center">
                         <button 
                             onClick={onClose}
                             className={`px-6 py-3 rounded-xl font-bold transition-colors border ${isLight ? 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50' : 'text-zinc-400 bg-white/5 border-white/5 hover:bg-white/10'}`}
                         >
-                            Cancel
+                            {t('modal.bulkRemove.cancel')}
                         </button>
                         <button 
                             onClick={onConfirm}
                             className="px-6 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-500 shadow-lg shadow-red-900/20 transition-colors flex items-center gap-2"
                         >
-                            <Trash2 size={18} /> Yes, Remove
+                            <Trash2 size={18} /> {t('modal.bulkRemove.confirm')}
                         </button>
                     </div>
                 </div>

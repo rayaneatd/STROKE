@@ -2,6 +2,7 @@
 import React from 'react';
 import { X, Zap, Check, Star, Sparkles, Crown } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation, Trans } from 'react-i18next';
 
 import Logo from '../ui/Logo';
 
@@ -17,6 +18,7 @@ const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({
   onUpgrade 
 }) => {
   const { isLight, accent } = useTheme();
+  const { t } = useTranslation();
 
   if (!isOpen) return null;
 
@@ -45,9 +47,14 @@ const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({
 
               {/* Content */}
               <div className="px-8 pt-8 pb-8 text-center">
-                  <h2 className={`text-2xl font-black mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Unlock Unlimited Potential</h2>
+                  <h2 className={`text-2xl font-black mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{t('modal.upgrade.title')}</h2>
                   <p className={`text-sm mb-8 leading-relaxed ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>
-                      You've run out of scans! Upgrade to <span className="inline-flex items-center gap-1 align-bottom font-bold"><Logo variant="text" height={16} /> Pro</span> to remove limits and hire faster.
+                      <Trans
+                          i18nKey="modal.upgrade.description"
+                          components={{
+                              1: <span className="inline-flex items-center gap-1 align-bottom font-bold"><Logo variant="text" height={16} /></span>
+                          }}
+                      />
                   </p>
 
                   <div className="space-y-3 mb-8 text-left">
@@ -55,19 +62,19 @@ const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({
                           <div className="p-1.5 bg-green-500/20 text-green-500 rounded-full">
                               <Check size={14} strokeWidth={3} />
                           </div>
-                          <span className={`text-sm font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>Unlimited Resume Scans</span>
+                          <span className={`text-sm font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{t('modal.upgrade.features.unlimited')}</span>
                       </div>
                       <div className={`flex items-center gap-3 p-3 rounded-xl border ${isLight ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/5'}`}>
                           <div className="p-1.5 bg-green-500/20 text-green-500 rounded-full">
                               <Check size={14} strokeWidth={3} />
                           </div>
-                          <span className={`text-sm font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>Advanced AI Analysis</span>
+                          <span className={`text-sm font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{t('modal.upgrade.features.advancedAI')}</span>
                       </div>
                       <div className={`flex items-center gap-3 p-3 rounded-xl border ${isLight ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/5'}`}>
                           <div className="p-1.5 bg-green-500/20 text-green-500 rounded-full">
                               <Check size={14} strokeWidth={3} />
                           </div>
-                          <span className={`text-sm font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>Priority Processing Queue</span>
+                          <span className={`text-sm font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{t('modal.upgrade.features.priority')}</span>
                       </div>
                   </div>
 
@@ -76,7 +83,7 @@ const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({
                     className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group relative overflow-hidden ${isLight ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-white text-black hover:bg-zinc-200'}`}
                   >
                       <span className="relative flex items-center gap-2">
-                          <Zap size={20} className="fill-current text-amber-500" /> Upgrade Now
+                          <Zap size={20} className="fill-current text-amber-500" /> {t('modal.upgrade.cta')}
                       </span>
                   </button>
                   
@@ -84,7 +91,7 @@ const UpgradePlanModal: React.FC<UpgradePlanModalProps> = ({
                     onClick={onClose}
                     className={`mt-4 text-xs font-bold transition-colors ${isLight ? 'text-slate-400 hover:text-slate-600' : 'text-zinc-500 hover:text-white'}`}
                   >
-                      Maybe Later
+                      {t('modal.upgrade.later')}
                   </button>
               </div>
           </div>

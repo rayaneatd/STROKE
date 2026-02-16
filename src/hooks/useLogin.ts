@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { MOCK_USERS } from '../services/mockData';
 import { classifyEmailDomain, EmailType } from '../utils/emailDomains';
 
 export const useLogin = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const [isRegistering, setIsRegistering] = useState(false);
@@ -61,12 +63,12 @@ export const useLogin = () => {
 
         try {
             if (classifyEmailDomain(email) !== EmailType.PUBLIC) {
-                setError("Work emails are not allowed for login. Please use a personal email.");
+                setError(t('auth.errors.workEmailRequired'));
                 setLoading(false);
                 return;
             }
             if (isRegistering) {
-                if (!displayName) throw new Error("Name is required");
+                if (!displayName) throw new Error(t('auth.errors.nameRequired'));
 
                 const { error: signUpError } = await supabase.auth.signUp({
                     email,
@@ -79,7 +81,7 @@ export const useLogin = () => {
                 });
 
                 if (signUpError) throw signUpError;
-                alert("Please check your email for the confirmation link!");
+                alert(t('auth.errors.checkEmail'));
             } else {
                 const { error: signInError } = await supabase.auth.signInWithPassword({
                     email,
@@ -90,7 +92,7 @@ export const useLogin = () => {
                 navigate('/');
             }
         } catch (err: any) {
-            setError(err.message || "An unexpected error occurred");
+            setError(err.message || t('auth.errors.unexpected'));
         } finally {
             setLoading(false);
         }
@@ -120,7 +122,7 @@ export const useLogin = () => {
             });
             if (socialError) throw socialError;
         } catch (err: any) {
-            setError(err.message || "Social login failed");
+            setError(err.message || t('auth.errors.socialLoginFailed'));
             setSocialLoading(null);
         }
     };
@@ -129,15 +131,15 @@ export const useLogin = () => {
         e.preventDefault();
         setError('');
         if (!email) {
-            setError("Please enter your email address");
+            setError(t('auth.errors.enterEmail'));
             return;
         }
         if (!captchaToken) {
-            setError("Please complete the captcha challenge");
+            setError(t('auth.errors.completeCaptcha'));
             return;
         }
         if (classifyEmailDomain(email) !== EmailType.PUBLIC) {
-            setError("Work emails are not allowed for login. Please use a personal email.");
+            setError(t('auth.errors.workEmailNotAllowed'));
             return;
         }
         setMagicLinkLoading(true);
@@ -168,7 +170,7 @@ export const useLogin = () => {
 
             setMagicLinkSuccess(true);
         } catch (err: any) {
-            setError(err.message || "Failed to send magic link");
+            setError(err.message || t('auth.errors.magicLinkFailed'));
         } finally {
             setMagicLinkLoading(false);
         }
@@ -176,14 +178,17 @@ export const useLogin = () => {
 
     const handleForgotPassword = async () => {
         if (!email) {
-            setError("Please enter your email address first");
+            setError(t('auth.errors.enterEmailFirst'));
             return;
         }
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/update-password`,
+        });
         if (resetError) {
             setError(resetError.message);
         } else {
-            alert("Reset link sent to your email.");
+            alert(t('auth.errors.resetLinkSent'));
+            setMagicLinkSuccess(true);
         }
     };
 

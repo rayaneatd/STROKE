@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { AlertTriangle, Coins, Zap, ArrowRight, Wallet } from 'lucide-react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Project } from '../types';
 
 interface ProjectBudgetBannerProps {
@@ -16,6 +17,8 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
     onFundProject,
     onBuyCredits
 }) => {
+    const { t } = useTranslation();
+
     // Logic only applies if billing mode is PROJECT_INVESTMENT
     if (project.settings.billingMode !== 'PROJECT_INVESTMENT') return null;
 
@@ -38,10 +41,13 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
                         <AlertTriangle size={20} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-red-400">Critical: Project & Wallet Funds Low</h3>
+                        <h3 className="text-sm font-bold text-red-400">{t('projectBudget.critical.title')}</h3>
                         <p className="text-xs text-red-300/80 mt-1 leading-relaxed">
-                            Project budget is at <span className="font-bold">{Math.round(percentRemaining)}%</span> and your wallet is running low. 
-                            To prevent interruption, please purchase credits and allocate funds.
+                            <Trans
+                                i18nKey="projectBudget.critical.description"
+                                values={{ percent: Math.round(percentRemaining) }}
+                                components={{ 1: <span className="font-bold" /> }}
+                            />
                         </p>
                     </div>
                 </div>
@@ -50,13 +56,13 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
                         onClick={onBuyCredits}
                         className="px-4 py-2 bg-white/5 text-red-300 text-xs font-bold border border-red-500/30 hover:bg-red-500/20 rounded-lg transition-colors flex items-center gap-1 shadow-sm"
                     >
-                        <Zap size={14} className="fill-current"/> Buy Credits
+                        <Zap size={14} className="fill-current"/> {t('projectBudget.critical.buyCredits')}
                     </button>
                     <button 
                         onClick={onFundProject}
                         className="px-4 py-2 bg-red-600 text-white text-xs font-bold hover:bg-red-700 rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center gap-1"
                     >
-                        <Coins size={14} /> Fund Project
+                        <Coins size={14} /> {t('projectBudget.critical.fundProject')}
                     </button>
                 </div>
             </div>
@@ -72,10 +78,13 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
                         <Wallet size={20} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-amber-400">Project Budget Depleted</h3>
+                        <h3 className="text-sm font-bold text-amber-400">{t('projectBudget.warning.title')}</h3>
                         <p className="text-xs text-amber-300/80 mt-1">
-                            Only <span className="font-bold">{Math.round(percentRemaining)}%</span> of the allocated budget remains. 
-                            Transfer credits from your wallet to keep this project active.
+                            <Trans
+                                i18nKey="projectBudget.warning.description"
+                                values={{ percent: Math.round(percentRemaining) }}
+                                components={{ 1: <span className="font-bold" /> }}
+                            />
                         </p>
                     </div>
                 </div>
@@ -83,7 +92,7 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
                     onClick={onFundProject}
                     className="px-5 py-2.5 bg-amber-500 text-black text-xs font-bold hover:bg-amber-400 rounded-lg transition-colors shadow-lg shadow-amber-500/10 flex items-center gap-2 shrink-0"
                 >
-                    <Coins size={14} /> Allocate Funds <ArrowRight size={14} />
+                    <Coins size={14} /> {t('projectBudget.warning.allocateFunds')} <ArrowRight size={14} />
                 </button>
             </div>
         );

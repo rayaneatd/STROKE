@@ -250,7 +250,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                                                             onClick={() => onNavigate('profile')}
                                                             className={`text-xs font-bold flex items-center justify-center gap-1 w-full py-1.5 rounded bg-${accentColor}-600 text-white hover:bg-${accentColor}-500`}
                                                         >
-                                                            <Link size={10} /> Connect Email
+                                                            <Link size={10} /> {t('project.actions.connectEmail')}
                                                         </button>
                                                     </div>
                                                 )}
@@ -269,7 +269,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                             onClick={handleEditClick}
                             className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg text-xs font-bold transition-colors ${editBtnClass}`}
                         >
-                            <Edit2 size={14} /> Edit Project
+                            <Edit2 size={14} /> {t('project.actions.editProject')}
                         </button>
                     )}
                 </div>
@@ -288,9 +288,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                 <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center justify-between text-red-400 text-sm animate-fade-in">
                     <div className="flex items-center gap-2">
                         <AlertTriangle size={16} />
-                        <span className="font-bold">Scan Failed:</span> {quotaError}
+                        <span className="font-bold">{t('project.errors.scanFailed')}</span> {quotaError}
                     </div>
-                    <button onClick={() => setQuotaError(null)} className="text-red-400 hover:text-white">Dismiss</button>
+                    <button onClick={() => setQuotaError(null)} className="text-red-400 hover:text-white">{t('project.actions.dismiss')}</button>
                 </div>
             )}
 
