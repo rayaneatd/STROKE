@@ -155,8 +155,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         table: 'profiles',
                         filter: `id=eq.${user.id}`
                     },
-                    (payload) => {
+                    (payload: any) => {
                         console.log('Realtime profile update received:', payload);
+                        
+                        // Optimistically update local state if we have the new record
+                        const newRecord = payload.new;
+                        if (newRecord && user) {
+                             setUser(prev => {
+                                 if (!prev) return null;
+                                 return {
+                                     ...prev,
+                                     // Update fields that might have changed
+                                     scansBalance: newRecord.scans_balance ?? prev.scansBalance,
+                                     subscriptionPlan: newRecord.subscription_plan ?? prev.subscriptionPlan,
+                                     billingType: newRecord.billing_type ?? prev.billingType,
+                                     purchasedScans: newRecord.purchased_scans ?? prev.purchasedScans,
+                                     overageCap: newRecord.overage_cap ?? prev.overageCap
+                                 };
+                             });
+                        }
+
                         fetchProfile(user.id as unknown as string, {
                             email: user.email,
                             user_metadata: {
