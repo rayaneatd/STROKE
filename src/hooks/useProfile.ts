@@ -230,17 +230,36 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         try {
             if (!user?.id) throw new Error(t('profile.errors.userIdNotFound'));
 
-            const { error } = await supabase
-                .from('profiles')
-                .update({ 
-                    primary_email: primaryEmailInput 
-                })
-                .eq('id', user.id);
+            const email = primaryEmailInput.trim().toLowerCase();
 
+            // 1. Validate Format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                throw new Error(t('profile.errors.invalidEmail', 'Invalid email format'));
+            }
+
+            // 2. Validate Professional Email (Must be Personal)
+            if (classifyEmailDomain(email) === EmailType.CUSTOM) {
+                throw new Error(t('profile.errors.professionalEmailNotAllowed', 'Professional emails are not allowed for primary account. Please use a personal email.'));
+            }
+
+            // 3. Validate Existence
+            const { data: exists, error: checkError } = await supabase.rpc('check_email_availability', { 
+                email_to_check: email 
+            });
+
+            if (checkError) throw checkError;
+            if (exists) {
+                throw new Error(t('profile.errors.emailTaken', 'This email is already associated with another account.'));
+            }
+
+            // 4. Update Auth Email (Triggers Verification & Sync)
+            const { error } = await supabase.auth.updateUser({ email });
+            
             if (error) throw error;
 
             await queryClient.invalidateQueries({ queryKey: ['profile'] });
-            setEmailSuccess(t('profile.success.emailUpdated'));
+            setEmailSuccess(t('profile.success.emailUpdateSent', 'Verification link sent to both old and new email addresses.'));
             setIsEditingPrimary(false);
         } catch (err: any) {
             console.error('Update email error:', err);
