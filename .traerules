@@ -1,0 +1,26 @@
+# STROKE - Project Rules & Architecture
+
+## Tech Stack
+- Frontend: React 18 (Vite), TypeScript, TailwindCSS.
+- Backend: Supabase (PostgreSQL, Auth, Storage).
+- i18n: react-i18next (Fichiers JSON dans /public/locales).
+
+## Internationalization (i18n) Rules
+- STRICT: Ne jamais écrire de texte brut (Hardcoded strings) dans les composants.
+- Toujours utiliser le hook `useTranslation` et la fonction `t('key')`.
+- Les clés doivent être hiérarchiques (ex: `Settings.Appearance.title`).
+- Toute nouvelle clé doit être ajoutée simultanément dans `public/locales/en/translation.json` et `public/locales/fr/translation.json`.
+- Garder les termes techniques anglais s'ils sont standards en français (ex: "Dashboard", "Feedback").
+
+## Database & Security
+- Toujours assumer que Row Level Security (RLS) est activé.
+- Lors de la création de nouvelles tables, générer systématiquement les politiques RLS.
+- Utiliser les types générés de Supabase (`src/types/database.types.ts`).
+
+## Coding Style
+- Utiliser des Functional Components avec TypeScript.
+- Préférer les composants UI réutilisables de `src/components/ui`.
+- Latence et Performance : Utiliser `useTransition` pour les changements d'état lourds (comme le switch de langue).
+
+## Deployment (Vercel)
+- Ne jamais oublier que l'app est une SPA. Toutes les routes doivent pointer vers index.html via vercel.json.
