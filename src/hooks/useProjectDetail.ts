@@ -52,17 +52,17 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 investmentBalance: projectData.investment_balance || 0,
                 totalInvested: projectData.total_invested || 0,
                 members: Array.isArray(projectData.members) ? projectData.members.map((m: any) => ({
-                    userId: m.userId,
+                    userId: m.userId ?? m.user_id,
                     role: m.role as ProjectRole,
                     permissions: m.permissions || [],
-                    scansUsed: m.scansUsed || 0,
-                    scanQuota: m.scanQuota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota),
-                    joinedAt: m.joinedAt,
+                    scansUsed: m.scansUsed ?? m.scans_used ?? 0,
+                    scanQuota: (m.scanQuota ?? m.scan_quota) === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota ?? m.scan_quota),
+                    joinedAt: m.joinedAt ?? m.joined_at,
                     user: m.user ? {
                         id: m.user.id,
                         email: m.user.email,
-                        displayName: m.user.displayName || m.user.email?.split('@')[0] || 'Unknown',
-                        avatarUrl: m.user.avatarUrl,
+                        displayName: m.user.displayName || m.user.display_name || m.user.email?.split('@')[0] || 'Unknown',
+                        avatarUrl: m.user.avatarUrl || m.user.avatar_url,
                         isBanned: m.user.role === 'BANNED'
                     } : undefined
                 })) : []
