@@ -51,7 +51,7 @@ const ProjectCard = React.memo(({
     const currentLanguage = i18n.language;
     const member = project.members.find(m => m.userId === currentUserId);
     const userRole = member?.role || ProjectRole.EMPLOYEE;
-    const owner = MOCK_USERS.find(u => u.id === project.ownerId);
+    const owner = project.members.find(m => m.userId === project.ownerId)?.user;
 
     const getStatusColor = (status: Project['status']) => {
         switch (status) {
