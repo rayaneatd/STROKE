@@ -244,7 +244,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                                 />
                                 {isEditingPrimary ? (
                                     <div className="flex gap-2">
-                                        <ThemedButton variant="ghost" onClick={() => { setIsEditingPrimary(false); setPrimaryEmailInput(currentUser.primaryEmail || ''); }}>{t('profile.cancel')}</ThemedButton>
+                                        <ThemedButton variant="ghost" onClick={() => { setIsEditingPrimary(false); setPrimaryEmailInput(currentUser.email || ''); }}>{t('profile.cancel')}</ThemedButton>
                                         <ThemedButton onClick={handleUpdateProfileEmail} isLoading={isSavingPrimary} icon={<Check size={16}/>}>{t('profile.save')}</ThemedButton>
                                     </div>
                                 ) : (

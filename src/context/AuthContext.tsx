@@ -43,17 +43,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (data) {
                 console.log(`[AuthContext] Profile loaded. Balance: ${data.scans_balance}`);
                 // Dual Identity Logic
-                let primaryEmail = data.primary_email;
+                const authEmail = authUser.email || data.email || null;
+                let primaryEmail = authEmail;
                 const workMails = Array.isArray(data.work_mails) ? data.work_mails : [];
                 let workEmail = data.work_email || workMails[0] || null;
                 const isOwner = data.is_owner || false;
 
-                if (!primaryEmail && !workEmail && authUser.email) {
-                    const type = classifyEmailDomain(authUser.email);
-                    if (type === EmailType.PUBLIC) {
-                        primaryEmail = authUser.email;
-                    } else {
-                        workEmail = authUser.email;
+                if (authEmail) {
+                    const type = classifyEmailDomain(authEmail);
+                    if (type === EmailType.CUSTOM && !workEmail) {
+                        workEmail = authEmail;
                     }
                 }
 

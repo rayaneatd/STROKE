@@ -41,17 +41,16 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             const profile = (data || {}) as Partial<Tables<'profiles'>>;
 
             // Dual Identity Logic
-            let primaryEmail = profile.primary_email;
+            const authEmail = authUser.email || profile.email || null;
+            let primaryEmail = authEmail;
             const workMails = Array.isArray(profile.work_mails) ? (profile.work_mails as unknown as string[]) : [];
             let workEmail = profile.work_email || workMails[0] || null;
             const isOwner = profile.is_owner || false;
 
-            if (!primaryEmail && !workEmail && authUser.email) {
-                const type = classifyEmailDomain(authUser.email);
-                if (type === EmailType.PUBLIC) {
-                    primaryEmail = authUser.email;
-                } else {
-                    workEmail = authUser.email;
+            if (authEmail) {
+                const type = classifyEmailDomain(authEmail);
+                if (type === EmailType.CUSTOM && !workEmail) {
+                    workEmail = authEmail;
                 }
             }
 
@@ -112,8 +111,8 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 company: user.company || '',
                 industry: user.industry || ''
             });
-            if (user.primaryEmail) {
-                setPrimaryEmailInput(user.primaryEmail);
+            if (user.email) {
+                setPrimaryEmailInput(user.email);
             }
         }
     }, [user]);
@@ -231,6 +230,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             if (!user?.id) throw new Error(t('profile.errors.userIdNotFound'));
 
             const email = primaryEmailInput.trim().toLowerCase();
+            const currentEmail = (user?.email || '').trim().toLowerCase();
 
             // 1. Validate Format
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -241,6 +241,10 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             // 2. Validate Professional Email (Must be Personal)
             if (classifyEmailDomain(email) === EmailType.CUSTOM) {
                 throw new Error(t('profile.errors.professionalEmailNotAllowed', 'Professional emails are not allowed for primary account. Please use a personal email.'));
+            }
+
+            if (email === currentEmail) {
+                throw new Error(t('profile.errors.emailSame', 'This is already your current email.'));
             }
 
             // 3. Validate Existence

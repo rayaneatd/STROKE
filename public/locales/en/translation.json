@@ -257,12 +257,17 @@
         "success": {
             "updated": "Profile updated successfully",
             "emailUpdated": "Primary email updated successfully.",
+            "emailUpdateSent": "Verification link sent to both old and new email addresses.",
             "workEmailRemoved": "Work email removed."
         },
         "errors": {
             "updateFailed": "Failed to update profile",
             "userIdNotFound": "User ID not found",
             "emailUpdateFailed": "Failed to update email",
+            "invalidEmail": "Invalid email format",
+            "professionalEmailNotAllowed": "Professional emails are not allowed for primary account. Please use a personal email.",
+            "emailTaken": "This email is already associated with another account.",
+            "emailSame": "This is already your current email.",
             "workEmailRemoveFailed": "Failed to remove work email",
             "aurinkoNotConfigured": "Aurinko is not configured.",
             "notAuthenticated": "Not authenticated"

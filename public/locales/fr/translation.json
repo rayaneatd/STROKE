@@ -256,12 +256,17 @@
         "success": {
             "updated": "Profil mis à jour avec succès",
             "emailUpdated": "Email principal mis à jour avec succès.",
+            "emailUpdateSent": "Lien de vérification envoyé aux anciennes et nouvelles adresses email.",
             "workEmailRemoved": "Email professionnel supprimé."
         },
         "errors": {
             "updateFailed": "Échec de la mise à jour du profil",
             "userIdNotFound": "ID utilisateur introuvable",
             "emailUpdateFailed": "Échec de la mise à jour de l'email",
+            "invalidEmail": "Format d'email invalide",
+            "professionalEmailNotAllowed": "Les emails professionnels ne sont pas autorisés pour l'email principal. Veuillez utiliser un email personnel.",
+            "emailTaken": "Cet email est déjà associé à un autre compte.",
+            "emailSame": "C'est déjà votre email actuel.",
             "workEmailRemoveFailed": "Échec de la suppression de l'email professionnel",
             "aurinkoNotConfigured": "Aurinko n'est pas configuré.",
             "notAuthenticated": "Non authentifié"
