@@ -133,6 +133,73 @@
                 "never": "Never",
                 "criticalAlerts": "Critical alerts (security, payment) are always sent immediately."
             }
+        },
+        "ai": {
+            "calibration": {
+                "title": "Calibration Engine",
+                "description": "Configure how our engine analyzes and matches candidates.",
+                "strictness": {
+                    "title": "Matching Strictness",
+                    "low": {
+                        "label": "Broad",
+                        "description": "Prioritizes potential & transferable skills."
+                    },
+                    "medium": {
+                        "label": "Balanced",
+                        "description": "Standard keyword & semantic matching."
+                    },
+                    "high": {
+                        "label": "Precise",
+                        "description": "Strict requirement matching only."
+                    }
+                }
+            },
+            "personality": {
+                "title": "Personality",
+                "tone": {
+                    "title": "Summary Tone",
+                    "professional": "Professional",
+                    "casual": "Casual",
+                    "direct": "Direct"
+                },
+                "example": {
+                    "title": "Example Output",
+                    "professional": "Candidate possesses strong proficiency in React. Recommended for initial screening.",
+                    "casual": "This candidate looks like a great fit! They've got solid React skills worth a chat.",
+                    "direct": "Match Score: 85%. Key Skills: React (High). Recommendation: Interview."
+                }
+            }
+        },
+        "billing": {
+            "title": "Billing Strategy",
+            "description": "Control how your workspace handles usage limits.",
+            "prudent": {
+                "title": "Prudent Mode",
+                "badge": "Strict Limits",
+                "description": "Scanning stops immediately when your balance hits zero. You are never charged extra without manual approval. Ideal for strict budgets."
+            },
+            "serein": {
+                "title": "Serein Mode",
+                "badge": "Pay-as-you-go",
+                "paidPlanOnly": "PAID PLAN ONLY",
+                "description": "Work continues seamlessly. Negative balance (overage) is tracked via Polar.sh and billed automatically at the end of the cycle."
+            },
+            "overage": {
+                "title": "Credit Limit (Safety Cap)",
+                "unlimited": "Unlimited",
+                "unlimitedDesc": "You will be billed for all usage at the end of the billing cycle without interruption.",
+                "limitedDesc": "Scanning will automatically stop if your balance reaches -{{cap}} scans."
+            }
+        },
+        "security": {
+            "dangerZone": {
+                "title": "Danger Zone",
+                "deleteAccount": {
+                    "title": "Delete Account",
+                    "description": "Permanently remove your Personal Account and all of its contents from the <1>logo</1> platform. This action is not reversible, so please continue with caution.",
+                    "button": "Delete Account"
+                }
+            }
         }
     },
     "ai": {

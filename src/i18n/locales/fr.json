@@ -133,6 +133,73 @@
                 "never": "Jamais",
                 "criticalAlerts": "Les alertes critiques (sécurité, paiement) sont toujours envoyées immédiatement."
             }
+        },
+        "ai": {
+            "calibration": {
+                "title": "Moteur de calibrage",
+                "description": "Configurez comment notre moteur analyse et fait correspondre les candidats.",
+                "strictness": {
+                    "title": "Rigueur de correspondance",
+                    "low": {
+                        "label": "Large",
+                        "description": "Privilégie le potentiel et les compétences transférables."
+                    },
+                    "medium": {
+                        "label": "Équilibré",
+                        "description": "Correspondance standard par mots-clés et sémantique."
+                    },
+                    "high": {
+                        "label": "Précis",
+                        "description": "Correspondance stricte des exigences uniquement."
+                    }
+                }
+            },
+            "personality": {
+                "title": "Personnalité",
+                "tone": {
+                    "title": "Ton du résumé",
+                    "professional": "Professionnel",
+                    "casual": "Décontracté",
+                    "direct": "Direct"
+                },
+                "example": {
+                    "title": "Exemple de sortie",
+                    "professional": "Le candidat possède une forte maîtrise de React. Recommandé pour un premier entretien.",
+                    "casual": "Ce candidat semble parfait ! Il a de solides compétences en React qui valent le détour.",
+                    "direct": "Score de correspondance : 85%. Compétences clés : React (Élevé). Recommandation : Entretien."
+                }
+            }
+        },
+        "billing": {
+            "title": "Stratégie de facturation",
+            "description": "Contrôlez comment votre espace de travail gère les limites d'utilisation.",
+            "prudent": {
+                "title": "Mode Prudent",
+                "badge": "Limites strictes",
+                "description": "Le scan s'arrête immédiatement lorsque votre solde atteint zéro. Vous n'êtes jamais facturé en supplément sans approbation manuelle. Idéal pour les budgets stricts."
+            },
+            "serein": {
+                "title": "Mode Serein",
+                "badge": "Paiement à l'usage",
+                "paidPlanOnly": "FORFAIT PAYANT UNIQUEMENT",
+                "description": "Le travail continue sans interruption. Le solde négatif (dépassement) est suivi via Polar.sh et facturé automatiquement à la fin du cycle."
+            },
+            "overage": {
+                "title": "Limite de crédit (Plafond de sécurité)",
+                "unlimited": "Illimité",
+                "unlimitedDesc": "Vous serez facturé pour toute l'utilisation à la fin du cycle de facturation sans interruption.",
+                "limitedDesc": "Le scan s'arrêtera automatiquement si votre solde atteint -{{cap}} scans."
+            }
+        },
+        "security": {
+            "dangerZone": {
+                "title": "Zone de danger",
+                "deleteAccount": {
+                    "title": "Supprimer le compte",
+                    "description": "Supprimez définitivement votre compte personnel et tout son contenu de la plateforme <1>logo</1>. Cette action est irréversible, veuillez donc continuer avec prudence.",
+                    "button": "Supprimer le compte"
+                }
+            }
         }
     },
     "ai": {
