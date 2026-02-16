@@ -624,30 +624,28 @@
             "scans": "SCANS"
         },
         "addMember": {
-            "title": {
-                "ADMIN": "Add Admin",
-                "EMPLOYEE": "Add Team Member",
-                "VISITOR": "Add Visitor"
-            },
+            "titleAdmin": "Add Admin",
+            "titleEmployee": "Add Team Member",
+            "titleVisitor": "Add Visitor",
             "subtitle": "Select connections to add to this project.",
             "selectRole": "Select Role",
+            "allOrgs": "All Organizations",
             "roles": {
-                "partner": {
-                    "title": "Talent Partner",
-                    "descTitle": "Full Access",
-                    "desc": "Partners have complete control over the project. They can upload resumes, run AI scans, analyze candidates, and view detailed reports."
-                },
-                "scout": {
-                    "title": "Talent Scout",
-                    "descTitle": "Sourcing Focus",
-                    "desc": "Scouts can upload resumes and perform initial screenings. They cannot access aggregated analytics or strategic reports."
-                },
-                "analyst": {
-                    "title": "Talent Analyst",
-                    "descTitle": "Insights Focus",
-                    "desc": "Analysts have read-only access to recruitment data and analytics dashboards. They cannot upload files or modify candidate data."
-                }
+                "partner": "Talent Partner",
+                "scout": "Talent Scout",
+                "analyst": "Talent Analyst",
+                "visitor": "Visitor"
             },
+            "roleDetails": {
+                "fullAccess": "Full Access",
+                "partnerDesc": "Partners have complete control over the project. They can upload resumes, run AI scans, analyze candidates, and view detailed reports.",
+                "sourcingFocus": "Sourcing Focus",
+                "scoutDesc": "Scouts can upload resumes and perform initial screenings. They cannot access aggregated analytics or strategic reports.",
+                "insightsFocus": "Insights Focus",
+                "analystDesc": "Analysts have read-only access to recruitment data and analytics dashboards. They cannot upload files or modify candidate data."
+            },
+            "noConnections": "No eligible connections found.",
+            "connectMore": "Connect with more people to add them here.",
             "emptyState": {
                 "title": "No eligible connections found.",
                 "desc": "Connect with more people to add them here."
@@ -966,7 +964,7 @@
             }
         }
     },
-    "modal": {
+    "connections": {
         "title": "Connections",
         "growNetwork": "Grow your professional network",
         "searchPlaceholder": "Enter email to connect...",

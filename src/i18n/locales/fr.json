@@ -756,30 +756,28 @@
            "scans": "SCANS"
          },
         "addMember": {
-            "title": {
-                "ADMIN": "Ajouter Admin",
-                "EMPLOYEE": "Ajouter Membre d'Équipe",
-                "VISITOR": "Ajouter Visiteur"
-            },
+            "titleAdmin": "Ajouter Admin",
+            "titleEmployee": "Ajouter Membre d'Équipe",
+            "titleVisitor": "Ajouter Visiteur",
             "subtitle": "Sélectionnez les connexions à ajouter à ce projet.",
             "selectRole": "Sélectionner le Rôle",
+            "allOrgs": "Toutes les organisations",
             "roles": {
-                "partner": {
-                    "title": "Partenaire Talent",
-                    "descTitle": "Accès Complet",
-                    "desc": "Les partenaires ont un contrôle total sur le projet. Ils peuvent télécharger des CV, lancer des analyses IA, analyser les candidats et voir les rapports détaillés."
-                },
-                "scout": {
-                    "title": "Éclaireur Talent",
-                    "descTitle": "Focus Sourcing",
-                    "desc": "Les éclaireurs peuvent télécharger des CV et effectuer des sélections initiales. Ils ne peuvent pas accéder aux analyses agrégées ou aux rapports stratégiques."
-                },
-                "analyst": {
-                    "title": "Analyste Talent",
-                    "descTitle": "Focus Insights",
-                    "desc": "Les analystes ont un accès en lecture seule aux données de recrutement et aux tableaux de bord d'analyse. Ils ne peuvent pas télécharger de fichiers ou modifier les données des candidats."
-                }
+                "partner": "Partenaire Talent",
+                "scout": "Éclaireur Talent",
+                "analyst": "Analyste Talent",
+                "visitor": "Visiteur"
             },
+            "roleDetails": {
+                "fullAccess": "Accès Complet",
+                "partnerDesc": "Les partenaires ont un contrôle total sur le projet. Ils peuvent télécharger des CV, lancer des analyses IA, analyser les candidats et voir les rapports détaillés.",
+                "sourcingFocus": "Focus Sourcing",
+                "scoutDesc": "Les éclaireurs peuvent télécharger des CV et effectuer des sélections initiales. Ils ne peuvent pas accéder aux analyses agrégées ou aux rapports stratégiques.",
+                "insightsFocus": "Focus Insights",
+                "analystDesc": "Les analystes ont un accès en lecture seule aux données de recrutement et aux tableaux de bord d'analyse. Ils ne peuvent pas télécharger de fichiers ou modifier les données des candidats."
+            },
+            "noConnections": "Aucune connexion éligible trouvée.",
+            "connectMore": "Connectez-vous avec plus de personnes pour les ajouter ici.",
             "emptyState": {
                 "title": "Aucune connexion éligible trouvée.",
                 "desc": "Connectez-vous avec plus de personnes pour les ajouter ici."
