@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
-    FileText, Clock, Calendar,
+    Loader2, FileText, Clock, Calendar,
     Medal, Eye, MailCheck, FileCheck, FileEdit
 } from 'lucide-react';
 
