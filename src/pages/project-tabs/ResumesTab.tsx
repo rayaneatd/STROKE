@@ -103,24 +103,6 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
     const candidates = myCandidates;
 
-    const rankedCandidates = useMemo(() => {
-        const scored = candidates
-            .filter(c => c.score !== null && c.score !== undefined)
-            .slice()
-            .sort((a, b) => {
-                const scoreDiff = (b.score || 0) - (a.score || 0);
-                if (scoreDiff !== 0) return scoreDiff;
-                return new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime();
-            });
-        const rankById = new Map<string, number>();
-        scored.forEach((c, index) => {
-            rankById.set(c.id, index + 1);
-        });
-        return candidates.map(c => ({
-            ...c,
-            rank: rankById.get(c.id)
-        }));
-    }, [candidates]);
 
     // Selection & Drawer State
     const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
@@ -600,7 +582,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
                 {/* Candidate List Component */}
                 <CandidateList
-                    candidates={rankedCandidates}
+                    candidates={candidates}
                     selectedFileId={selectedFile?.id || null}
                     onSelect={handleCandidateClick}
                     currentUser={currentUser}

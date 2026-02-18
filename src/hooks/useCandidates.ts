@@ -95,6 +95,7 @@ export const useCandidates = ({
                 exportedBy: row.exported_by,
                 emailSentAt: row.email_sent_at,
                 emailDraft: row.email_draft,
+                rank: row.rank ? Number(row.rank) : undefined,
                 // AI Enhanced fields
                 email: row.email,
                 phone: row.phone,

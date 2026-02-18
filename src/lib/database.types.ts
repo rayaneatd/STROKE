@@ -490,6 +490,7 @@ export type Database = {
                     original_resume_name: string | null
                     phone: string | null
                     project_id: string
+                    rank: number | null
                     red_flags: Json | null
                     score: number | null
                     score_justification: string | null

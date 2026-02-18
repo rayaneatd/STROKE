@@ -2,7 +2,7 @@ import React from 'react';
 import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
-    Loader2, FileText, Clock, Calendar,
+    FileText, Clock, Calendar,
     Medal, Eye, MailCheck, FileCheck, FileEdit
 } from 'lucide-react';
 
@@ -71,7 +71,8 @@ const CandidateList: React.FC<CandidateListProps> = ({
                     const file = candidates[index];
                     if (!file) return null;
 
-                    const score = file.score || 0;
+                    const hasScore = file.score !== null && file.score !== undefined;
+                    const score = hasScore ? file.score : 0;
                     const isTop = score >= 80;
                     const isMid = score >= 50 && score < 80;
 
@@ -142,11 +143,6 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             </div>
                             <div className={`${showScannedBy ? 'col-span-4' : 'col-span-5'} min-w-0`}>
                                 <div className="flex items-center gap-3">
-                                    {!showScannedBy && (
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold border ${isTop ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : isMid ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
-                                            {file.candidateName ? file.candidateName.charAt(0) : '?'}
-                                        </div>
-                                    )}
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
                                             <h4 className={`text-sm font-bold truncate ${isSelected ? `text-${accentColor}-500` : textPrimary}`}>{file.candidateName || 'Processing...'}</h4>
@@ -201,18 +197,17 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
                             {!showScannedBy && (
                                 <div className="col-span-3">
-                                    {file.status === 'COMPLETED' ? (
-                                        <div className="flex items-center gap-3">
-                                            <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
-                                                <div className={`h-full rounded-full ${isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500'}`} style={{ width: `${score}%` }}></div>
-                                            </div>
-                                            <span className={`text-sm font-bold ${isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary}`}>{score}%</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
+                                            <div
+                                                className={`h-full rounded-full ${hasScore ? (isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500') : 'bg-transparent'}`}
+                                                style={{ width: `${score}%` }}
+                                            ></div>
                                         </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2 text-xs font-bold text-amber-500">
-                                            <Loader2 size={12} className="animate-spin" /> PROCESSING
-                                        </div>
-                                    )}
+                                        <span className={`text-sm font-bold ${hasScore ? (isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary) : textSecondary}`}>
+                                            {hasScore ? `${score}%` : '--'}
+                                        </span>
+                                    </div>
                                 </div>
                             )}
 
@@ -235,16 +230,11 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
                             {showScannedBy && (
                                 <div className="col-span-2 text-right">
-                                    {file.status === 'COMPLETED' ? (
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                            score >= 50 ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                                isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700'
-                                            }`}>
-                                            {score}%
-                                        </span>
-                                    ) : (
-                                        <span className={`text-[10px] font-bold uppercase ${isLight ? 'text-slate-400' : 'text-zinc-600'}`}>{file.status}</span>
-                                    )}
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${hasScore ? (score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                        score >= 50 ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                            isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700') : (isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700')}`}>
+                                        {hasScore ? `${score}%` : '--'}
+                                    </span>
                                 </div>
                             )}
                         </div>
