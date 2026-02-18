@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
     X, ExternalLink, Eye, BrainCircuit, MessageSquare, Mail, FileText,
     Trophy, MailCheck, Linkedin, Github, AlertOctagon, Sparkles, ThumbsUp, ThumbsDown,
@@ -153,10 +154,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
     if (!isOpen || !selectedFile) return null;
 
-    return (
-        <div className="fixed inset-0 z-[100] flex justify-end">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex justify-end">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}></div>
-            <div className={`relative w-full max-w-6xl h-full shadow-2xl flex flex-col animate-fade-in-right border-l ${isLight ? 'bg-white border-slate-200' : 'bg-[#0e0e10] border-white/10'}`}>
+            <div className={`relative w-[95vw] max-w-[1600px] h-full shadow-2xl flex flex-col animate-fade-in-right border-l ${isLight ? 'bg-white border-slate-200' : 'bg-[#0e0e10] border-white/10'}`}>
                 {/* Drawer Header */}
                 <div className={`flex items-center justify-between p-6 border-b shrink-0 ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/5'}`}>
                     <div className="flex items-center gap-4">
@@ -602,7 +603,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
