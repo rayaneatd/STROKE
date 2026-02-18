@@ -54,11 +54,12 @@ interface CandidateDrawerProps {
   isOpen: boolean;
   candidateId: string | null;
   onClose: () => void;
+  hideCommunicationTab?: boolean;
 }
 
 type DrawerTab = 'analysis' | 'communication' | 'interview';
 
-const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, onClose }) => {
+const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, onClose, hideCommunicationTab = false }) => {
   const { t } = useTranslation();
   const [data, setData] = useState<CandidateDrawerData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -528,13 +529,15 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
               <LayoutDashboard className="w-3.5 h-3.5" />
               {t('candidateDrawer.tabs.analysis')}
             </button>
-            <button
-              onClick={() => setActiveTab('communication')}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'communication' ? 'border-purple-500 text-purple-400' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
-            >
-              <Mail className="w-3.5 h-3.5" />
-              {t('candidateDrawer.tabs.communication')}
-            </button>
+            {!hideCommunicationTab && (
+              <button
+                onClick={() => setActiveTab('communication')}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'communication' ? 'border-purple-500 text-purple-400' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                {t('candidateDrawer.tabs.communication')}
+              </button>
+            )}
             <button
               onClick={() => setActiveTab('interview')}
               className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'interview' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
@@ -546,7 +549,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
           {activeTab === 'analysis' && renderAnalysis()}
-          {activeTab === 'communication' && renderCommunication()}
+          {activeTab === 'communication' && !hideCommunicationTab && renderCommunication()}
           {activeTab === 'interview' && renderInterview()}
           <div className="h-12" />
         </div>

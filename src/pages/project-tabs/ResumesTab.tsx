@@ -599,6 +599,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                     isOpen={!!selectedFile}
                     candidateId={selectedFile?.id || null}
                     onClose={() => setSelectedFile(null)}
+                    hideCommunicationTab={true}
                 />
             </div>
         </div>
