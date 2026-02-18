@@ -11,7 +11,6 @@ interface UseCandidatesProps {
     filterScores: ('HIGH' | 'MID' | 'LOW')[];
     filterActivities: ('EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED')[];
     filterUploaders?: string[];
-    status?: ('COMPLETED' | 'PENDING' | 'PROCESSING' | 'FAILED') | ('COMPLETED' | 'PENDING' | 'PROCESSING' | 'FAILED')[];
     enabled?: boolean;
 }
 
@@ -25,12 +24,11 @@ export const useCandidates = ({
     filterScores,
     filterActivities,
     filterUploaders,
-    status,
     enabled = true
 }: UseCandidatesProps) => {
     const queryClient = useQueryClient();
     // Include userId in query key to refresh if user changes (rare but good practice)
-    const queryKey = ['candidates', projectId, userId, searchQuery, sortOption, filterScores, filterActivities, filterUploaders, status];
+    const queryKey = ['candidates', projectId, userId, searchQuery, sortOption, filterScores, filterActivities, filterUploaders];
 
     // Real-time Subscription
     useEffect(() => {
@@ -70,9 +68,6 @@ export const useCandidates = ({
     } = useInfiniteQuery({
         queryKey,
         queryFn: async ({ pageParam = 0 }) => {
-            // Normalize status to array
-            const statusArray = Array.isArray(status) ? status : (status ? [status] : null);
-
             const { data, error } = await supabase.rpc('get_project_candidates', {
                 p_project_id: projectId,
                 p_user_id: userId,
@@ -81,7 +76,6 @@ export const useCandidates = ({
                 p_filter_scores: filterScores.length > 0 ? filterScores : null,
                 p_filter_activities: filterActivities.length > 0 ? filterActivities : null,
                 p_filter_uploaders: filterUploaders && filterUploaders.length > 0 ? filterUploaders : null,
-                p_status: statusArray,
                 p_page_param: pageParam,
                 p_page_size: PAGE_SIZE
             });
@@ -93,7 +87,6 @@ export const useCandidates = ({
                 projectId: row.project_id,
                 name: row.name || row.candidate_name || 'Unknown Candidate', // Fallback to candidate name or default
                 size: row.size || '0 KB', 
-                status: row.status,
                 uploadedAt: row.uploaded_at,
                 score: row.score,
                 candidateName: row.candidate_name,
@@ -108,7 +101,6 @@ export const useCandidates = ({
                 location: row.location,
                 summary: row.summary,
                 skills: row.skills,
-                rank: row.rank ? Number(row.rank) : undefined,
 
                 // Elite Data Mapping
                 currentPosition: row.current_position,

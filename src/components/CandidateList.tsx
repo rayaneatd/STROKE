@@ -3,7 +3,7 @@ import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
     Loader2, FileText, Clock, Calendar,
-    Crown, Medal, Award, Eye, MailCheck, FileCheck, FileEdit
+    Medal, Eye, MailCheck, FileCheck, FileEdit
 } from 'lucide-react';
 
 interface CandidateListProps {
@@ -83,33 +83,36 @@ const CandidateList: React.FC<CandidateListProps> = ({
                     const isSelected = selectedFileId === file.id;
 
                     // Rank Logic
-                    const rank = file.rank ?? (sortOption === 'SCORE_DESC' ? index + 1 : undefined);
+                    const rank = file.rank;
                     let rankDisplay: React.ReactNode = '-';
                     
                     if (rank !== undefined) {
                         if (rank === 1) {
                             rankDisplay = (
-                                <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
-                                    <div className="absolute inset-0 bg-yellow-500/20 rounded-full blur-[2px]"></div>
-                                    <div className="relative w-full h-full bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg border border-yellow-300/30">
-                                        <Crown size={14} className="text-white fill-white/20" />
+                                <div className="relative flex items-center justify-center w-10 h-8 mx-auto gap-1">
+                                    <div className="absolute inset-y-0 left-1 w-6 h-6 bg-yellow-500/20 rounded-full blur-[2px]"></div>
+                                    <div className="relative w-6 h-6 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg border border-yellow-300/30">
+                                        <Medal size={12} className="text-white fill-white/20" />
                                     </div>
+                                    <span className={`${textPrimary} text-xs font-semibold`}>{rank}</span>
                                 </div>
                             );
-                        } else if (rank === 2 && showScannedBy) { // Only show medal styles in Activity tab style if preferred, or globally
+                        } else if (rank === 2) {
                              rankDisplay = (
-                                <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
-                                    <div className="relative w-full h-full bg-gradient-to-br from-slate-300 to-slate-500 rounded-full flex items-center justify-center shadow-md border border-slate-300/30">
-                                        <Medal size={14} className="text-white fill-white/20" />
+                                <div className="relative flex items-center justify-center w-10 h-8 mx-auto gap-1">
+                                    <div className="relative w-6 h-6 bg-gradient-to-br from-slate-300 to-slate-500 rounded-full flex items-center justify-center shadow-md border border-slate-300/30">
+                                        <Medal size={12} className="text-white fill-white/20" />
                                     </div>
+                                    <span className={`${textPrimary} text-xs font-semibold`}>{rank}</span>
                                 </div>
                             );
-                        } else if (rank === 3 && showScannedBy) {
+                        } else if (rank === 3) {
                              rankDisplay = (
-                                <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
-                                    <div className="relative w-full h-full bg-gradient-to-br from-orange-400 to-amber-700 rounded-full flex items-center justify-center shadow-md border border-orange-300/30">
-                                        <Award size={14} className="text-white fill-white/20" />
+                                <div className="relative flex items-center justify-center w-10 h-8 mx-auto gap-1">
+                                    <div className="relative w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-700 rounded-full flex items-center justify-center shadow-md border border-orange-300/30">
+                                        <Medal size={12} className="text-white fill-white/20" />
                                     </div>
+                                    <span className={`${textPrimary} text-xs font-semibold`}>{rank}</span>
                                 </div>
                             );
                         } else {

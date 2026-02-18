@@ -111,7 +111,6 @@ export type Database = {
                     project_id: string
                     score: number | null
                     size: string | null
-                    status: string | null
                     uploaded_at: string | null
                     uploaded_by: string | null
                     viewed_by: string[] | null
@@ -126,7 +125,6 @@ export type Database = {
                     project_id: string
                     score?: number | null
                     size?: string | null
-                    status?: string | null
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
@@ -141,7 +139,6 @@ export type Database = {
                     project_id?: string
                     score?: number | null
                     size?: string | null
-                    status?: string | null
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
@@ -471,7 +468,6 @@ export type Database = {
                     p_project_id: string
                     p_search_query: string
                     p_sort_option: string
-                    p_status: string[] | null
                     p_user_id: string
                 }
                 Returns: {
@@ -494,7 +490,6 @@ export type Database = {
                     original_resume_name: string | null
                     phone: string | null
                     project_id: string
-                    rank: number | null
                     red_flags: Json | null
                     score: number | null
                     score_justification: string | null
@@ -502,13 +497,16 @@ export type Database = {
                     skills: string[] | null
                     social_links: Json | null
                     soft_skills_analysis: string | null
-                    status: string | null
                     summary: string | null
                     uploaded_at: string | null
                     uploaded_by: string | null
                     viewed_by: string[] | null
                     years_of_experience: number | null
                 }[]
+            }
+            get_project_owner_ai_tone: {
+                Args: { p_project_id: string }
+                Returns: string
             }
             get_project_owner_connections: {
                 Args: { p_project_id: string }

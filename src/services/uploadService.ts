@@ -83,7 +83,6 @@ export const processUploads = async (
             project_id: projectId,
             name: file.name,
             size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-            status: 'PENDING',
             uploaded_by: userId,
             // storage_path: storagePath, // Add this if you want to track the path
           });

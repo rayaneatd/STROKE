@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import CandidateList from '../../components/CandidateList';
 import CandidateDrawer from '../../components/CandidateDrawer';
+import { supabase } from '../../lib/supabase';
 
 interface ActivityTabProps {
     project: Project;
@@ -54,6 +55,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     // --- Drawer State ---
     const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [isDrafting, setIsDrafting] = useState(false);
 
     // Theme Helpers
     const isLight = currentUser.preferences?.uiConfig?.theme === 'LIGHT';
@@ -100,9 +102,27 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         sortOption,
         filterScores,
         filterActivities,
-        filterUploaders: filterScanners,
-        status: ['COMPLETED', 'PENDING', 'PROCESSING', 'FAILED']
+        filterUploaders: filterScanners
     });
+
+    const rankedCandidates = useMemo(() => {
+        const scored = candidates
+            .filter(c => c.score !== null && c.score !== undefined)
+            .slice()
+            .sort((a, b) => {
+                const scoreDiff = (b.score || 0) - (a.score || 0);
+                if (scoreDiff !== 0) return scoreDiff;
+                return new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime();
+            });
+        const rankById = new Map<string, number>();
+        scored.forEach((c, index) => {
+            rankById.set(c.id, index + 1);
+        });
+        return candidates.map(c => ({
+            ...c,
+            rank: rankById.get(c.id)
+        }));
+    }, [candidates]);
 
     const uniqueScanners = contributionData.length;
 
@@ -140,6 +160,29 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         // Simple export logic for now, similar to ResumesTab but maybe for all listed
         // For now just alert or simple mock
         alert("Exporting visible list...");
+    };
+
+    const handleDrafts = async () => {
+        if (!onBatchUpdate || candidates.length === 0) return;
+        setIsDrafting(true);
+        const { data, error } = await supabase.rpc('get_project_owner_ai_tone', {
+            p_project_id: project.id
+        });
+        if (error) {
+            setIsDrafting(false);
+            return;
+        }
+        const tone = String(data || 'PROFESSIONAL').toUpperCase();
+        const draft =
+            tone === 'CASUAL' ? 'Casual' :
+            tone === 'DIRECT' ? 'Direct' :
+            'Professional';
+        const updates = candidates.map(c => ({
+            id: c.id,
+            changes: { emailDraft: draft }
+        }));
+        await onBatchUpdate(updates);
+        setIsDrafting(false);
     };
 
     return (
@@ -338,6 +381,16 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                 </div>
                             )}
                         </div>
+                        {canUseAntiGhosting && (
+                            <button
+                                onClick={handleDrafts}
+                                disabled={isDrafting || candidates.length === 0}
+                                className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'}`}
+                            >
+                                {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <Ghost size={14} />}
+                                Drafts
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -352,7 +405,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
                 {/* Candidate List Component */}
                 <CandidateList
-                    candidates={candidates}
+                    candidates={rankedCandidates}
                     selectedFileId={selectedFile?.id || null}
                     onSelect={handleCandidateClick}
                     currentUser={currentUser}

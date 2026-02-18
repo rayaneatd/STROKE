@@ -98,11 +98,29 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         sortOption,
         filterScores,
         filterActivities,
-        filterUploaders: [currentUser.id], // Strict filter: Only show my uploads
-        status: ['COMPLETED', 'PENDING', 'PROCESSING', 'FAILED']
+        filterUploaders: [currentUser.id]
     });
 
     const candidates = myCandidates;
+
+    const rankedCandidates = useMemo(() => {
+        const scored = candidates
+            .filter(c => c.score !== null && c.score !== undefined)
+            .slice()
+            .sort((a, b) => {
+                const scoreDiff = (b.score || 0) - (a.score || 0);
+                if (scoreDiff !== 0) return scoreDiff;
+                return new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime();
+            });
+        const rankById = new Map<string, number>();
+        scored.forEach((c, index) => {
+            rankById.set(c.id, index + 1);
+        });
+        return candidates.map(c => ({
+            ...c,
+            rank: rankById.get(c.id)
+        }));
+    }, [candidates]);
 
     // Selection & Drawer State
     const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
@@ -582,7 +600,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
                 {/* Candidate List Component */}
                 <CandidateList
-                    candidates={candidates}
+                    candidates={rankedCandidates}
                     selectedFileId={selectedFile?.id || null}
                     onSelect={handleCandidateClick}
                     currentUser={currentUser}
@@ -601,7 +619,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                     onClose={() => setSelectedFile(null)}
                     isLight={isLight}
                     accentColor={accentColor}
-                    isTopCandidate={sortOption === 'SCORE_DESC' && candidates.findIndex(c => c.id === selectedFile?.id) === 0}
+                    isTopCandidate={selectedFile?.rank === 1}
                     onMarkContacted={onMarkContacted}
                     onBatchUpdate={onBatchUpdate}
                     currentUser={currentUser}

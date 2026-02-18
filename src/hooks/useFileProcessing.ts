@@ -116,26 +116,7 @@ export const useFileProcessing = (
     }, []);
 
     const retryFile = useCallback(async (fileId: string) => {
-        // For local-only failures, user needs to re-upload.
-        // For DB records in 'FAILED' status, we reset them.
         if (fileId.startsWith('fail-') || fileId.startsWith('local-')) return;
-
-        setFiles(prev => prev.map(f => {
-            if (f.id === fileId) {
-                return { ...f, status: 'PENDING', failureReasons: [] };
-            }
-            return f;
-        }));
-
-        const { error } = await supabase
-            .from('candidates')
-            .update({ status: 'PENDING', failure_reasons: [] } as any)
-            .eq('id', fileId);
-
-        if (error) {
-            console.error("Failed to retry candidate:", error);
-            setFiles(prev => prev.map(f => f.id === fileId ? { ...f, status: 'FAILED' } : f));
-        }
     }, []);
 
     const queueFilesForProcessing = useCallback((targetFiles: ProjectFile[]) => {

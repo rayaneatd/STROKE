@@ -24,13 +24,13 @@ export const useProjectAnalytics = (projectId: string) => {
             const [statsResult, topResult] = await Promise.all([
                 supabase
                     .from('candidates')
-                    .select('status, score, uploaded_at, uploaded_by, email_sent_at')
+                    .select('score, uploaded_at, uploaded_by, email_sent_at')
                     .eq('project_id', projectId),
                 supabase
                     .from('candidates')
                     .select('id, candidate_name, score, uploaded_at')
                     .eq('project_id', projectId)
-                    .eq('status', 'COMPLETED')
+                    .not('score', 'is', null)
                     .order('score', { ascending: false })
                     .limit(5)
             ]);
@@ -41,12 +41,12 @@ export const useProjectAnalytics = (projectId: string) => {
             const data = statsResult.data || [];
             
             const total = data.length;
-            const completed = data.filter(c => c.status === 'COMPLETED').length;
+            const completed = data.filter(c => c.score != null).length;
             const pending = total - completed;
             const riskCount = data.filter(c => !c.email_sent_at).length;
 
             const scores = data
-                .filter(c => c.status === 'COMPLETED' && c.score != null)
+                .filter(c => c.score != null)
                 .map(c => c.score as number);
             
             const avgScore = scores.length > 0

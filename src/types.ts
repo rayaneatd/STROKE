@@ -230,7 +230,7 @@ export interface ProjectFile {
   projectId: ProjectId;
   name: string;
   size: string;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   uploadedAt: string;
   score?: number;
   candidateName?: string;

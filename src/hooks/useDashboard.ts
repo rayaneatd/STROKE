@@ -60,8 +60,10 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
 
             // 3. Aggregate Data
             const candidates = (candidatesData || []) as any[];
-            const completedCandidates = candidates.filter(c => c.status === 'COMPLETED');
+            const completedCandidates = candidates.filter(c => c.score != null);
             const qualifiedCandidates = completedCandidates.filter(c => (c.score || 0) >= 80);
+            const pendingCandidates = candidates.filter(c => c.score == null);
+            const missingDataCount = candidates.filter(c => !c.candidate_name).length;
 
             // Timeline Calculation
             const timelineMap = new Map<string, { total: number, scoreSum: number, count: number }>();
@@ -117,18 +119,18 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     qualifiedTrend: 'Stable',
                     activeProjects: projectsData.filter(p => p.status === 'ACTIVE').length,
                     avgTimeProcessing: '0m 45s',
-                    failedUploadsCount: candidates.filter(c => c.status === 'FAILED').length
+                    failedUploadsCount: 0
                 },
                 teamStats: roleCounts,
                 timelineData,
                 errorData: [
-                    { name: 'Missing Data', value: candidates.filter(c => c.status === 'FAILED' && !c.candidate_name).length, fill: '#6366f1' },
+                    { name: 'Missing Data', value: missingDataCount, fill: '#6366f1' },
                     { name: 'Low Score', value: completedCandidates.filter(c => (c.score || 0) < 40).length, fill: '#ef4444' },
-                    { name: 'Pending', value: candidates.filter(c => c.status === 'PENDING').length, fill: '#f59e0b' }
+                    { name: 'Pending', value: pendingCandidates.length, fill: '#f59e0b' }
                 ],
                 projectPerformance: projectsData.map(p => {
                     const pCandidates = candidates.filter(c => c.project_id === p.id);
-                    const pCompleted = pCandidates.filter(c => c.status === 'COMPLETED');
+                    const pCompleted = pCandidates.filter(c => c.score != null);
                     return {
                         id: p.id,
                         name: p.title,
