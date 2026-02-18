@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -20,6 +20,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { debounce } from '../utils/performance';
 
 interface CandidateDrawerData {
   candidate_name: string | null;
@@ -64,6 +65,90 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DrawerTab>('analysis');
   const [draft, setDraft] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+
+  // --- Autosave Logic ---
+  
+  const saveDraft = useCallback(
+    async (currentDraft: string) => {
+      if (!candidateId) return;
+      setSaveStatus('saving');
+      try {
+        const { error } = await supabase.rpc('save_candidate_email_draft', {
+          p_candidate_id: candidateId,
+          p_draft: currentDraft
+        });
+        if (error) {
+          console.error('Autosave failed:', error);
+          setSaveStatus('error');
+        } else {
+          setSaveStatus('saved');
+        }
+      } catch (err) {
+        console.error('Autosave error:', err);
+        setSaveStatus('error');
+      }
+    },
+    [candidateId]
+  );
+
+  // Debounced save function
+  const debouncedSave = useMemo(
+    () => debounce((val: string) => saveDraft(val), 1000),
+    [saveDraft]
+  );
+
+  // Handle draft changes
+  const handleDraftChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setDraft(val);
+    debouncedSave(val);
+  };
+
+  // Save on close
+  useEffect(() => {
+    return () => {
+      if (candidateId && draft) {
+        saveDraft(draft);
+      }
+    };
+  }, [candidateId, draft, saveDraft]);
+
+  // --- Sending Logic ---
+
+  const handleSendEmail = async () => {
+    if (!candidateId || !draft.trim()) return;
+    
+    setIsSending(true);
+    try {
+      // 1. Simulate sending (replace with real API later)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // 2. Log for debug
+      console.log('draft envoyé');
+      console.log(`[Debug] To: ${data?.email || 'N/A'} | Content: ${draft.substring(0, 50)}...`);
+
+      // 3. Update DB state
+      const now = new Date().toISOString();
+      const { error } = await supabase.rpc('save_candidate_email_draft', {
+        p_candidate_id: candidateId,
+        p_draft: draft,
+        p_sent_at: now
+      });
+
+      if (error) throw error;
+
+      // 4. Update local state
+      setData(prev => prev ? { ...prev, email_sent_at: now } : null);
+      
+    } catch (err) {
+      console.error('Failed to send email:', err);
+      // Could add toast here
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -104,9 +189,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
   }, [isOpen]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
-    if (score >= 50) return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
-    return 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+    if (score >= 80) return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]';
+    if (score >= 50) return 'text-amber-500 bg-amber-500/10 border-amber-500/20 shadow-[0_0_15px_-3px_rgba(245,158,11,0.2)]';
+    return 'text-rose-500 bg-rose-500/10 border-rose-500/20 shadow-[0_0_15px_-3px_rgba(244,63,94,0.2)]';
   };
 
   const copyToClipboard = (text?: string | null) => {
@@ -156,17 +241,14 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
   if (!isOpen) return null;
 
   const matchScoreValue = typeof data?.match_score === 'number' ? data.match_score : null;
-  const matchScoreLabel = matchScoreValue === null ? '—' : `${matchScoreValue}%`;
-  const scoreClass = matchScoreValue === null ? 'text-zinc-400 bg-zinc-900 border-white/5' : getScoreColor(matchScoreValue);
-
   const linkedinUrl = data?.social_links?.linkedin;
   const githubUrl = data?.social_links?.github;
 
   const renderAnalysis = () => (
-    <div className="space-y-8">
-      <div className="relative p-6 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-900/50 border border-white/5">
+    <div className="space-y-8 animate-fade-in">
+      <div className="relative p-6 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-900/50 border border-white/5 shadow-sm">
         {data?.career_trajectory && (
-          <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center gap-1.5">
+          <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center gap-1.5 shadow-sm">
             <Rocket className="w-3.5 h-3.5" />
             {data.career_trajectory}
           </div>
@@ -180,7 +262,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
       </div>
 
       {normalized.redFlags.length > 0 && (
-        <div className="p-5 rounded-2xl bg-rose-950/10 border border-rose-500/20">
+        <div className="p-5 rounded-2xl bg-rose-950/10 border border-rose-500/20 shadow-sm">
           <h3 className="flex items-center gap-2 text-xs font-bold text-rose-500 uppercase tracking-wider mb-4">
             <AlertTriangle className="w-4 h-4" />
             {t('candidateDrawer.analysis.attention')}
@@ -205,7 +287,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
           <div className="flex flex-wrap gap-2">
             {normalized.keySkills.length > 0 ? (
               normalized.keySkills.map((skill, idx) => (
-                <span key={idx} className="px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                <span key={idx} className="px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-emerald-400 text-xs font-medium shadow-sm">
                   {skill}
                 </span>
               ))
@@ -223,7 +305,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
           <div className="flex flex-wrap gap-2">
             {normalized.missingSkills.length > 0 ? (
               normalized.missingSkills.map((skill, idx) => (
-                <span key={idx} className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-white/5 text-zinc-500 text-xs font-medium">
+                <span key={idx} className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-white/5 text-zinc-500 text-xs font-medium decoration-zinc-700">
                   {skill}
                 </span>
               ))
@@ -246,7 +328,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
   );
 
   const renderCommunication = () => (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-6 h-full flex flex-col animate-fade-in">
       <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 space-y-4 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
@@ -264,19 +346,48 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
             className="w-full h-full min-h-[300px] bg-zinc-950 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none"
             placeholder={t('candidateDrawer.email.draftPlaceholder')}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={handleDraftChange}
+            disabled={isSending}
           />
         </div>
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex justify-end gap-3 pt-2 items-center">
+          <div className="flex items-center gap-2 mr-auto text-xs text-zinc-500">
+             {saveStatus === 'saving' && (
+               <>
+                 <Loader2 className="w-3 h-3 animate-spin" />
+                 <span>Saving...</span>
+               </>
+             )}
+             {saveStatus === 'saved' && (
+               <>
+                 <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                 <span>Saved</span>
+               </>
+             )}
+             {saveStatus === 'error' && (
+               <>
+                 <AlertTriangle className="w-3 h-3 text-rose-500" />
+                 <span>Error saving</span>
+               </>
+             )}
+          </div>
           <button
-            onClick={() => setDraft('')}
-            className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors"
+            onClick={() => {
+              setDraft('');
+              saveDraft(''); // Immediate save for clear
+            }}
+            disabled={isSending}
+            className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50"
           >
             {t('candidateDrawer.email.clear')}
           </button>
-          <button className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-xl transition-colors flex items-center gap-2">
-            <Mail className="w-3.5 h-3.5" />
-            {t('candidateDrawer.email.send')}
+          <button 
+            onClick={handleSendEmail}
+            disabled={isSending || !draft.trim()}
+            className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+            {isSending ? 'Sending...' : t('candidateDrawer.email.send')}
           </button>
         </div>
       </div>
@@ -284,7 +395,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
   );
 
   const renderInterview = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
           <Mic className="w-4 h-4" />
@@ -399,8 +510,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
               </div>
             </div>
             <div className="group relative cursor-help">
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 text-xl font-bold ${scoreClass}`}>
-                {matchScoreLabel}
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 text-xl font-bold ${getScoreColor(matchScoreValue || 0)}`}>
+                {matchScoreValue ?? 0}%
               </div>
               {data.score_justification && (
                 <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-zinc-900 border border-white/10 rounded-xl shadow-xl text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
@@ -446,16 +557,16 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium text-zinc-200 truncate max-w-[200px]">
-                {data.original_resume_name || t('candidateDrawer.footer.fallbackResume')}
+                {data.original_resume_name || 'CV Original.pdf'}
               </span>
               <span className="text-xs text-zinc-500">
-                {t('candidateDrawer.footer.importedOn')} {data.uploaded_at ? new Date(data.uploaded_at).toLocaleDateString() : '-'}
+                {t('candidateDrawer.header.added')} {data.uploaded_at ? new Date(data.uploaded_at).toLocaleDateString() : '-'}
               </span>
             </div>
           </div>
           <button className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-zinc-300 text-sm font-medium rounded-xl transition-colors flex items-center gap-2">
             <ExternalLink className="w-4 h-4" />
-            {t('candidateDrawer.footer.openResume')}
+            {t('candidateDrawer.preview.openExternal')}
           </button>
         </div>
       </div>
@@ -464,7 +575,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex justify-end font-sans">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        onClick={onClose}
+      />
       <div className="relative w-full max-w-[650px] h-full bg-zinc-950 border-l border-white/10 shadow-2xl animate-slide-in-right flex flex-col">
         <button
           onClick={onClose}
