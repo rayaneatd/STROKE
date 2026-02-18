@@ -23,6 +23,8 @@ interface CandidateDrawerProps {
     textSecondary: string;
 }
 
+import { useInterviewQuestions } from '../hooks/useInterviewQuestions';
+
 const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     isOpen,
     selectedFile,
@@ -41,6 +43,46 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     const [generatedEmail, setGeneratedEmail] = useState('');
     const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
     const [isEmailSent, setIsEmailSent] = useState(false);
+
+    // Interview Questions Hook
+    const { 
+        questions: interviewQuestions, 
+        addQuestion, 
+        deleteQuestion, 
+        isAdding: isAddingQuestion,
+        isLoading: isLoadingQuestions
+    } = useInterviewQuestions(selectedFile?.id);
+
+    const [newQuestion, setNewQuestion] = useState('');
+    const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+
+    const handleAddQuestion = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newQuestion.trim()) return;
+        
+        addQuestion({
+            question: newQuestion,
+            type: 'MANUAL'
+        }, {
+            onSuccess: () => setNewQuestion('')
+        });
+    };
+
+    const handleGenerateAIQuestions = async () => {
+        setIsGeneratingQuestions(true);
+        // Simulate AI delay
+        setTimeout(() => {
+            const mockQuestions = [
+                { question: "Describe a situation where you had to solve a difficult technical problem.", context: "Problem Solving", type: 'AI' as const },
+                { question: "How do you stay updated with the latest industry trends?", context: "Continuous Learning", type: 'AI' as const },
+                { question: "Tell me about a time you disagreed with a team member. How did you resolve it?", context: "Teamwork", type: 'AI' as const }
+            ];
+            
+            mockQuestions.forEach(q => addQuestion(q));
+            setIsGeneratingQuestions(false);
+        }, 1500);
+    };
+
 
     // Reset state when file changes
     useEffect(() => {
@@ -323,28 +365,74 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                             )}
 
                             {drawerTab === 'INTERVIEW' && (
-                                <div className="space-y-6 animate-fade-in">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className={`text-xs font-extrabold uppercase tracking-widest ${textSecondary}`}>Suggested Questions</h4>
-                                        <span className={`text-[10px] px-2 py-1 rounded border ${isLight ? 'bg-slate-100 border-slate-200' : 'bg-white/5 border-white/10'}`}>AI Generated</span>
+                                <div className="space-y-6 animate-fade-in h-full flex flex-col">
+                                    <div className="flex items-center justify-between shrink-0">
+                                        <h4 className={`text-xs font-extrabold uppercase tracking-widest ${textSecondary}`}>Interview Guide</h4>
+                                        <button 
+                                            onClick={handleGenerateAIQuestions}
+                                            disabled={isGeneratingQuestions || isLoadingQuestions}
+                                            className={`text-[10px] px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 transition-colors ${isLight ? `bg-${accentColor}-50 text-${accentColor}-600 border-${accentColor}-100 hover:bg-${accentColor}-100` : `bg-${accentColor}-500/10 text-${accentColor}-400 border-${accentColor}-500/20 hover:bg-${accentColor}-500/20`}`}
+                                        >
+                                            {isGeneratingQuestions ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                            Generate with AI
+                                        </button>
                                     </div>
+
+                                    {/* Add Question Form */}
+                                    <form onSubmit={handleAddQuestion} className="relative shrink-0">
+                                        <input
+                                            type="text"
+                                            value={newQuestion}
+                                            onChange={(e) => setNewQuestion(e.target.value)}
+                                            placeholder="Type a new interview question..."
+                                            className={`w-full p-3 pr-10 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-${accentColor}-500 ${isLight ? 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400' : 'bg-white/5 border-white/10 text-white placeholder:text-zinc-600'}`}
+                                        />
+                                        <button 
+                                            type="submit"
+                                            disabled={!newQuestion.trim() || isAddingQuestion}
+                                            className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${!newQuestion.trim() ? 'opacity-0 pointer-events-none' : 'opacity-100'} ${isLight ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-white/10 text-zinc-400 hover:bg-white/20 hover:text-white'}`}
+                                        >
+                                            <Send size={14} />
+                                        </button>
+                                    </form>
                                     
-                                    <div className="space-y-4">
-                                        {selectedFile.interviewQuestions && selectedFile.interviewQuestions.length > 0 ? (
-                                            selectedFile.interviewQuestions.map((q: any, idx: number) => (
-                                                <div key={idx} className={`p-5 rounded-2xl border transition-all hover:shadow-md ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
+                                    <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
+                                        {isLoadingQuestions ? (
+                                            <div className="flex items-center justify-center py-20">
+                                                <Loader2 size={24} className={`animate-spin ${textSecondary}`} />
+                                            </div>
+                                        ) : interviewQuestions && interviewQuestions.length > 0 ? (
+                                            interviewQuestions.map((q, idx) => (
+                                                <div key={q.id} className={`group relative p-5 rounded-2xl border transition-all hover:shadow-md ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
+                                                    <button 
+                                                        onClick={() => deleteQuestion(q.id)}
+                                                        className={`absolute top-3 right-3 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity ${isLight ? 'hover:bg-rose-50 text-rose-500' : 'hover:bg-rose-500/10 text-rose-400'}`}
+                                                        title="Delete question"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
                                                     <div className="flex gap-3">
-                                                        <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isLight ? `bg-${accentColor}-100 text-${accentColor}-600` : `bg-${accentColor}-500/20 text-${accentColor}-400`}`}>
+                                                        <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${q.type === 'AI' ? (isLight ? 'bg-purple-100 text-purple-600' : 'bg-purple-500/20 text-purple-400') : (isLight ? `bg-${accentColor}-100 text-${accentColor}-600` : `bg-${accentColor}-500/20 text-${accentColor}-400`)}`}>
                                                             {idx + 1}
                                                         </div>
-                                                        <div className="space-y-2">
-                                                            <p className={`font-medium text-sm ${textPrimary}`}>{q.question || q}</p>
+                                                        <div className="space-y-2 flex-1">
+                                                            <div className="flex items-start justify-between pr-8">
+                                                                <p className={`font-medium text-sm ${textPrimary}`}>{q.question}</p>
+                                                            </div>
                                                             {q.context && (
                                                                 <div className={`text-xs p-3 rounded-lg flex gap-2 ${isLight ? 'bg-slate-50 text-slate-600' : 'bg-white/5 text-zinc-400'}`}>
                                                                     <HelpCircle size={14} className="shrink-0 mt-0.5" />
                                                                     <span>{q.context}</span>
                                                                 </div>
                                                             )}
+                                                            <div className="flex items-center gap-2 mt-2">
+                                                                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${q.type === 'AI' ? (isLight ? 'bg-purple-50 text-purple-600 border-purple-100' : 'bg-purple-500/10 text-purple-400 border-purple-500/20') : (isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/5 text-zinc-500 border-white/10')}`}>
+                                                                    {q.type === 'AI' ? 'AI Generated' : 'Manual Entry'}
+                                                                </span>
+                                                                <span className={`text-[10px] ${textSecondary}`}>
+                                                                    {new Date(q.created_at).toLocaleDateString()}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -352,7 +440,13 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                                         ) : (
                                             <div className={`text-center py-10 rounded-2xl border border-dashed ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
                                                 <MessageSquare className={`mx-auto mb-3 opacity-20 ${textSecondary}`} size={32} />
-                                                <p className={`text-sm ${textSecondary}`}>No interview questions generated yet.</p>
+                                                <p className={`text-sm ${textSecondary}`}>No interview questions yet.</p>
+                                                <button 
+                                                    onClick={handleGenerateAIQuestions}
+                                                    className={`mt-4 text-xs font-bold ${isLight ? `text-${accentColor}-600 hover:text-${accentColor}-700` : `text-${accentColor}-400 hover:text-${accentColor}-300`}`}
+                                                >
+                                                    Generate suggested questions
+                                                </button>
                                             </div>
                                         )}
                                     </div>

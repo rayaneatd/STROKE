@@ -269,7 +269,14 @@ export interface ProjectFile {
   missingSkills?: string[];
   redFlags?: string[];
   softSkillsAnalysis?: string;
-  interviewQuestions?: { question: string; context: string }[];
+  interviewQuestions?: { 
+    id: string; 
+    question: string; 
+    context?: string; 
+    type: 'AI' | 'MANUAL';
+    createdBy?: string;
+    createdAt: string;
+  }[];
   careerTrajectory?: string;
   socialLinks?: { linkedin?: string; github?: string; portfolio?: string };
   originalResumeName?: string;

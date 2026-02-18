@@ -16,6 +16,7 @@ import { debounce } from '../../utils/performance';
 import { generateReport, generateAIEmailDraft } from '../../services/mockData';
 import { useVirtualizer } from '../../hooks/useVirtualizer';
 import CandidateDrawer from '../../components/CandidateDrawer';
+import CandidateList from '../../components/CandidateList';
 
 interface ResumesTabProps {
     projectId: string; // Added projectId
@@ -194,16 +195,9 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         setSearchQuery('');
     };
 
-    // --- Virtualization for Candidates ---
-    const { visibleItems, totalHeight, onScroll } = useVirtualizer({
-        itemCount: completedCandidates.length,
-        itemHeight: ITEM_HEIGHT,
-        containerHeight: CONTAINER_HEIGHT,
-    });
-
-    // Infinite Scroll Handler
+    // --- Virtualization for Candidates (Moved to CandidateList) ---
+    // We only need the scroll handler for infinite loading
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        onScroll(e);
         const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
         // Load more when near bottom (200px threshold)
         if (scrollHeight - scrollTop - clientHeight < 200 && hasNextCompleted && !isFetchingNextCompleted) {
@@ -665,100 +659,19 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                     <div className="col-span-3 text-right">Uploaded</div>
                 </div>
 
-                {/* Virtualized Rows */}
-                <div
-                    className={`flex-1 overflow-y-auto custom-scrollbar min-h-[500px] ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}
+                {/* Candidate List Component */}
+                <CandidateList
+                    candidates={candidates}
+                    selectedFileId={selectedFile?.id || null}
+                    onSelect={handleCandidateClick}
+                    currentUser={currentUser}
+                    sortOption={sortOption}
+                    isLight={isLight}
+                    accentColor={accentColor}
                     onScroll={handleScroll}
-                    style={{ height: CONTAINER_HEIGHT, position: 'relative' }}
-                >
-                    <div style={{ height: totalHeight, position: 'relative' }}>
-                        {visibleItems.map(({ index, offsetTop }) => {
-                            const file = candidates[index];
-                            if (!file) return null; // Safety check
-                            const score = file.score || 0;
-                            const isTop = score >= 80;
-                            const isMid = score >= 50 && score < 80;
-
-                            const isExported = file.exportedBy?.includes(currentUser.id);
-                            const isViewed = file.viewedBy?.includes(currentUser.id);
-                            const isEmailed = !!file.emailSentAt;
-
-                            const isSelected = selectedFile?.id === file.id;
-
-                            // Use persistent rank from DB if available, otherwise fallback to index if sorting by score
-                            const rank = file.rank ?? (sortOption === 'SCORE_DESC' ? index + 1 : undefined);
-
-                            let rankDisplay: React.ReactNode = '-';
-                            if (rank !== undefined) {
-                                if (rank === 1) {
-                                    rankDisplay = (
-                                        <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
-                                            <div className="absolute inset-0 bg-yellow-500/20 rounded-full blur-[2px]"></div>
-                                            <div className="relative w-full h-full bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg border border-yellow-300/30">
-                                                <Crown size={14} className="text-white fill-white/20" />
-                                            </div>
-                                        </div>
-                                    );
-                                } else {
-                                    rankDisplay = <span className="font-mono text-zinc-600 font-bold">#{rank}</span>;
-                                }
-                            }
-
-                            return (
-                                <div
-                                    key={file.id}
-                                    style={{
-                                        position: 'absolute',
-                                        top: offsetTop,
-                                        left: 0,
-                                        width: '100%',
-                                        height: ITEM_HEIGHT
-                                    }}
-                                    onClick={() => handleCandidateClick(file)}
-                                    className={`grid grid-cols-12 gap-4 px-8 items-center transition-colors group cursor-pointer border-b ${isLight ? 'border-slate-50 hover:bg-slate-50' : 'border-white/5 hover:bg-white/5'
-                                        } ${isSelected ? (isLight ? `bg-${accentColor}-50` : 'bg-brand-500/10') : ''}`}
-                                >
-                                    <div className="col-span-1 text-center flex justify-center">
-                                        {rankDisplay}
-                                    </div>
-                                    <div className="col-span-5 min-w-0">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold border ${isTop ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : isMid ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700'}`}>
-                                                {file.candidateName ? file.candidateName.charAt(0) : '?'}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <h4 className={`text-sm font-bold truncate ${isSelected ? `text-${accentColor}-500` : textPrimary}`}>{file.candidateName || 'Processing...'}</h4>
-                                                <div className={`flex items-center gap-2 text-xs ${textSecondary}`}>
-                                                    <span className="truncate max-w-[150px]">{file.name}</span>
-                                                    {isEmailed && <span title="Emailed"><MailCheck size={12} className="text-emerald-500" /></span>}
-                                                    {isExported && <span title="Exported"><FileCheck size={12} className="text-blue-500" /></span>}
-                                                    {isViewed && <span title="Viewed"><Eye size={12} className={isLight ? "text-slate-400" : "text-zinc-400"} /></span>}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-span-3">
-                                        {file.status === 'COMPLETED' ? (
-                                            <div className="flex items-center gap-3">
-                                                <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
-                                                    <div className={`h-full rounded-full ${isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500'}`} style={{ width: `${score}%` }}></div>
-                                                </div>
-                                                <span className={`text-sm font-bold ${isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary}`}>{score}%</span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2 text-xs font-bold text-amber-500">
-                                                <Loader2 size={12} className="animate-spin" /> PROCESSING
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className={`col-span-3 text-right text-xs font-medium ${textSecondary}`}>
-                                        {new Date(file.uploadedAt).toLocaleDateString()}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                    itemHeight={ITEM_HEIGHT}
+                    containerHeight={CONTAINER_HEIGHT}
+                />
 
                 {/* Full Screen Drawer */}
                 <CandidateDrawer

@@ -13,6 +13,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useVirtualizer } from '../../hooks/useVirtualizer';
 import CandidateDrawer from '../../components/CandidateDrawer';
+import CandidateList from '../../components/CandidateList';
 
 interface ActivityTabProps {
     project: Project;
@@ -127,16 +128,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     // Counts for Display
     const filteredRiskCount = filteredRiskCandidates.length; // View Risk
 
-    // --- Virtualization ---
-    const { visibleItems, totalHeight, onScroll } = useVirtualizer({
-        itemCount: filteredFiles.length,
-        itemHeight: ITEM_HEIGHT,
-        containerHeight: CONTAINER_HEIGHT,
-    });
-
+    // --- Virtualization (Moved to CandidateList) ---
     // Infinite Scroll Handler
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        onScroll(e);
         const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
         if (scrollHeight - scrollTop - clientHeight < 200 && hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
@@ -497,157 +491,22 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     <div className="col-span-2 text-right">Score</div>
                 </div>
 
-                {/* List Content with Virtualization */}
-                <div
-                    className={`flex-1 overflow-y-auto custom-scrollbar min-h-[500px] ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}
-                    onScroll={onScroll}
-                    style={{ height: CONTAINER_HEIGHT, position: 'relative' }}
-                >
-                    {filteredFiles.length === 0 ? (
-                        <div className={`flex flex-col items-center justify-center h-64 ${textSecondary}`}>
-                            <FileText size={48} className="opacity-20 mb-3" />
-                            <p className="text-sm font-medium">No activity records found.</p>
-                            {(activeFiltersCount > 0 || search) && (
-                                <button onClick={clearFilters} className={`mt-2 text-xs font-bold text-${accentColor}-400 hover:underline`}>
-                                    Clear filters
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        <div style={{ height: totalHeight, position: 'relative' }}>
-                            {visibleItems.map(({ index, offsetTop }) => {
-                                    const file = filteredFiles[index];
-                                    const scanner = userMap.get(file.uploadedByUserId || '');
-                                    const score = file.score || 0;
-                                    const rank = sortOption === 'SCORE_DESC' ? index + 1 : undefined;
-
-                                    const isExported = file.exportedBy?.includes(currentUser.id);
-                                    const isViewed = file.viewedBy?.includes(currentUser.id);
-                                    const isEmailed = !!file.emailSentAt;
-                                    const hasDraft = !!file.emailDraft;
-
-                                    let rankDisplay: React.ReactNode = '-';
-                                    if (rank !== undefined) {
-                                        if (rank === 1) {
-                                        rankDisplay = (
-                                            <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
-                                                <div className="absolute inset-0 bg-yellow-500/20 rounded-full blur-[2px]"></div>
-                                                <div className="relative w-full h-full bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg border border-yellow-300/30">
-                                                    <Crown size={14} className="text-white fill-white/20" />
-                                                </div>
-                                            </div>
-                                        );
-                                    } else if (rank === 2) {
-                                        rankDisplay = (
-                                            <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
-                                                <div className="relative w-full h-full bg-gradient-to-br from-slate-300 to-slate-500 rounded-full flex items-center justify-center shadow-md border border-slate-300/30">
-                                                    <Medal size={14} className="text-white fill-white/20" />
-                                                </div>
-                                            </div>
-                                        );
-                                    } else if (rank === 3) {
-                                        rankDisplay = (
-                                            <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
-                                                <div className="relative w-full h-full bg-gradient-to-br from-orange-400 to-amber-700 rounded-full flex items-center justify-center shadow-md border border-orange-300/30">
-                                                    <Award size={14} className="text-white fill-white/20" />
-                                                </div>
-                                            </div>
-                                        );
-                                    } else {
-                                        rankDisplay = <span className={`font-mono font-bold ${isLight ? 'text-slate-400' : 'text-zinc-600'}`}>#{rank}</span>;
-                                    }
-                                }
-
-                                return (
-                                    <div
-                                        key={file.id}
-                                        onClick={() => handleCandidateClick(file)}
-                                        style={{
-                                            position: 'absolute',
-                                            top: offsetTop,
-                                            left: 0,
-                                            width: '100%',
-                                            height: ITEM_HEIGHT
-                                        }}
-                                        className={`grid grid-cols-12 gap-4 px-6 items-center transition-colors group cursor-pointer border-b ${isLight ? 'border-slate-50 hover:bg-slate-50' : 'border-white/5 hover:bg-white/5'}`}
-                                    >
-                                        <div className="col-span-1 text-center text-xs">
-                                            {rankDisplay}
-                                        </div>
-                                        <div className="col-span-4 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`font-bold text-sm truncate transition-colors group-hover:text-${accentColor}-500 ${isLight ? 'text-slate-700' : 'text-zinc-200'}`}>
-                                                    {file.candidateName || 'Processing...'}
-                                                </div>
-                                                <div className="flex -space-x-1">
-                                                    {isEmailed && (
-                                                        <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title="Email Sent">
-                                                            <MailCheck size={10} className="text-emerald-500" />
-                                                        </div>
-                                                    )}
-                                                    {hasDraft && !isEmailed && (
-                                                        <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title="Draft Ready">
-                                                            <FileEdit size={10} className="text-purple-500" />
-                                                        </div>
-                                                    )}
-                                                    {isExported && (
-                                                        <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title="Exported to PDF">
-                                                            <FileCheck size={10} className="text-blue-500" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                {isViewed && (
-                                                    <div title="Viewed by you">
-                                                        <Eye size={12} className={isLight ? "text-slate-400" : "text-zinc-600"} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className={`text-xs truncate flex items-center gap-1 ${textSecondary}`}>
-                                                <FileText size={10} /> {file.name}
-                                            </div>
-                                        </div>
-                                        <div className="col-span-3 flex items-center gap-2">
-                                            {scanner ? (
-                                                <>
-                                                    <img
-                                                        src={scanner.avatarUrl || `https://ui-avatars.com/api/?name=${scanner.displayName}`}
-                                                        className={`w-6 h-6 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`}
-                                                        alt={scanner.displayName}
-                                                    />
-                                                    <span className={`text-xs font-medium truncate ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>{scanner.displayName}</span>
-                                                </>
-                                            ) : (
-                                                <span className={`text-xs italic ${textSecondary}`}>Unknown User</span>
-                                            )}
-                                        </div>
-                                        <div className={`col-span-2 text-xs ${textSecondary}`}>
-                                            <div className="flex items-center gap-1.5">
-                                                <Calendar size={12} />
-                                                {new Date(file.uploadedAt).toLocaleDateString()}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 mt-0.5 opacity-70">
-                                                <Clock size={12} />
-                                                {new Date(file.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </div>
-                                        </div>
-                                        <div className="col-span-2 text-right">
-                                            {file.status === 'COMPLETED' ? (
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                                    score >= 50 ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                                        isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700'
-                                                    }`}>
-                                                    {score}%
-                                                </span>
-                                            ) : (
-                                                <span className={`text-[10px] font-bold uppercase ${isLight ? 'text-slate-400' : 'text-zinc-600'}`}>{file.status}</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
+                {/* Candidate List */}
+                <CandidateList
+                    candidates={filteredFiles}
+                    selectedFileId={selectedFile?.id || null}
+                    onSelect={handleCandidateClick}
+                    currentUser={currentUser}
+                    sortOption={sortOption}
+                    isLight={isLight}
+                    accentColor={accentColor}
+                    onScroll={handleScroll}
+                    itemHeight={ITEM_HEIGHT}
+                    containerHeight={CONTAINER_HEIGHT}
+                    showScannedBy={true}
+                    userMap={userMap}
+                />
+            </div>
             </div>
 
             {/* Anti-Ghosting Bar (Conditional) */}
