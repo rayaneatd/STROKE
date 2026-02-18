@@ -147,7 +147,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 <div className="flex items-center gap-3">
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h4 className={`text-sm font-bold truncate ${isSelected ? `text-${accentColor}-500` : textPrimary}`}>{file.candidateName || t('candidateList.processing')}</h4>
+                                            <h4 className={`text-sm font-bold truncate ${isSelected ? `text-${accentColor}-500` : textPrimary}`}>{file.candidateName || 'Candidate'}</h4>
                                             <div className="flex -space-x-1">
                                                 {isEmailed && (
                                                     <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title={t('candidateList.emailSent')}>
@@ -199,18 +199,12 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
                             {!showScannedBy && (
                                 <div className="col-span-3">
-                                    {file.status === 'COMPLETED' ? (
-                                        <div className="flex items-center gap-3">
-                                            <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
-                                                <div className={`h-full rounded-full ${isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500'}`} style={{ width: `${score}%` }}></div>
-                                            </div>
-                                            <span className={`text-sm font-bold ${isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary}`}>{score}%</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
+                                            <div className={`h-full rounded-full ${isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500'}`} style={{ width: `${score}%` }}></div>
                                         </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2 text-xs font-bold text-amber-500">
-                                            <Loader2 size={12} className="animate-spin" /> {t('candidateList.processingStatus')}
-                                        </div>
-                                    )}
+                                        <span className={`text-sm font-bold ${isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary}`}>{score}%</span>
+                                    </div>
                                 </div>
                             )}
 
