@@ -231,7 +231,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
           </div>
 
           {/* 3. Risk Management (Conditional) */}
-          {data.red_flags && data.red_flags.length > 0 && (
+          {Array.isArray(data.red_flags) && data.red_flags.length > 0 && (
             <div className="p-5 rounded-2xl bg-rose-950/10 border border-rose-500/20">
               <h3 className="flex items-center gap-2 text-xs font-bold text-rose-500 uppercase tracking-wider mb-4">
                 <AlertTriangle className="w-4 h-4" />
@@ -257,11 +257,15 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 Compétences Validées
               </h3>
               <div className="flex flex-wrap gap-2">
-                {data.key_skills?.map((skill, idx) => (
-                  <span key={idx} className="px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-                    {skill}
-                  </span>
-                )) || <span className="text-zinc-500 text-xs italic">Aucune compétence détectée</span>}
+                {Array.isArray(data.key_skills) && data.key_skills.length > 0 ? (
+                  data.key_skills.map((skill, idx) => (
+                    <span key={idx} className="px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-zinc-500 text-xs italic">Aucune compétence détectée</span>
+                )}
               </div>
             </div>
 
@@ -272,11 +276,15 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 Compétences Manquantes
               </h3>
               <div className="flex flex-wrap gap-2">
-                {data.missing_skills?.map((skill, idx) => (
-                  <span key={idx} className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-white/5 text-zinc-500 text-xs font-medium decoration-zinc-700">
-                    {skill}
-                  </span>
-                )) || <span className="text-zinc-500 text-xs italic">Aucun manque identifié</span>}
+                {Array.isArray(data.missing_skills) && data.missing_skills.length > 0 ? (
+                  data.missing_skills.map((skill, idx) => (
+                    <span key={idx} className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-white/5 text-zinc-500 text-xs font-medium decoration-zinc-700">
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-zinc-500 text-xs italic">Aucun manque identifié</span>
+                )}
               </div>
             </div>
           </div>
@@ -298,16 +306,20 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               Questions d'entretien suggérées
             </h3>
             <div className="grid gap-3">
-              {data.interview_questions?.map((q, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-zinc-900 border border-white/5 hover:border-purple-500/30 transition-colors group">
-                  <p className="text-sm text-zinc-200 font-medium group-hover:text-purple-100 transition-colors">"{q.question}"</p>
-                  {q.context && (
-                    <p className="mt-2 text-xs text-zinc-500 border-t border-white/5 pt-2">
-                      <span className="font-semibold text-zinc-400">Contexte :</span> {q.context}
-                    </p>
-                  )}
-                </div>
-              )) || <p className="text-zinc-500 text-sm italic">Aucune question générée.</p>}
+              {Array.isArray(data.interview_questions) && data.interview_questions.length > 0 ? (
+                data.interview_questions.map((q, idx) => (
+                  <div key={idx} className="p-4 rounded-xl bg-zinc-900 border border-white/5 hover:border-purple-500/30 transition-colors group">
+                    <p className="text-sm text-zinc-200 font-medium group-hover:text-purple-100 transition-colors">"{q.question}"</p>
+                    {q.context && (
+                      <p className="mt-2 text-xs text-zinc-500 border-t border-white/5 pt-2">
+                        <span className="font-semibold text-zinc-400">Contexte :</span> {q.context}
+                      </p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-zinc-500 text-sm italic">Aucune question générée.</p>
+              )}
             </div>
           </div>
 
