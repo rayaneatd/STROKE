@@ -52,6 +52,54 @@ export type Database = {
                     }
                 ]
             }
+            candidate_interview_questions: {
+                Row: {
+                    candidate_id: string
+                    context: string | null
+                    created_at: string | null
+                    created_by: string | null
+                    id: string
+                    question: string
+                    type: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    candidate_id: string
+                    context?: string | null
+                    created_at?: string | null
+                    created_by?: string | null
+                    id?: string
+                    question: string
+                    type?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    candidate_id?: string
+                    context?: string | null
+                    created_at?: string | null
+                    created_by?: string | null
+                    id?: string
+                    question?: string
+                    type?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "candidate_interview_questions_candidate_id_fkey"
+                        columns: ["candidate_id"]
+                        isOneToOne: false
+                        referencedRelation: "candidates"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "candidate_interview_questions_created_by_fkey"
+                        columns: ["created_by"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
             candidates: {
                 Row: {
                     candidate_name: string | null
@@ -412,6 +460,55 @@ export type Database = {
             check_is_project_owner: {
                 Args: { p_id: string; u_id: string }
                 Returns: boolean
+            }
+            get_project_candidates: {
+                Args: {
+                    p_filter_activities: string[] | null
+                    p_filter_scores: string[] | null
+                    p_filter_uploaders: string[] | null
+                    p_page_param: number
+                    p_page_size: number
+                    p_project_id: string
+                    p_search_query: string
+                    p_sort_option: string
+                    p_status: string[] | null
+                    p_user_id: string
+                }
+                Returns: {
+                    candidate_name: string | null
+                    career_trajectory: string | null
+                    current_position: string | null
+                    email: string | null
+                    email_draft: string | null
+                    email_sent_at: string | null
+                    executive_summary: string | null
+                    exported_by: string[] | null
+                    full_count: number
+                    id: string
+                    interview_questions: Json | null
+                    key_skills: Json | null
+                    location: string | null
+                    match_score: number | null
+                    missing_skills: Json | null
+                    name: string
+                    original_resume_name: string | null
+                    phone: string | null
+                    project_id: string
+                    rank: number | null
+                    red_flags: Json | null
+                    score: number | null
+                    score_justification: string | null
+                    size: string | null
+                    skills: string[] | null
+                    social_links: Json | null
+                    soft_skills_analysis: string | null
+                    status: string | null
+                    summary: string | null
+                    uploaded_at: string | null
+                    uploaded_by: string | null
+                    viewed_by: string[] | null
+                    years_of_experience: number | null
+                }[]
             }
             get_project_owner_connections: {
                 Args: { p_project_id: string }
