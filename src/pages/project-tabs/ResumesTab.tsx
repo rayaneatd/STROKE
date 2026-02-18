@@ -71,8 +71,6 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
     const [sortOption, setSortOption] = useState<SortOption>('SCORE_DESC');
     const [filterScores, setFilterScores] = useState<ScoreFilter[]>([]);
     const [filterActivities, setFilterActivities] = useState<ActivityFilter[]>([]);
-    const [filterScanners, setFilterScanners] = useState<string[]>([]);
-    const [scannerSearch, setScannerSearch] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // --- Derived Lists ---
@@ -84,16 +82,6 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         });
         return map;
     }, [members]);
-
-    const filteredScanners = useMemo(() => {
-        return members
-            .map(m => m.user)
-            .filter((u): u is User => !!u)
-            .filter(u =>
-                u.displayName.toLowerCase().includes(scannerSearch.toLowerCase()) ||
-                u.email.toLowerCase().includes(scannerSearch.toLowerCase())
-            );
-    }, [members, scannerSearch]);
 
     // Server-side Pagination & Filtering (Completed)
     const { 
@@ -110,7 +98,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         sortOption,
         filterScores,
         filterActivities,
-        filterUploaders: filterScanners,
+        filterUploaders: [currentUser.id], // Strict filter: Only show my uploads
         status: 'COMPLETED'
     });
 
@@ -174,7 +162,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         return [...localFiles, ...dbFailed];
     }, [dbPendingCandidates, localFiles]);
 
-    const activeFiltersCount = filterScores.length + filterActivities.length + filterScanners.length;
+    const activeFiltersCount = filterScores.length + filterActivities.length;
 
     // --- Filtering & Sorting ---
     const handleSearch = useCallback(debounce((query: string) => {
@@ -538,49 +526,8 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                                     className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-xl border z-30 animate-fade-in-up p-4 ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}
                                 >
                                     <div className="space-y-4">
-                                        {/* Scanner Filter */}
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <label className={`text-xs font-bold uppercase tracking-wider ${textSecondary}`}>Scanner</label>
-                                                {filterScanners.length > 0 && (
-                                                    <span className={`text-[10px] bg-${accentColor}-500/10 text-${accentColor}-400 px-1.5 rounded-md font-bold`}>{filterScanners.length}</span>
-                                                )}
-                                            </div>
-
-                                            <div className="relative mb-2">
-                                                <Search size={12} className={`absolute left-2.5 top-1/2 -translate-y-1/2 ${textSecondary}`} />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Find user..."
-                                                    value={scannerSearch}
-                                                    onChange={(e) => setScannerSearch(e.target.value)}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className={`w-full pl-8 pr-3 py-1.5 text-xs rounded-lg focus:outline-none focus:border-${accentColor}-500/50 transition-colors ${isLight ? 'bg-slate-50 text-slate-700' : 'bg-white/5 text-zinc-300'}`}
-                                                />
-                                            </div>
-
-                                            <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
-                                                {filteredScanners.map(u => (
-                                                    <button
-                                                        key={u.id}
-                                                        onClick={(e) => { e.stopPropagation(); toggleFilter(u.id, filterScanners, setFilterScanners); }}
-                                                        className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between group transition-colors ${isLight ? 'hover:bg-slate-50' : 'hover:bg-white/5'}`}
-                                                    >
-                                                        <div className="flex items-center gap-2 min-w-0">
-                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${filterScanners.includes(u.id) ? `bg-${accentColor}-500 border-${accentColor}-500` : isLight ? 'border-slate-300 group-hover:border-slate-400' : 'border-zinc-700 group-hover:border-zinc-500'}`}>
-                                                                {filterScanners.includes(u.id) && <Check size={10} className="text-white" />}
-                                                            </div>
-                                                            <img src={u.avatarUrl || `https://ui-avatars.com/api/?name=${u.displayName}`} className={`w-5 h-5 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`} alt="" />
-                                                            <span className={`truncate ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{u.displayName}</span>
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                                {filteredScanners.length === 0 && (
-                                                    <div className={`text-xs p-2 text-center italic ${textSecondary}`}>No matching scanners</div>
-                                                )}
-                                            </div>
-                                        </div>
-
+                                        {/* Scanner Filter Removed as we only show own uploads */}
+                                        
                                         {/* Score Filter */}
                                         <div>
                                             <label className={`text-xs font-bold uppercase tracking-wider block mb-2 ${textSecondary}`}>Score Range</label>
