@@ -328,7 +328,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
     </div>
   );
 
-  const renderCommunication = () => (
+  const renderCommunication = () => {
+    const isEmailSent = !!data?.email_sent_at;
+    
+    return (
     <div className="space-y-6 h-full flex flex-col animate-fade-in">
       <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 space-y-4 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-2">
@@ -344,11 +347,11 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
         </div>
         <div className="flex-1">
           <textarea
-            className="w-full h-full min-h-[300px] bg-zinc-950 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none"
+            className={`w-full h-full min-h-[300px] bg-zinc-950 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none ${isEmailSent ? 'opacity-50 cursor-not-allowed' : ''}`}
             placeholder={t('candidateDrawer.email.draftPlaceholder')}
             value={draft}
             onChange={handleDraftChange}
-            disabled={isSending}
+            disabled={isSending || isEmailSent}
           />
         </div>
         <div className="flex justify-end gap-3 pt-2 items-center">
@@ -377,23 +380,24 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
               setDraft('');
               saveDraft(''); // Immediate save for clear
             }}
-            disabled={isSending}
-            className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50"
+            disabled={isSending || isEmailSent}
+            className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t('candidateDrawer.email.clear')}
           </button>
           <button 
             onClick={handleSendEmail}
-            disabled={isSending || !draft.trim()}
+            disabled={isSending || !draft.trim() || isEmailSent}
             className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
-            {isSending ? 'Sending...' : t('candidateDrawer.email.send')}
+            {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isEmailSent ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Mail className="w-3.5 h-3.5" />}
+            {isSending ? 'Sending...' : isEmailSent ? 'Sent' : t('candidateDrawer.email.send')}
           </button>
         </div>
       </div>
     </div>
   );
+  };
 
   const renderInterview = () => (
     <div className="space-y-6 animate-fade-in">
