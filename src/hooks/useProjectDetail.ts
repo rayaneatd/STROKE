@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Project, ProjectRole, User as UserType, ProjectFile, OutreachStrategy, FileId, EmployeeAddPermission } from '../types';
 import { supabase } from '../lib/supabase';
 import { useFileProcessing } from './useFileProcessing';
+import { useProjectAnalytics } from './useProjectAnalytics';
 import { useAuth } from '../context/AuthContext';
 
 interface UseProjectDetailProps {
@@ -33,7 +34,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         queryKey: ['project', projectId],
         queryFn: async () => {
             const { data, error } = await supabase
-                .rpc('get_user_project', { 
+                .rpc('get_user_project' as any, { 
                     target_user_id: currentUser.id, 
                     target_project_id: projectId 
                 })
@@ -73,35 +74,20 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         }
     });
 
-    // 2. Fetch Candidates (ProjectFiles)
-    const { data: candidates = [], isLoading: isCandidatesLoading } = useQuery({
-        queryKey: ['candidates', projectId],
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from('candidates')
-                .select('*')
-                .eq('project_id', projectId)
-                .order('uploaded_at', { ascending: false });
+    // 2. Project Analytics & Stats
+    const { data: analyticsData } = useProjectAnalytics(projectId);
 
-            if (error) throw error;
+    const analytics = useMemo(() => ({
+        total: analyticsData?.total || 0,
+        completed: analyticsData?.completed || 0,
+        pending: analyticsData?.pending || 0,
+        riskCount: analyticsData?.riskCount || 0,
+        avgScore: analyticsData?.avgScore || 0,
+        timelineData: analyticsData?.timelineData || []
+    }), [analyticsData]);
 
-            return data.map((c: any) => ({
-                id: c.id as FileId,
-                projectId: c.project_id,
-                name: c.name,
-                size: c.size,
-                status: c.status,
-                uploadedAt: c.uploaded_at,
-                score: c.score,
-                candidateName: c.candidate_name,
-                uploadedByUserId: c.uploaded_by,
-                viewedBy: c.viewed_by || [],
-                exportedBy: c.exported_by || [],
-                emailSentAt: c.email_sent_at,
-                emailDraft: c.email_draft
-            } as ProjectFile));
-        }
-    });
+    const topCandidates = analyticsData?.topCandidates || [];
+    const contributionData = analyticsData?.contributionData || [];
 
     // Real-time Subscriptions
     useEffect(() => {
@@ -111,7 +97,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 queryClient.invalidateQueries({ queryKey: ['project', projectId] });
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'candidates', filter: `project_id=eq.${projectId}` }, () => {
-                queryClient.invalidateQueries({ queryKey: ['candidates', projectId] });
+                queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'project_members', filter: `project_id=eq.${projectId}` }, () => {
                 queryClient.invalidateQueries({ queryKey: ['project', projectId] });
@@ -135,11 +121,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     } = useFileProcessing(projectId, currentUser, project, () => { });
 
     // Sync files state with candidates from DB
-    useEffect(() => {
-        if (candidates.length > 0) {
-            setFiles(candidates);
-        }
-    }, [candidates, setFiles]);
+    // REMOVED: setFiles(candidates) - We now rely on useCandidates and useProjectAnalytics
+    // for efficient data handling. files state in useFileProcessing only tracks local/failed uploads.
+
 
     // Permissions & Derived State
     const currentMemberRecord = useMemo(() => project?.members.find(m => m.userId === currentUser.id), [project, currentUser.id]);
@@ -165,7 +149,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     // Mutations
     const updateProjectMutation = useMutation({
         mutationFn: async (data: any) => {
-            const { error } = await supabase.rpc('update_project', {
+            const { error } = await supabase.rpc('update_project' as any, {
                 p_project_id: projectId,
                 p_title: data.title,
                 p_description: data.description,
@@ -182,7 +166,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
     const markViewedMutation = useMutation({
         mutationFn: async (candidateId: string) => {
-            const { error } = await supabase.rpc('mark_candidate_viewed', {
+            const { error } = await supabase.rpc('mark_candidate_viewed' as any, {
                 candidate_id: candidateId,
                 user_id: currentUser.id
             });
@@ -297,7 +281,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
     const withdrawFundsMutation = useMutation({
         mutationFn: async (amount: number) => {
-            const { data, error } = await supabase.rpc('transfer_project_funds', {
+            const { data, error } = await supabase.rpc('transfer_project_funds' as any, {
                 p_project_id: projectId,
                 p_amount: amount,
                 p_action: 'WITHDRAW'
@@ -316,46 +300,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         }
     });
 
-    // Analytics Calculation
-    const analytics = useMemo(() => {
-        if (!files.length) return { total: 0, completed: 0, pending: 0, avgScore: 0, timelineData: [] };
-
-        const completed = files.filter(f => f.status === 'COMPLETED');
-        const pending = files.filter(f => f.status === 'PROCESSING' || f.status === 'PENDING');
-        const avgScore = completed.length
-            ? Math.round(completed.reduce((acc, f) => acc + (f.score || 0), 0) / completed.length)
-            : 0;
-
-        // Calculate timeline data (group by date)
-        const timelineMap = new Map<string, number>();
-        files.forEach(f => {
-            const date = new Date(f.uploadedAt).toLocaleDateString();
-            timelineMap.set(date, (timelineMap.get(date) || 0) + 1);
-        });
-
-        const timelineData = Array.from(timelineMap.entries())
-            .map(([date, applications]) => ({ date, applications }))
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-            .slice(-7); // Last 7 days with data
-
-        return {
-            total: files.length,
-            completed: completed.length,
-            pending: pending.length,
-            avgScore,
-            timelineData
-        };
-    }, [files]);
-
-    const topCandidates = useMemo(() => [...files]
-        .filter(f => f.score && f.score > 0)
-        .sort((a, b) => (b.score || 0) - (a.score || 0))
-        .slice(0, 5), [files]);
-
-    const contributionData = useMemo(() => project?.members.map(m => ({
-        scans: m.scansUsed,
-        role: m.role
-    })) || [], [project?.members]);
+    // Analytics Calculation - REMOVED DUPLICATE
+    // We already have 'analytics', 'topCandidates', and 'contributionData' defined above using useProjectAnalytics hook.
+    // The previous implementation here was redundant and used incomplete 'files' state (local only).
 
     // Actions & Derived Permissions
     const isActive = project?.status === 'ACTIVE';
@@ -468,7 +415,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
         // Deduct credits via RPC
         try {
-            const { data, error } = await supabase.rpc('deduct_scan_credits', {
+            const { data, error } = await supabase.rpc('deduct_scan_credits' as any, {
                 p_project_id: projectId,
                 p_user_id: currentUser.id,
                 p_cost: cost
@@ -532,9 +479,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         project,
         activeTab,
         setActiveTab,
-        files,
+        files, // Now contains only local failures/uploads
         isUploading,
-        isProjectLoading: isProjectLoading || isCandidatesLoading,
+        isProjectLoading, // Removed isCandidatesLoading
         analytics,
         topCandidates,
         contributionData,

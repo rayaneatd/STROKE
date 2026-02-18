@@ -357,8 +357,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
 
                 {activeTab === 'activity' && canViewActivityTab && (
                     <ActivityTab
-                        files={files}
                         project={project}
+                        riskCount={analytics.riskCount}
+                        contributionData={contributionData}
                         canUseAntiGhosting={canUseAntiGhosting}
                         onMarkContacted={handleMarkContacted}
                         onMarkViewed={markViewed}
@@ -370,7 +371,9 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
 
                 {activeTab === 'resumes' && canViewResumes && (
                     <ResumesTab
+                        projectId={projectId}
                         files={files}
+                        members={project.members}
                         isUploading={isUploading}
                         handleFilesAdded={handleFilesAdded}
                         onScan={handleStartScan}

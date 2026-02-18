@@ -9,14 +9,16 @@ import {
     FileUp, AlertCircle, Crown, Award, Send, ThumbsUp, ThumbsDown, BrainCircuit, Wand2, Ghost, MailCheck, Edit3, Check, EyeOff, RotateCcw, AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ProjectFile, User } from '../../types';
-import { useDataWorker } from '../../hooks/useDataWorker';
-import { useVirtualizer } from '../../hooks/useVirtualizer';
+import { ProjectFile, User, ProjectMember } from '../../types';
+import { useCandidates } from '../../hooks/useCandidates';
 import { debounce } from '../../utils/performance';
 import { generateReport, generateAIEmailDraft } from '../../services/mockData';
+import { useVirtualizer } from '../../hooks/useVirtualizer';
 
 interface ResumesTabProps {
-    files: ProjectFile[];
+    projectId: string; // Added projectId
+    files?: ProjectFile[]; // Made optional as we use hook
+    members?: ProjectMember[]; // Added for scanner filter
     isUploading: boolean;
     handleFilesAdded: (files: File[]) => void;
     onScan: () => void;
@@ -42,7 +44,9 @@ type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 
 type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME';
 
 const ResumesTab: React.FC<ResumesTabProps> = ({
-    files,
+    projectId,
+    files = [],
+    members = [],
     isUploading,
     handleFilesAdded,
     onScan,
@@ -64,9 +68,65 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     const [sortOption, setSortOption] = useState<SortOption>('SCORE_DESC');
     const [filterScores, setFilterScores] = useState<ScoreFilter[]>([]);
     const [filterActivities, setFilterActivities] = useState<ActivityFilter[]>([]);
+    const [filterScanners, setFilterScanners] = useState<string[]>([]);
+    const [scannerSearch, setScannerSearch] = useState('');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    const [filteredFiles, setFilteredFiles] = useState<ProjectFile[]>([]);
+    // --- Derived Lists ---
+    // Map user IDs to User objects for quick lookup
+    const userMap = useMemo(() => {
+        const map = new Map<string, User>();
+        members.forEach(m => {
+            if (m.user) map.set(m.userId, m.user);
+        });
+        return map;
+    }, [members]);
+
+    const filteredScanners = useMemo(() => {
+        return members
+            .map(m => m.user)
+            .filter((u): u is User => !!u)
+            .filter(u =>
+                u.displayName.toLowerCase().includes(scannerSearch.toLowerCase()) ||
+                u.email.toLowerCase().includes(scannerSearch.toLowerCase())
+            );
+    }, [members, scannerSearch]);
+
+    // Server-side Pagination & Filtering (Completed)
+    const { 
+        candidates: completedCandidates, 
+        totalCount: totalCompleted, 
+        fetchNextPage: fetchNextCompleted, 
+        hasNextPage: hasNextCompleted, 
+        isFetchingNextPage: isFetchingNextCompleted, 
+        isLoading: isCompletedLoading 
+    } = useCandidates({
+        projectId,
+        userId: currentUser.id,
+        searchQuery,
+        sortOption,
+        filterScores,
+        filterActivities,
+        filterUploaders: filterScanners,
+        status: 'COMPLETED'
+    });
+
+    // Server-side Pagination (Pending/Failed)
+    const { 
+        candidates: dbPendingCandidates,
+        fetchNextPage: fetchNextPending,
+        hasNextPage: hasNextPending
+    } = useCandidates({
+        projectId,
+        userId: currentUser.id,
+        searchQuery: '',
+        sortOption: 'DATE_DESC',
+        filterScores: [],
+        filterActivities: [],
+        status: ['PENDING', 'PROCESSING', 'FAILED']
+    });
+
+    const candidates = completedCandidates;
 
     // Selection & Drawer State
     const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
@@ -84,7 +144,6 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     // Drag & Drop State
     const [isDragging, setIsDragging] = useState(false);
 
-    const { postMessage } = useDataWorker();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Theme Helpers
@@ -102,24 +161,24 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         ? 'bg-white border-slate-200 text-slate-700 focus:ring-2 focus:ring-slate-100'
         : 'bg-[#18181b] border-white/10 text-zinc-300 focus:ring-2 focus:ring-white/5';
 
+    const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/5 border-white/10 text-white placeholder:text-zinc-500';
+
     // --- Derived Lists ---
-    const pendingFiles = useMemo(() => files.filter(f => f.status === 'PENDING' || f.status === 'PROCESSING'), [files]);
-    const failedFiles = useMemo(() => files.filter(f => f.status === 'FAILED'), [files]);
+    // Merge local failed files (from props) with DB pending/failed files
+    const localFiles = useMemo(() => files.filter(f => f.id.startsWith('fail-')), [files]);
+    
+    const pendingFiles = useMemo(() => {
+        const dbPending = dbPendingCandidates.filter(f => f.status === 'PENDING' || f.status === 'PROCESSING');
+        // Filter out duplicates if any (though IDs should differ)
+        return dbPending;
+    }, [dbPendingCandidates]);
 
-    const activeFiltersCount = filterScores.length + filterActivities.length;
+    const failedFiles = useMemo(() => {
+        const dbFailed = dbPendingCandidates.filter(f => f.status === 'FAILED');
+        return [...localFiles, ...dbFailed];
+    }, [dbPendingCandidates, localFiles]);
 
-    // --- Rank Calculation ---
-    const rankMap = useMemo(() => {
-        const scoredFiles = files
-            .filter(f => f.status === 'COMPLETED' && typeof f.score === 'number')
-            .sort((a, b) => (b.score || 0) - (a.score || 0));
-
-        const map = new Map<string, number>();
-        scoredFiles.forEach((f, index) => {
-            map.set(f.id, index + 1);
-        });
-        return map;
-    }, [files]);
+    const activeFiltersCount = filterScores.length + filterActivities.length + filterScanners.length;
 
     // --- Filtering & Sorting ---
     const handleSearch = useCallback(debounce((query: string) => {
@@ -140,69 +199,22 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         setSearchQuery('');
     };
 
-    useEffect(() => {
-        // 1. Text Search (Worker)
-        postMessage(
-            { type: 'FILTER_FILES', payload: { files, query: searchQuery } },
-            (result: ProjectFile[]) => {
-                let processed = [...result.filter(f => f.status === 'COMPLETED')];
-
-                // 2. Score Filter (Local Multi-Select OR)
-                if (filterScores.length > 0) {
-                    processed = processed.filter(f => {
-                        const s = f.score || 0;
-                        return filterScores.some(range => {
-                            if (range === 'HIGH') return s >= 80;
-                            if (range === 'MID') return s >= 50 && s < 80;
-                            if (range === 'LOW') return s < 50;
-                            return false;
-                        });
-                    });
-                }
-
-                // 3. Activity Filter (Local Multi-Select OR)
-                if (filterActivities.length > 0) {
-                    processed = processed.filter(f => {
-                        return filterActivities.some(filter => {
-                            const isEmailed = !!f.emailSentAt;
-                            const isExported = f.exportedBy?.includes(currentUser.id);
-                            const isViewed = f.viewedBy?.includes(currentUser.id);
-
-                            switch (filter) {
-                                case 'EMAILED': return isEmailed;
-                                case 'NOT_EMAILED': return !isEmailed;
-                                case 'EXPORTED': return isExported;
-                                case 'NOT_EXPORTED': return !isExported;
-                                case 'VIEWED': return isViewed;
-                                case 'NOT_VIEWED': return !isViewed;
-                                default: return false;
-                            }
-                        });
-                    });
-                }
-
-                // 4. Sort
-                processed.sort((a, b) => {
-                    switch (sortOption) {
-                        case 'SCORE_DESC': return (b.score || 0) - (a.score || 0);
-                        case 'SCORE_ASC': return (a.score || 0) - (b.score || 0);
-                        case 'DATE_DESC': return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
-                        case 'DATE_ASC': return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
-                        case 'NAME_ASC': return (a.candidateName || '').localeCompare(b.candidateName || '');
-                        default: return 0;
-                    }
-                });
-                setFilteredFiles(processed);
-            }
-        );
-    }, [files, searchQuery, filterScores, filterActivities, sortOption, postMessage, currentUser.id]);
-
     // --- Virtualization for Candidates ---
     const { visibleItems, totalHeight, onScroll } = useVirtualizer({
-        itemCount: filteredFiles.length,
+        itemCount: completedCandidates.length,
         itemHeight: ITEM_HEIGHT,
         containerHeight: CONTAINER_HEIGHT,
     });
+
+    // Infinite Scroll Handler
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        onScroll(e);
+        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+        // Load more when near bottom (200px threshold)
+        if (scrollHeight - scrollTop - clientHeight < 200 && hasNextCompleted && !isFetchingNextCompleted) {
+            fetchNextCompleted();
+        }
+    };
 
     // --- Virtualization for Pending/Upload List (Optimization) ---
     const pendingContainerHeight = 300;
@@ -211,6 +223,14 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         itemHeight: PENDING_ITEM_HEIGHT,
         containerHeight: pendingContainerHeight,
     });
+
+    const handlePendingScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        onPendingScroll(e);
+        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop - clientHeight < 100 && hasNextPending) {
+            fetchNextPending();
+        }
+    };
 
     // --- Handlers ---
 
@@ -249,7 +269,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     };
 
     const handleExport = () => {
-        const candidatesToExport = filteredFiles;
+        const candidatesToExport = candidates;
 
         if (candidatesToExport.length === 0) {
             alert(t('project.resumes.errors.noCandidatesExport'));
@@ -332,22 +352,6 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         }
     };
 
-    const getMockCandidateDetails = (file: ProjectFile) => {
-        const score = file.score || 0;
-        let summary = "";
-        if (score > 85) summary = "An exceptional candidate with strong alignment to the core requirements. Demonstrated leadership in previous roles and possesses the exact tech stack needed.";
-        else if (score > 70) summary = "A solid contender with most key skills. Experience is relevant but might need some ramp-up time on specific internal tools. Good cultural fit potential.";
-        else summary = "Missing several key qualifications. Experience is tangential but shows potential for a more junior or different role.";
-
-        return {
-            email: `${file.candidateName?.toLowerCase().replace(' ', '.')}@example.com`,
-            phone: "+1 (555) 123-4567",
-            location: "Remote / Hybrid",
-            summary,
-            skills: score > 80 ? ['React', 'TypeScript', 'Node.js', 'System Design'] : ['JavaScript', 'HTML/CSS', 'Communication']
-        };
-    };
-
     return (
         <div className="relative h-[calc(100vh-220px)] min-h-[600px] animate-fade-in flex flex-col lg:flex-row gap-6">
             {/* Left Panel: Upload Area */}
@@ -394,7 +398,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                         ) : (
                             <div
                                 className="flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0"
-                                onScroll={onPendingScroll}
+                                onScroll={handlePendingScroll}
                                 style={{ position: 'relative' }}
                             >
                                 {/* Virtualized Upload List */}
@@ -590,6 +594,49 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                     className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-xl border z-30 animate-fade-in-up p-4 ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}
                                 >
                                     <div className="space-y-4">
+                                        {/* Scanner Filter */}
+                                        <div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className={`text-xs font-bold uppercase tracking-wider ${textSecondary}`}>Scanner</label>
+                                                {filterScanners.length > 0 && (
+                                                    <span className={`text-[10px] bg-${accentColor}-500/10 text-${accentColor}-400 px-1.5 rounded-md font-bold`}>{filterScanners.length}</span>
+                                                )}
+                                            </div>
+
+                                            <div className="relative mb-2">
+                                                <Search size={12} className={`absolute left-2.5 top-1/2 -translate-y-1/2 ${textSecondary}`} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Find user..."
+                                                    value={scannerSearch}
+                                                    onChange={(e) => setScannerSearch(e.target.value)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className={`w-full pl-8 pr-3 py-1.5 text-xs rounded-lg focus:outline-none focus:border-${accentColor}-500/50 transition-colors ${isLight ? 'bg-slate-50 text-slate-700' : 'bg-white/5 text-zinc-300'}`}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
+                                                {filteredScanners.map(u => (
+                                                    <button
+                                                        key={u.id}
+                                                        onClick={(e) => { e.stopPropagation(); toggleFilter(u.id, filterScanners, setFilterScanners); }}
+                                                        className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between group transition-colors ${isLight ? 'hover:bg-slate-50' : 'hover:bg-white/5'}`}
+                                                    >
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${filterScanners.includes(u.id) ? `bg-${accentColor}-500 border-${accentColor}-500` : isLight ? 'border-slate-300 group-hover:border-slate-400' : 'border-zinc-700 group-hover:border-zinc-500'}`}>
+                                                                {filterScanners.includes(u.id) && <Check size={10} className="text-white" />}
+                                                            </div>
+                                                            <img src={u.avatarUrl || `https://ui-avatars.com/api/?name=${u.displayName}`} className={`w-5 h-5 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`} alt="" />
+                                                            <span className={`truncate ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{u.displayName}</span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                                {filteredScanners.length === 0 && (
+                                                    <div className={`text-xs p-2 text-center italic ${textSecondary}`}>No matching scanners</div>
+                                                )}
+                                            </div>
+                                        </div>
+
                                         {/* Score Filter */}
                                         <div>
                                             <label className={`text-xs font-bold uppercase tracking-wider block mb-2 ${textSecondary}`}>Score Range</label>
@@ -651,7 +698,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
                         <button
                             onClick={handleExport}
-                            disabled={isExporting || filteredFiles.length === 0}
+                            disabled={isExporting || candidates.length === 0}
                             className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'}`}
                         >
                             {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
@@ -671,12 +718,13 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                 {/* Virtualized Rows */}
                 <div
                     className={`flex-1 overflow-y-auto custom-scrollbar min-h-[500px] ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}
-                    onScroll={onScroll}
+                    onScroll={handleScroll}
                     style={{ height: CONTAINER_HEIGHT, position: 'relative' }}
                 >
                     <div style={{ height: totalHeight, position: 'relative' }}>
                         {visibleItems.map(({ index, offsetTop }) => {
-                            const file = filteredFiles[index];
+                            const file = candidates[index];
+                            if (!file) return null; // Safety check
                             const score = file.score || 0;
                             const isTop = score >= 80;
                             const isMid = score >= 50 && score < 80;
@@ -687,7 +735,8 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
                             const isSelected = selectedFile?.id === file.id;
 
-                            const rank = rankMap.get(file.id);
+                            // Use persistent rank from DB if available, otherwise fallback to index if sorting by score
+                            const rank = file.rank ?? (sortOption === 'SCORE_DESC' ? index + 1 : undefined);
 
                             let rankDisplay: React.ReactNode = '-';
                             if (rank !== undefined) {
@@ -787,7 +836,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    {rankMap.get(selectedFile.id) === 1 && (
+                                    {sortOption === 'SCORE_DESC' && candidates.findIndex(c => c.id === selectedFile.id) === 0 && (
                                         <div className="px-4 py-1.5 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 text-amber-500 rounded-full text-xs font-bold flex items-center gap-1.5 border border-amber-500/20 shadow-sm">
                                             <Trophy size={14} className="fill-current" /> Top Candidate
                                         </div>
@@ -876,25 +925,42 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                                 <div>
                                                     <h4 className={`text-xs font-extrabold uppercase tracking-widest mb-3 ${textSecondary}`}>AI Executive Summary</h4>
                                                     <p className={`text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        {getMockCandidateDetails(selectedFile).summary}
+                                                        {selectedFile.summary || "No summary available for this candidate yet."}
                                                     </p>
+                                                    
+                                                    {selectedFile.email && (
+                                                        <div className="mt-4 flex items-center gap-4 text-xs">
+                                                            <div className="flex items-center gap-1.5 opacity-70">
+                                                                <Mail size={12} /> {selectedFile.email}
+                                                            </div>
+                                                            {selectedFile.phone && (
+                                                                <div className="flex items-center gap-1.5 opacity-70">
+                                                                    <Phone size={12} /> {selectedFile.phone}
+                                                                </div>
+                                                            )}
+                                                            {selectedFile.location && (
+                                                                <div className="flex items-center gap-1.5 opacity-70">
+                                                                    <MapPin size={12} /> {selectedFile.location}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 <div className="grid grid-cols-2 gap-4">
-                                                    <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10">
-                                                        <h5 className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase mb-2"><ThumbsUp size={12} /> Key Strengths</h5>
-                                                        <ul className={`text-xs space-y-1 list-disc pl-3 ${isLight ? 'text-emerald-700' : 'text-zinc-400'}`}>
-                                                            <li>Advanced React Patterns</li>
-                                                            <li>Team Leadership (5+ yrs)</li>
-                                                            <li>System Architecture</li>
-                                                        </ul>
-                                                    </div>
-                                                    <div className="bg-rose-500/5 p-4 rounded-xl border border-rose-500/10">
-                                                        <h5 className="flex items-center gap-2 text-xs font-bold text-rose-500 uppercase mb-2"><ThumbsDown size={12} /> Potential Risks</h5>
-                                                        <ul className={`text-xs space-y-1 list-disc pl-3 ${isLight ? 'text-rose-700' : 'text-zinc-400'}`}>
-                                                            <li>Short tenure in 2021</li>
-                                                            <li>Salary expectations</li>
-                                                        </ul>
+                                                    <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10 col-span-2">
+                                                        <h5 className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase mb-2"><ThumbsUp size={12} /> Key Skills & Strengths</h5>
+                                                        {selectedFile.skills && selectedFile.skills.length > 0 ? (
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {selectedFile.skills.map((skill, idx) => (
+                                                                    <span key={idx} className={`text-[10px] px-2 py-1 rounded-full font-bold border ${isLight ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                                                                        {skill}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <p className={`text-xs italic ${textSecondary}`}>No skills extracted yet.</p>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -975,18 +1041,24 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                                 <div>
                                                     <h4 className={`text-xs font-extrabold uppercase tracking-widest mb-4 ${textSecondary}`}>Key Details</h4>
                                                     <div className="space-y-4">
-                                                        <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                            <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Mail size={18} /></div>
-                                                            <span className="truncate font-medium">{getMockCandidateDetails(selectedFile).email}</span>
-                                                        </div>
-                                                        <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                            <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Phone size={18} /></div>
-                                                            <span className="font-medium">{getMockCandidateDetails(selectedFile).phone}</span>
-                                                        </div>
-                                                        <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                            <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><MapPin size={18} /></div>
-                                                            <span className="font-medium">{getMockCandidateDetails(selectedFile).location}</span>
-                                                        </div>
+                                                        {selectedFile.email && (
+                                                            <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+                                                                <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Mail size={18} /></div>
+                                                                <span className="truncate font-medium">{selectedFile.email}</span>
+                                                            </div>
+                                                        )}
+                                                        {selectedFile.phone && (
+                                                            <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+                                                                <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Phone size={18} /></div>
+                                                                <span className="font-medium">{selectedFile.phone}</span>
+                                                            </div>
+                                                        )}
+                                                        {selectedFile.location && (
+                                                            <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+                                                                <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><MapPin size={18} /></div>
+                                                                <span className="font-medium">{selectedFile.location}</span>
+                                                            </div>
+                                                        )}
                                                         <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
                                                             <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><GraduationCap size={18} /></div>
                                                             <span className="font-medium">Bachelor's Degree</span>
@@ -997,11 +1069,14 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                                 <div>
                                                     <h4 className={`text-xs font-extrabold uppercase tracking-widest mb-4 ${textSecondary}`}>Extracted Skills</h4>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {getMockCandidateDetails(selectedFile).skills.map(skill => (
-                                                            <span key={skill} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-default ${isLight ? 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100' : 'bg-[#18181b] hover:bg-white/5 text-zinc-300 border-white/5'}`}>
+                                                        {selectedFile.skills && selectedFile.skills.map((skill, idx) => (
+                                                            <span key={idx} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-default ${isLight ? 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100' : 'bg-[#18181b] hover:bg-white/5 text-zinc-300 border-white/5'}`}>
                                                                 {skill}
                                                             </span>
                                                         ))}
+                                                        {(!selectedFile.skills || selectedFile.skills.length === 0) && (
+                                                            <span className={`text-xs italic ${textSecondary}`}>No skills extracted yet.</span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

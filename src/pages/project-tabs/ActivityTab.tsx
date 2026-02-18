@@ -1,7 +1,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { ProjectFile, User, Project, ProjectRole } from '../../types';
+import { debounce } from '../../utils/performance';
 import { generateAIEmailDraft, generateReport, saveCandidateDraft, markCandidateContacted } from '../../services/mockData';
+import { useCandidates } from '../../hooks/useCandidates';
 import {
     Activity, Calendar, Clock, Download, FileText, Filter, Ghost,
     Loader2, Search, Send, User as UserIcon, Wand2, MailCheck,
@@ -13,8 +15,9 @@ import { useTranslation } from 'react-i18next';
 import { useVirtualizer } from '../../hooks/useVirtualizer';
 
 interface ActivityTabProps {
-    files: ProjectFile[];
     project: Project;
+    riskCount: number;
+    contributionData: { userId: string; scans: number }[];
     canUseAntiGhosting: boolean;
     onMarkContacted?: (fileId: string) => void;
     onMarkViewed?: (fileId: string) => void;
@@ -32,8 +35,9 @@ const ITEM_HEIGHT = 72;
 const CONTAINER_HEIGHT = 600;
 
 const ActivityTab: React.FC<ActivityTabProps> = ({
-    files,
     project,
+    riskCount,
+    contributionData,
     canUseAntiGhosting,
     onMarkContacted,
     onMarkViewed,
@@ -72,12 +76,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
     const borderClass = isLight ? 'border-slate-100' : 'border-white/5';
     const itemHoverClass = isLight ? 'hover:bg-slate-50' : 'hover:bg-white/5';
-    const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:bg-white' : 'bg-black/20 border-white/5 text-white placeholder:text-zinc-600';
-
-    const selectBg = isLight
-        ? 'bg-white border-slate-200 text-slate-700 focus:ring-2 focus:ring-slate-100'
-        : 'bg-[#18181b] border-white/10 text-zinc-300 focus:ring-2 focus:ring-white/5';
-
+    const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/5 border-white/10 text-white placeholder:text-zinc-500';
+    const selectBg = isLight ? 'bg-white border-slate-200 text-slate-700' : 'bg-[#18181b] border-white/10 text-zinc-300';
+    
     // Map user IDs to User objects for quick lookup
     const userMap = useMemo(() => {
         const map = new Map<string, User>();
@@ -87,110 +88,49 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         return map;
     }, [project.members]);
 
-    // Get unique scanners for filter dropdown
     const availableScanners = useMemo(() => {
-        const ids = new Set(files.map(f => f.uploadedByUserId).filter(Boolean));
-        return Array.from(ids).map(id => userMap.get(id!)!).filter(Boolean);
-    }, [files, userMap]);
+        // Since we don't have all files, we use project members as potential scanners
+        return project.members
+            .map(m => m.user)
+            .filter((u): u is User => !!u);
+    }, [project.members]);
 
     const activeFiltersCount = filterScanners.length + filterScores.length + filterActivities.length;
     const isFiltering = activeFiltersCount > 0 || search.length > 0;
 
-    // --- Rank Calculation ---
-    const rankMap = useMemo(() => {
-        const scoredFiles = files
-            .filter(f => f.status === 'COMPLETED' && typeof f.score === 'number')
-            .sort((a, b) => (b.score || 0) - (a.score || 0));
-
-        const map = new Map<string, number>();
-        scoredFiles.forEach((f, index) => {
-            map.set(f.id, index + 1);
-        });
-        return map;
-    }, [files]);
-
-    const filteredFiles = useMemo(() => {
-        let result = [...files];
-
-        // 1. Search
-        if (search) {
-            const lower = search.toLowerCase();
-            result = result.filter(f =>
-                f.candidateName?.toLowerCase().includes(lower) ||
-                f.name.toLowerCase().includes(lower) ||
-                userMap.get(f.uploadedByUserId || '')?.displayName.toLowerCase().includes(lower)
-            );
-        }
-
-        // 2. Filter by Scanner (Multi-select OR)
-        if (filterScanners.length > 0) {
-            result = result.filter(f => f.uploadedByUserId && filterScanners.includes(f.uploadedByUserId));
-        }
-
-        // 3. Filter by Score (Multi-select OR)
-        if (filterScores.length > 0) {
-            result = result.filter(f => {
-                const s = f.score || 0;
-                return filterScores.some(range => {
-                    if (range === 'HIGH') return s >= 80;
-                    if (range === 'MID') return s >= 50 && s < 80;
-                    if (range === 'LOW') return s < 50;
-                    return false;
-                });
-            });
-        }
-
-        // 4. Filter by Activity Markers (Multi-select OR)
-        if (filterActivities.length > 0) {
-            result = result.filter(f => {
-                return filterActivities.some(filter => {
-                    const isEmailed = !!f.emailSentAt;
-                    const isExported = f.exportedBy?.includes(currentUser.id);
-                    const isViewed = f.viewedBy?.includes(currentUser.id);
-                    const hasDraft = !!f.emailDraft;
-
-                    switch (filter) {
-                        case 'EMAILED': return isEmailed;
-                        case 'NOT_EMAILED': return !isEmailed;
-                        case 'EXPORTED': return isExported;
-                        case 'NOT_EXPORTED': return !isExported;
-                        case 'VIEWED': return isViewed;
-                        case 'NOT_VIEWED': return !isViewed;
-                        case 'HAS_DRAFT': return hasDraft;
-                        default: return false;
-                    }
-                });
-            });
-        }
-
-        // 5. Sort
-        result.sort((a, b) => {
-            switch (sortOption) {
-                case 'DATE_DESC': return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
-                case 'DATE_ASC': return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
-                case 'SCORE_DESC': return (b.score || 0) - (a.score || 0);
-                case 'SCORE_ASC': return (a.score || 0) - (b.score || 0);
-                default: return 0;
-            }
-        });
-
-        return result;
-    }, [files, search, userMap, filterScanners, filterScores, filterActivities, sortOption, currentUser.id]);
+    // --- Server-side Data Fetching ---
+    const { 
+        candidates: filteredFiles, 
+        totalCount: totalScans, 
+        fetchNextPage, 
+        hasNextPage, 
+        isFetchingNextPage, 
+        isLoading 
+    } = useCandidates({
+        projectId: project.id,
+        userId: currentUser.id,
+        searchQuery: search,
+        sortOption,
+        filterScores,
+        filterActivities,
+        filterUploaders: filterScanners,
+        // Fetch all statuses including FAILED for activity log
+        status: ['COMPLETED', 'PENDING', 'PROCESSING', 'FAILED']
+    });
 
     // STRICT At Risk Logic:
     // Defined as any candidate who has NOT been emailed.
-    const riskCandidates = useMemo(() => files.filter(f => !f.emailSentAt && f.status !== 'FAILED'), [files]);
-
+    // NOTE: riskCount is now passed from parent (calculated via analytics)
+    
     // FILTERED Risk Logic:
-    // Uncontacted candidates strictly within the CURRENT filtered view
+    // Uncontacted candidates strictly within the CURRENT filtered view (loaded pages)
     const filteredRiskCandidates = useMemo(() => filteredFiles.filter(f => !f.emailSentAt && f.status !== 'FAILED'), [filteredFiles]);
 
-    // Sub-lists for actions (Scoped to FILTERED list so buttons only act on what is visible)
+    // Sub-lists for actions (Scoped to FILTERED/LOADED list so buttons only act on what is visible)
     const candidatesWithDrafts = useMemo(() => filteredRiskCandidates.filter(f => !!f.emailDraft), [filteredRiskCandidates]);
     const candidatesNoDrafts = useMemo(() => filteredRiskCandidates.filter(f => !f.emailDraft), [filteredRiskCandidates]);
 
     // Counts for Display
-    const riskCount = riskCandidates.length; // Global Risk
     const filteredRiskCount = filteredRiskCandidates.length; // View Risk
 
     // --- Virtualization ---
@@ -199,6 +139,15 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         itemHeight: ITEM_HEIGHT,
         containerHeight: CONTAINER_HEIGHT,
     });
+
+    // Infinite Scroll Handler
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        onScroll(e);
+        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop - clientHeight < 200 && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    };
 
     // --- Handlers ---
 
@@ -374,24 +323,16 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         return () => document.removeEventListener('click', handleClickOutside);
     }, [isFilterOpen]);
 
-    const getMockCandidateDetails = (file: ProjectFile) => {
-        const score = file.score || 0;
-        let summary = "";
-        if (score > 85) summary = "An exceptional candidate with strong alignment to the core requirements. Demonstrated leadership in previous roles and possesses the exact tech stack needed.";
-        else if (score > 70) summary = "A solid contender with most key skills. Experience is relevant but might need some ramp-up time on specific internal tools. Good cultural fit potential.";
-        else summary = "Missing several key qualifications. Experience is tangential but shows potential for a more junior or different role.";
+    const rankMap = useMemo(() => {
+        const map = new Map<string, number>();
+        filteredFiles.forEach((f, idx) => {
+            if (f.rank) map.set(f.id, f.rank);
+            else if (sortOption === 'SCORE_DESC') map.set(f.id, idx + 1);
+        });
+        return map;
+    }, [filteredFiles, sortOption]);
 
-        return {
-            email: `${file.candidateName?.toLowerCase().replace(' ', '.')}@example.com`,
-            phone: "+1 (555) 123-4567",
-            location: "Remote / Hybrid",
-            summary,
-            skills: score > 80 ? ['React', 'TypeScript', 'Node.js', 'System Design'] : ['JavaScript', 'HTML/CSS', 'Communication']
-        };
-    };
-
-    const totalScans = files.length;
-    const uniqueScanners = new Set(files.map(f => f.uploadedByUserId)).size;
+    const uniqueScanners = contributionData.length;
 
     const filteredScanners = availableScanners.filter(u =>
         u.displayName.toLowerCase().includes(scannerSearch.toLowerCase()) ||
@@ -639,19 +580,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     ) : (
                         <div style={{ height: totalHeight, position: 'relative' }}>
                             {visibleItems.map(({ index, offsetTop }) => {
-                                const file = filteredFiles[index];
-                                const scanner = userMap.get(file.uploadedByUserId || '');
-                                const score = file.score || 0;
-                                const rank = rankMap.get(file.id);
+                                    const file = filteredFiles[index];
+                                    const scanner = userMap.get(file.uploadedByUserId || '');
+                                    const score = file.score || 0;
+                                    const rank = sortOption === 'SCORE_DESC' ? index + 1 : undefined;
 
-                                const isExported = file.exportedBy?.includes(currentUser.id);
-                                const isViewed = file.viewedBy?.includes(currentUser.id);
-                                const isEmailed = !!file.emailSentAt;
-                                const hasDraft = !!file.emailDraft;
+                                    const isExported = file.exportedBy?.includes(currentUser.id);
+                                    const isViewed = file.viewedBy?.includes(currentUser.id);
+                                    const isEmailed = !!file.emailSentAt;
+                                    const hasDraft = !!file.emailDraft;
 
-                                let rankDisplay: React.ReactNode = '-';
-                                if (rank !== undefined) {
-                                    if (rank === 1) {
+                                    let rankDisplay: React.ReactNode = '-';
+                                    if (rank !== undefined) {
+                                        if (rank === 1) {
                                         rankDisplay = (
                                             <div className="relative flex items-center justify-center w-8 h-8 mx-auto">
                                                 <div className="absolute inset-0 bg-yellow-500/20 rounded-full blur-[2px]"></div>
@@ -939,25 +880,24 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                             <div>
                                                 <h4 className={`text-xs font-extrabold uppercase tracking-widest mb-3 ${textSecondary}`}>AI Executive Summary</h4>
                                                 <p className={`text-sm leading-relaxed ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                    {getMockCandidateDetails(selectedFile).summary}
+                                                    {selectedFile.summary || "No summary available."}
                                                 </p>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10">
-                                                    <h5 className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase mb-2"><ThumbsUp size={12} /> Key Strengths</h5>
-                                                    <ul className={`text-xs space-y-1 list-disc pl-3 ${isLight ? 'text-emerald-700' : 'text-zinc-400'}`}>
-                                                        <li>Advanced React Patterns</li>
-                                                        <li>Team Leadership (5+ yrs)</li>
-                                                        <li>System Architecture</li>
-                                                    </ul>
-                                                </div>
-                                                <div className="bg-rose-500/5 p-4 rounded-xl border border-rose-500/10">
-                                                    <h5 className="flex items-center gap-2 text-xs font-bold text-rose-500 uppercase mb-2"><ThumbsDown size={12} /> Potential Risks</h5>
-                                                    <ul className={`text-xs space-y-1 list-disc pl-3 ${isLight ? 'text-rose-700' : 'text-zinc-400'}`}>
-                                                        <li>Short tenure in 2021</li>
-                                                        <li>Salary expectations</li>
-                                                    </ul>
+                                                <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10 col-span-2">
+                                                    <h5 className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase mb-2"><ThumbsUp size={12} /> Key Skills & Strengths</h5>
+                                                    {selectedFile.skills && selectedFile.skills.length > 0 ? (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {selectedFile.skills.map((skill, idx) => (
+                                                                <span key={idx} className={`text-[10px] px-2 py-1 rounded-full font-bold border ${isLight ? 'bg-white border-emerald-100 text-emerald-700' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                                                                    {skill}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className={`text-xs italic ${textSecondary}`}>No skills extracted.</p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1034,18 +974,24 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                             <div>
                                                 <h4 className={`text-xs font-extrabold uppercase tracking-widest mb-4 ${textSecondary}`}>Key Details</h4>
                                                 <div className="space-y-4">
-                                                    <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Mail size={18} /></div>
-                                                        <span className="truncate font-medium">{getMockCandidateDetails(selectedFile).email}</span>
-                                                    </div>
-                                                    <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Phone size={18} /></div>
-                                                        <span className="font-medium">{getMockCandidateDetails(selectedFile).phone}</span>
-                                                    </div>
-                                                    <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
-                                                        <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><MapPin size={18} /></div>
-                                                        <span className="font-medium">{getMockCandidateDetails(selectedFile).location}</span>
-                                                    </div>
+                                                    {selectedFile.email && (
+                                                        <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+                                                            <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Mail size={18} /></div>
+                                                            <span className="truncate font-medium">{selectedFile.email}</span>
+                                                        </div>
+                                                    )}
+                                                    {selectedFile.phone && (
+                                                        <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+                                                            <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><Phone size={18} /></div>
+                                                            <span className="font-medium">{selectedFile.phone}</span>
+                                                        </div>
+                                                    )}
+                                                    {selectedFile.location && (
+                                                        <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
+                                                            <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><MapPin size={18} /></div>
+                                                            <span className="font-medium">{selectedFile.location}</span>
+                                                        </div>
+                                                    )}
                                                     <div className={`flex items-center gap-4 text-sm group ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>
                                                         <div className={`p-2.5 rounded-xl transition-colors ${isLight ? 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' : 'bg-white/5 text-zinc-500 group-hover:bg-brand-500/10 group-hover:text-brand-400'}`}><GraduationCap size={18} /></div>
                                                         <span className="font-medium">Bachelor's Degree</span>
@@ -1056,11 +1002,14 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                             <div>
                                                 <h4 className={`text-xs font-extrabold uppercase tracking-widest mb-4 ${textSecondary}`}>Extracted Skills</h4>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {getMockCandidateDetails(selectedFile).skills.map(skill => (
-                                                        <span key={skill} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-default ${isLight ? 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100' : 'bg-[#18181b] hover:bg-white/5 text-zinc-300 border-white/5'}`}>
+                                                    {selectedFile.skills && selectedFile.skills.map((skill, idx) => (
+                                                        <span key={idx} className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-default ${isLight ? 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100' : 'bg-[#18181b] hover:bg-white/5 text-zinc-300 border-white/5'}`}>
                                                             {skill}
                                                         </span>
                                                     ))}
+                                                    {(!selectedFile.skills || selectedFile.skills.length === 0) && (
+                                                        <span className={`text-xs italic ${textSecondary}`}>No skills extracted.</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

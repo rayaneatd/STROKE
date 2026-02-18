@@ -250,6 +250,14 @@ export interface ProjectFile {
   // Private Markers
   viewedBy?: string[]; // Array of UserIds who have clicked/viewed
   exportedBy?: string[]; // Array of UserIds who have exported this file
+
+  // --- AI ENHANCED DATA ---
+  email?: string;
+  phone?: string;
+  location?: string;
+  summary?: string;
+  skills?: string[];
+  rank?: number;
 }
 
 // --- WORKER MESSAGES ---
