@@ -42,6 +42,23 @@ export const useFileProcessing = (
             return;
         }
 
+        const pendingLocalFiles: { file: File; id: FileId }[] = valid.map((file, index) => ({
+            file,
+            id: `local-${Date.now()}-${index}-${Math.random()}` as FileId
+        }));
+
+        const pendingProjectFiles: ProjectFile[] = pendingLocalFiles.map(({ file, id }) => ({
+            id,
+            projectId: projectId as any,
+            name: file.name,
+            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+            status: 'PENDING',
+            uploadedAt: new Date().toISOString(),
+            uploadedByUserId: currentUser.id
+        }));
+
+        setFiles(prev => [...pendingProjectFiles, ...prev]);
+
         // 2. Process Uploads (Storage -> DB)
         const processingFailures = await processUploads(
             valid,
@@ -54,17 +71,27 @@ export const useFileProcessing = (
 
         // 3. Handle Results
         if (processingFailures.length > 0) {
-            const newFailureFiles: ProjectFile[] = processingFailures.map(pf => ({
-                id: `fail-${Date.now()}-${Math.random()}` as FileId,
-                projectId: projectId as any,
-                name: pf.file.name,
-                size: `${(pf.file.size / 1024 / 1024).toFixed(2)} MB`,
-                status: 'FAILED',
-                uploadedAt: new Date().toISOString(),
-                uploadedByUserId: currentUser.id,
-                failureReasons: [pf.errorMessage || pf.reason]
-            }));
-            setFiles(prev => [...newFailureFiles, ...prev]);
+            const idByFile = new Map<File, FileId>(pendingLocalFiles.map(entry => [entry.file, entry.id]));
+            const failureReasonById = new Map<FileId, string>();
+
+            processingFailures.forEach(pf => {
+                const pendingId = idByFile.get(pf.file);
+                if (pendingId) {
+                    failureReasonById.set(pendingId, pf.errorMessage || pf.reason);
+                }
+            });
+
+            if (failureReasonById.size > 0) {
+                setFiles(prev => prev.map(f => {
+                    const reason = failureReasonById.get(f.id as FileId);
+                    if (!reason) return f;
+                    return {
+                        ...f,
+                        status: 'FAILED',
+                        failureReasons: [reason]
+                    };
+                }));
+            }
         }
 
         setIsUploading(false);
@@ -75,7 +102,7 @@ export const useFileProcessing = (
         setFiles(prev => prev.filter(f => f.id !== fileId));
 
         // Real removal from DB if not a local-only fail
-        if (!fileId.startsWith('fail-')) {
+        if (!fileId.startsWith('fail-') && !fileId.startsWith('local-')) {
             const { error } = await supabase
                 .from('candidates')
                 .delete()
@@ -91,7 +118,7 @@ export const useFileProcessing = (
     const retryFile = useCallback(async (fileId: string) => {
         // For local-only failures, user needs to re-upload.
         // For DB records in 'FAILED' status, we reset them.
-        if (fileId.startsWith('fail-')) return;
+        if (fileId.startsWith('fail-') || fileId.startsWith('local-')) return;
 
         setFiles(prev => prev.map(f => {
             if (f.id === fileId) {

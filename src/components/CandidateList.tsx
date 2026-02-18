@@ -31,17 +31,19 @@ const CandidateList: React.FC<CandidateListProps> = ({
     accentColor,
     onScroll,
     itemHeight = 80,
-    containerHeight = 600,
+    containerHeight,
     showScannedBy = false,
     userMap
 }) => {
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
     const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
 
+    const effectiveContainerHeight = containerHeight ?? 600;
+
     const { visibleItems, totalHeight, onScroll: onVirtualScroll } = useVirtualizer({
         itemCount: candidates.length,
         itemHeight: itemHeight,
-        containerHeight: containerHeight,
+        containerHeight: effectiveContainerHeight,
     });
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -60,9 +62,9 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
     return (
         <div
-            className={`flex-1 overflow-y-auto custom-scrollbar min-h-[500px] ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}
+            className={`flex-1 overflow-y-auto custom-scrollbar min-h-0 ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}
             onScroll={handleScroll}
-            style={{ height: containerHeight, position: 'relative' }}
+            style={{ height: containerHeight ?? '100%', position: 'relative' }}
         >
             <div style={{ height: totalHeight, position: 'relative' }}>
                 {visibleItems.map(({ index, offsetTop }) => {

@@ -28,7 +28,6 @@ type ScoreFilter = 'HIGH' | 'MID' | 'LOW';
 type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED';
 
 const ITEM_HEIGHT = 72;
-const CONTAINER_HEIGHT = 600;
 
 const ActivityTab: React.FC<ActivityTabProps> = ({
     project,
@@ -144,7 +143,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     };
 
     return (
-        <div className="space-y-6 animate-fade-in relative flex flex-col h-full">
+        <div className="relative h-[calc(100vh-220px)] min-h-[600px] animate-fade-in flex flex-col gap-6">
             {/* Header Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
                 <div className={`${cardBg} p-4 rounded-2xl border transition-all shadow-sm flex items-center gap-4`}>
@@ -179,7 +178,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
             </div>
 
             {/* Candidate List Section */}
-            <div className={`flex-1 flex flex-col rounded-[2rem] border shadow-sm overflow-hidden min-w-0 relative ${cardBg}`}>
+            <div className={`flex-1 flex flex-col rounded-[2rem] border shadow-sm overflow-hidden min-w-0 relative min-h-0 ${cardBg}`}>
                 
                 {/* Toolbar */}
                 <div className={`p-4 border-b flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-20 ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/5'}`}>
@@ -362,7 +361,6 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     accentColor={accentColor}
                     onScroll={handleScroll}
                     itemHeight={ITEM_HEIGHT}
-                    containerHeight={CONTAINER_HEIGHT}
                     showScannedBy={true}
                     userMap={userMap}
                 />

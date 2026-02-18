@@ -83,13 +83,13 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         return map;
     }, [members]);
 
-    // Server-side Pagination & Filtering (Completed)
+    // Server-side Pagination & Filtering (My Scans)
     const { 
-        candidates: completedCandidates, 
+        candidates: myCandidates, 
         totalCount: totalCompleted, 
         fetchNextPage: fetchNextCompleted, 
         hasNextPage: hasNextCompleted, 
-        isFetchingNextPage: isFetchingNextCompleted, 
+        isFetchingNextPage: isFetchingNextCompleted,
         isLoading: isCompletedLoading 
     } = useCandidates({
         projectId,
@@ -99,25 +99,10 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         filterScores,
         filterActivities,
         filterUploaders: [currentUser.id], // Strict filter: Only show my uploads
-        status: 'COMPLETED'
+        status: ['COMPLETED', 'PENDING', 'PROCESSING', 'FAILED']
     });
 
-    // Server-side Pagination (Pending/Failed)
-    const { 
-        candidates: dbPendingCandidates,
-        fetchNextPage: fetchNextPending,
-        hasNextPage: hasNextPending
-    } = useCandidates({
-        projectId,
-        userId: currentUser.id,
-        searchQuery: '',
-        sortOption: 'DATE_DESC',
-        filterScores: [],
-        filterActivities: [],
-        status: ['PENDING', 'PROCESSING', 'FAILED']
-    });
-
-    const candidates = completedCandidates;
+    const candidates = myCandidates;
 
     // Selection & Drawer State
     const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
@@ -147,20 +132,13 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
     const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/5 border-white/10 text-white placeholder:text-zinc-500';
 
-    // --- Derived Lists ---
-    // Merge local failed files (from props) with DB pending/failed files
-    const localFiles = useMemo(() => files.filter(f => f.id.startsWith('fail-')), [files]);
-    
     const pendingFiles = useMemo(() => {
-        const dbPending = dbPendingCandidates.filter(f => f.status === 'PENDING' || f.status === 'PROCESSING');
-        // Filter out duplicates if any (though IDs should differ)
-        return dbPending;
-    }, [dbPendingCandidates]);
+        return files.filter(f => f.status === 'PENDING' || f.status === 'PROCESSING');
+    }, [files]);
 
     const failedFiles = useMemo(() => {
-        const dbFailed = dbPendingCandidates.filter(f => f.status === 'FAILED');
-        return [...localFiles, ...dbFailed];
-    }, [dbPendingCandidates, localFiles]);
+        return files.filter(f => f.status === 'FAILED');
+    }, [files]);
 
     const activeFiltersCount = filterScores.length + filterActivities.length;
 
@@ -203,10 +181,6 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
     const handlePendingScroll = (e: React.UIEvent<HTMLDivElement>) => {
         onPendingScroll(e);
-        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-        if (scrollHeight - scrollTop - clientHeight < 100 && hasNextPending) {
-            fetchNextPending();
-        }
     };
 
     // --- Handlers ---
