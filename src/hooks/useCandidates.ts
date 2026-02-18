@@ -108,7 +108,22 @@ export const useCandidates = ({
                 location: row.location,
                 summary: row.summary,
                 skills: row.skills,
-                rank: row.rank ? Number(row.rank) : undefined
+                rank: row.rank ? Number(row.rank) : undefined,
+
+                // Elite Data Mapping
+                currentPosition: row.current_position,
+                yearsOfExperience: row.years_of_experience,
+                matchScore: row.match_score,
+                scoreJustification: row.score_justification,
+                executiveSummary: row.executive_summary,
+                keySkills: row.key_skills, // Already JSONB/Array from RPC
+                missingSkills: row.missing_skills,
+                redFlags: row.red_flags,
+                softSkillsAnalysis: row.soft_skills_analysis,
+                interviewQuestions: row.interview_questions,
+                careerTrajectory: row.career_trajectory,
+                socialLinks: row.social_links,
+                originalResumeName: row.original_resume_name
             } as ProjectFile));
 
             const totalCount = data && data.length > 0 ? Number(data[0].full_count) : 0;

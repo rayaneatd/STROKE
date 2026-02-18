@@ -258,6 +258,21 @@ export interface ProjectFile {
   summary?: string;
   skills?: string[];
   rank?: number;
+
+  // --- ELITE DATA FIELDS ---
+  currentPosition?: string;
+  yearsOfExperience?: number;
+  matchScore?: number;
+  scoreJustification?: string;
+  executiveSummary?: string;
+  keySkills?: string[];
+  missingSkills?: string[];
+  redFlags?: string[];
+  softSkillsAnalysis?: string;
+  interviewQuestions?: { question: string; context: string }[];
+  careerTrajectory?: string;
+  socialLinks?: { linkedin?: string; github?: string; portfolio?: string };
+  originalResumeName?: string;
 }
 
 // --- WORKER MESSAGES ---
