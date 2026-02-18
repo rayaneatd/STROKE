@@ -1,4 +1,78 @@
 {
+    "candidateList": {
+        "noCandidates": "Aucun candidat trouvé.",
+        "processing": "Traitement...",
+        "processingStatus": "EN TRAITEMENT",
+        "emailSent": "Email envoyé",
+        "draftReady": "Brouillon prêt",
+        "exported": "Exporté en PDF",
+        "viewedByYou": "Vu par vous",
+        "unknownUser": "Utilisateur inconnu"
+    },
+    "candidateDrawer": {
+        "tabs": {
+            "analysis": "Analyse",
+            "interview": "Entretien",
+            "communication": "Email",
+            "profile": "Profil"
+        },
+        "analysis": {
+            "matchScore": "Score de correspondance",
+            "strongFit": "Forte adéquation technique",
+            "leadership": "Potentiel de leadership",
+            "noJustification": "Aucune justification fournie",
+            "attention": "Attention requise",
+            "executiveSummary": "Résumé exécutif",
+            "noSummary": "Aucun résumé disponible pour ce candidat pour le moment.",
+            "keyStrengths": "Points forts",
+            "missingSkills": "Compétences manquantes",
+            "noStrengths": "Aucun point fort spécifique détecté.",
+            "noGaps": "Aucune lacune critique identifiée.",
+            "softSkills": "Compétences comportementales et personnalité",
+            "extractedSkills": "Compétences extraites",
+            "noSkills": "Aucune compétence extraite pour le moment."
+        },
+        "interview": {
+            "title": "Guide d'entretien",
+            "generate": "Générer avec l'IA",
+            "generating": "Génération...",
+            "placeholder": "Tapez une nouvelle question d'entretien...",
+            "noQuestions": "Aucune question d'entretien pour le moment.",
+            "generateSuggested": "Générer des questions suggérées",
+            "aiGenerated": "Généré par IA",
+            "manualEntry": "Saisie manuelle"
+        },
+        "email": {
+            "aiComposer": "Compositeur IA",
+            "generateResponse": "Générer une réponse",
+            "contextPlaceholder": "Contexte spécifique ? ex: Mentionner la fourchette de salaire...",
+            "draftTitle": "Brouillon d'email",
+            "sent": "(Envoyé)",
+            "draftPlaceholder": "Générez un brouillon ou commencez à taper...",
+            "clear": "Effacer",
+            "send": "Envoyer l'email",
+            "sentButton": "Email envoyé"
+        },
+        "profile": {
+            "title": "Profil professionnel",
+            "currentRole": "Rôle actuel",
+            "experience": "Expérience",
+            "years": "Ans",
+            "degree": "Licence / Master"
+        },
+        "header": {
+            "contacted": "Contacté",
+            "match": "Correspondance",
+            "added": "Ajouté le",
+            "topCandidate": "Candidat Top",
+            "unknown": "Utilisateur inconnu"
+        },
+        "preview": {
+            "openExternal": "Ouvrir externe",
+            "quickPreview": "Aperçu rapide",
+            "resumeContent": "Aperçu du contenu du CV"
+        }
+    },
     "common": {
         "loading": "Chargement...",
         "error": "Une erreur est survenue",

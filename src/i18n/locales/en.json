@@ -1,4 +1,78 @@
 {
+    "candidateList": {
+        "noCandidates": "No candidates found.",
+        "processing": "Processing...",
+        "processingStatus": "PROCESSING",
+        "emailSent": "Email Sent",
+        "draftReady": "Draft Ready",
+        "exported": "Exported to PDF",
+        "viewedByYou": "Viewed by you",
+        "unknownUser": "Unknown User"
+    },
+    "candidateDrawer": {
+        "tabs": {
+            "analysis": "Analysis",
+            "interview": "Interview",
+            "communication": "Email",
+            "profile": "Profile"
+        },
+        "analysis": {
+            "matchScore": "Match Score",
+            "strongFit": "Strong Technical Fit",
+            "leadership": "Leadership Potential",
+            "noJustification": "No justification provided",
+            "attention": "Attention Required",
+            "executiveSummary": "Executive Summary",
+            "noSummary": "No summary available for this candidate yet.",
+            "keyStrengths": "Key Strengths",
+            "missingSkills": "Missing Skills",
+            "noStrengths": "No specific strengths detected.",
+            "noGaps": "No critical gaps identified.",
+            "softSkills": "Soft Skills & Personality",
+            "extractedSkills": "Extracted Skills",
+            "noSkills": "No skills extracted yet."
+        },
+        "interview": {
+            "title": "Interview Guide",
+            "generate": "Generate with AI",
+            "generating": "Generating...",
+            "placeholder": "Type a new interview question...",
+            "noQuestions": "No interview questions yet.",
+            "generateSuggested": "Generate suggested questions",
+            "aiGenerated": "AI Generated",
+            "manualEntry": "Manual Entry"
+        },
+        "email": {
+            "aiComposer": "AI Composer",
+            "generateResponse": "Generate Response",
+            "contextPlaceholder": "Any specific context? e.g. Mention salary range...",
+            "draftTitle": "Email Draft",
+            "sent": "(Sent)",
+            "draftPlaceholder": "Generate a draft or start typing...",
+            "clear": "Clear",
+            "send": "Send Email",
+            "sentButton": "Email Sent"
+        },
+        "profile": {
+            "title": "Professional Profile",
+            "currentRole": "Current Role",
+            "experience": "Experience",
+            "years": "Years",
+            "degree": "Bachelor's Degree"
+        },
+        "header": {
+            "contacted": "Contacted",
+            "match": "Match",
+            "added": "Added",
+            "topCandidate": "Top Candidate",
+            "unknown": "Unknown User"
+        },
+        "preview": {
+            "openExternal": "Open external",
+            "quickPreview": "Quick Preview",
+            "resumeContent": "Resume Content Preview"
+        }
+    },
     "common": {
         "loading": "Loading...",
         "error": "An error occurred",

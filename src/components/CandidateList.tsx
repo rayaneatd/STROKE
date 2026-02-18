@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
@@ -35,6 +36,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
     showScannedBy = false,
     userMap
 }) => {
+    const { t } = useTranslation();
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
     const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
 
@@ -55,7 +57,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
         return (
             <div className={`flex flex-col items-center justify-center h-64 ${textSecondary}`}>
                 <FileText size={48} className="opacity-20 mb-3" />
-                <p className="text-sm font-medium">No candidates found.</p>
+                <p className="text-sm font-medium">{t('candidateList.noCandidates')}</p>
             </div>
         );
     }
@@ -145,26 +147,26 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 <div className="flex items-center gap-3">
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h4 className={`text-sm font-bold truncate ${isSelected ? `text-${accentColor}-500` : textPrimary}`}>{file.candidateName || 'Processing...'}</h4>
+                                            <h4 className={`text-sm font-bold truncate ${isSelected ? `text-${accentColor}-500` : textPrimary}`}>{file.candidateName || t('candidateList.processing')}</h4>
                                             <div className="flex -space-x-1">
                                                 {isEmailed && (
-                                                    <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title="Email Sent">
+                                                    <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title={t('candidateList.emailSent')}>
                                                         <MailCheck size={10} className="text-emerald-500" />
                                                     </div>
                                                 )}
                                                 {hasDraft && !isEmailed && showScannedBy && (
-                                                    <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title="Draft Ready">
+                                                    <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title={t('candidateList.draftReady')}>
                                                         <FileEdit size={10} className="text-purple-500" />
                                                     </div>
                                                 )}
                                                 {isExported && (
-                                                    <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title="Exported to PDF">
+                                                    <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title={t('candidateList.exported')}>
                                                         <FileCheck size={10} className="text-blue-500" />
                                                     </div>
                                                 )}
                                             </div>
                                             {isViewed && (
-                                                <div title="Viewed by you">
+                                                <div title={t('candidateList.viewedByYou')}>
                                                     <Eye size={12} className={isLight ? "text-slate-400" : "text-zinc-400"} />
                                                 </div>
                                             )}
@@ -190,24 +192,25 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             <span className={`text-xs font-medium truncate ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>{scanner.displayName}</span>
                                         </>
                                     ) : (
-                                        <span className={`text-xs italic ${textSecondary}`}>Unknown User</span>
+                                        <span className={`text-xs italic ${textSecondary}`}>{t('candidateList.unknownUser')}</span>
                                     )}
                                 </div>
                             )}
 
                             {!showScannedBy && (
                                 <div className="col-span-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
-                                            <div
-                                                className={`h-full rounded-full ${hasScore ? (isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500') : 'bg-transparent'}`}
-                                                style={{ width: `${score}%` }}
-                                            ></div>
+                                    {file.status === 'COMPLETED' ? (
+                                        <div className="flex items-center gap-3">
+                                            <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
+                                                <div className={`h-full rounded-full ${isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500'}`} style={{ width: `${score}%` }}></div>
+                                            </div>
+                                            <span className={`text-sm font-bold ${isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary}`}>{score}%</span>
                                         </div>
-                                        <span className={`text-sm font-bold ${hasScore ? (isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary) : textSecondary}`}>
-                                            {hasScore ? `${score}%` : '--'}
-                                        </span>
-                                    </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2 text-xs font-bold text-amber-500">
+                                            <Loader2 size={12} className="animate-spin" /> {t('candidateList.processingStatus')}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
