@@ -4,10 +4,9 @@ import { debounce } from '../../utils/performance';
 import { generateAIEmailDraft, generateReport } from '../../services/mockData';
 import { useCandidates } from '../../hooks/useCandidates';
 import {
-    Activity, Calendar, Clock, Download, FileText, Filter, Ghost,
+    Activity, Download, Filter, Ghost,
     Loader2, Search, Send, User as UserIcon, Wand2, MailCheck,
     SortAsc, SortDesc, Check, X,
-    Crown, Medal, Award, Trophy,
     FileEdit, FileCheck, Eye, EyeOff
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -506,7 +505,6 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     showScannedBy={true}
                     userMap={userMap}
                 />
-            </div>
             </div>
 
             {/* Anti-Ghosting Bar (Conditional) */}
