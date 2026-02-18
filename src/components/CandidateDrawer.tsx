@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { ProjectFile, User } from '../types';
 import { generateAIEmailDraft } from '../services/mockData';
+import { supabase } from '../lib/supabase';
 
 type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
@@ -24,8 +25,6 @@ interface CandidateDrawerProps {
     textPrimary: string;
     textSecondary: string;
 }
-
-import { useInterviewQuestions } from '../hooks/useInterviewQuestions';
 
 const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     isOpen,
@@ -46,18 +45,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     const [generatedEmail, setGeneratedEmail] = useState('');
     const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
     const [isEmailSent, setIsEmailSent] = useState(false);
+    const [resumeUrl, setResumeUrl] = useState<string | null>(null);
 
-    // Interview Questions Hook
-    const { 
-        questions: interviewQuestions, 
-        addQuestion, 
-        deleteQuestion, 
-        updateQuestion,
-        isAdding: isAddingQuestion,
-        isLoading: isLoadingQuestions,
-        isUpdating: isUpdatingQuestion
-    } = useInterviewQuestions(selectedFile?.id);
-
+    // Interview Questions Local State (synced with selectedFile)
     const [newQuestion, setNewQuestion] = useState('');
     const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
     
@@ -65,27 +55,75 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
     const [editQuestionText, setEditQuestionText] = useState('');
 
+    // Fetch Resume URL
+    useEffect(() => {
+        if (selectedFile?.name && selectedFile?.projectId) {
+            const fetchUrl = async () => {
+                // Try to get signed URL assuming path is projectId/name
+                // If name is just filename, we assume it's stored at projectId/name
+                // or just name if flat structure (but uploadService uses projectId/uuid)
+                // Let's try constructing path: projectId/name
+                // If name contains slashes, use it as is.
+                
+                let path = selectedFile.name;
+                if (!path.includes('/')) {
+                    path = `${selectedFile.projectId}/${selectedFile.name}`;
+                }
+
+                const { data, error } = await supabase.storage
+                    .from('resumes')
+                    .createSignedUrl(path, 3600); // 1 hour
+
+                if (data?.signedUrl) {
+                    setResumeUrl(data.signedUrl);
+                } else {
+                     console.error('Error fetching resume URL:', error);
+                }
+            };
+            fetchUrl();
+        }
+    }, [selectedFile]);
+
     const handleAddQuestion = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newQuestion.trim()) return;
+        if (!newQuestion.trim() || !selectedFile || !onBatchUpdate) return;
         
-        // Mock AI Generation Feature
-        if (newQuestion.trim().toLowerCase() === 'generate with ia') {
-            addQuestion({
-                question: "hello ?",
-                type: 'AI'
-            }, {
-                onSuccess: () => setNewQuestion('')
-            });
-            return;
-        }
-
-        addQuestion({
+        const questionToAdd = {
+            id: crypto.randomUUID(),
             question: newQuestion,
-            type: 'MANUAL'
-        }, {
-            onSuccess: () => setNewQuestion('')
-        });
+            type: 'MANUAL' as const,
+            createdAt: new Date().toISOString(),
+            createdBy: currentUser.id
+        };
+
+        const updatedQuestions = [...(selectedFile.interviewQuestions || []), questionToAdd];
+        
+        onBatchUpdate([{ 
+            id: selectedFile.id, 
+            changes: { interviewQuestions: updatedQuestions } 
+        }]);
+        
+        setNewQuestion('');
+    };
+
+    const deleteQuestion = (id: string) => {
+        if (!selectedFile || !onBatchUpdate) return;
+        const updatedQuestions = (selectedFile.interviewQuestions || []).filter(q => q.id !== id);
+        onBatchUpdate([{ 
+            id: selectedFile.id, 
+            changes: { interviewQuestions: updatedQuestions } 
+        }]);
+    };
+
+    const updateQuestion = (id: string, newText: string) => {
+        if (!selectedFile || !onBatchUpdate) return;
+        const updatedQuestions = (selectedFile.interviewQuestions || []).map(q => 
+            q.id === id ? { ...q, question: newText } : q
+        );
+        onBatchUpdate([{ 
+            id: selectedFile.id, 
+            changes: { interviewQuestions: updatedQuestions } 
+        }]);
     };
 
     const startEditing = (question: { id: string, question: string }) => {
@@ -100,16 +138,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
     const saveEditing = (id: string) => {
         if (!editQuestionText.trim()) return;
-        
-        updateQuestion({
-            id,
-            updates: { question: editQuestionText }
-        }, {
-            onSuccess: () => {
-                setEditingQuestionId(null);
-                setEditQuestionText('');
-            }
-        });
+        updateQuestion(id, editQuestionText);
+        setEditingQuestionId(null);
+        setEditQuestionText('');
     };
 
     const handleGenerateAIQuestions = async () => {
@@ -117,12 +148,18 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
         // Simulate AI delay
         setTimeout(() => {
             const mockQuestions = [
-                { question: "Describe a situation where you had to solve a difficult technical problem.", context: "Problem Solving", type: 'AI' as const },
-                { question: "How do you stay updated with the latest industry trends?", context: "Continuous Learning", type: 'AI' as const },
-                { question: "Tell me about a time you disagreed with a team member. How did you resolve it?", context: "Teamwork", type: 'AI' as const }
+                { id: crypto.randomUUID(), question: "Describe a situation where you had to solve a difficult technical problem.", context: "Problem Solving", type: 'AI' as const, createdAt: new Date().toISOString() },
+                { id: crypto.randomUUID(), question: "How do you stay updated with the latest industry trends?", context: "Continuous Learning", type: 'AI' as const, createdAt: new Date().toISOString() },
+                { id: crypto.randomUUID(), question: "Tell me about a time you disagreed with a team member. How did you resolve it?", context: "Teamwork", type: 'AI' as const, createdAt: new Date().toISOString() }
             ];
             
-            mockQuestions.forEach(q => addQuestion(q));
+            if (selectedFile && onBatchUpdate) {
+                const updatedQuestions = [...(selectedFile.interviewQuestions || []), ...mockQuestions];
+                onBatchUpdate([{ 
+                    id: selectedFile.id, 
+                    changes: { interviewQuestions: updatedQuestions } 
+                }]);
+            }
             setIsGeneratingQuestions(false);
         }, 1500);
     };
@@ -260,26 +297,31 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                     {/* Left: PDF Visualization */}
                     <div className={`flex-1 p-8 flex flex-col overflow-hidden relative border-r ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#050505] border-white/5'}`}>
                         <div className="absolute top-6 right-8 flex gap-2 z-10">
-                            <button className={`p-2.5 backdrop-blur rounded-xl shadow-sm border transition-all hover:scale-105 ${isLight ? 'bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border-slate-200' : 'bg-black/60 hover:bg-black/80 text-zinc-400 hover:text-white border-white/10'}`} title={t('candidateDrawer.preview.openExternal')}><ExternalLink size={18} /></button>
-                            <button className={`p-2.5 backdrop-blur rounded-xl shadow-sm border transition-all hover:scale-105 ${isLight ? 'bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border-slate-200' : 'bg-black/60 hover:bg-black/80 text-zinc-400 hover:text-white border-white/10'}`} title={t('candidateDrawer.preview.quickPreview')}><Eye size={18} /></button>
+                            {resumeUrl && (
+                                <a 
+                                    href={resumeUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className={`p-2.5 backdrop-blur rounded-xl shadow-sm border transition-all hover:scale-105 ${isLight ? 'bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border-slate-200' : 'bg-black/60 hover:bg-black/80 text-zinc-400 hover:text-white border-white/10'}`} 
+                                    title={t('candidateDrawer.preview.openExternal')}
+                                >
+                                    <ExternalLink size={18} />
+                                </a>
+                            )}
                         </div>
-                        <div className={`flex-1 shadow-xl rounded-2xl overflow-y-auto custom-scrollbar p-10 flex flex-col gap-8 items-center border w-full ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
-                            <div className="w-full max-w-3xl space-y-6 opacity-60 hover:opacity-100 transition-opacity duration-500">
-                                <div className={`h-10 rounded w-1/2 mb-10 ${isLight ? 'bg-slate-100' : 'bg-white/10'}`}></div>
-                                <div className="space-y-3">
-                                    <div className={`h-4 rounded w-full ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
-                                    <div className={`h-4 rounded w-full ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
-                                    <div className={`h-4 rounded w-3/4 ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
+                        <div className={`flex-1 shadow-xl rounded-2xl overflow-hidden border w-full h-full relative ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
+                            {resumeUrl ? (
+                                <iframe 
+                                    src={resumeUrl} 
+                                    className="w-full h-full border-none"
+                                    title="Resume Preview"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-4 opacity-50">
+                                    <Loader2 className="animate-spin" size={32} />
+                                    <p className="text-sm font-medium">Loading document...</p>
                                 </div>
-                                <div className={`h-40 rounded-2xl w-full border-2 border-dashed flex items-center justify-center ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-black/20 border-white/5'}`}>
-                                    <span className={`text-xs font-bold uppercase tracking-widest ${textSecondary}`}>[{t('candidateDrawer.preview.resumeContent')}]</span>
-                                </div>
-                                <div className="space-y-3 pt-6">
-                                    <div className={`h-5 rounded w-1/4 mb-4 ${isLight ? 'bg-slate-100' : 'bg-white/10'}`}></div>
-                                    <div className={`h-4 rounded w-full ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
-                                    <div className={`h-4 rounded w-5/6 ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
 
@@ -414,7 +456,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                                         <h4 className={`text-xs font-extrabold uppercase tracking-widest ${textSecondary}`}>{t('candidateDrawer.interview.title')}</h4>
                                         <button 
                                             onClick={handleGenerateAIQuestions}
-                                            disabled={isGeneratingQuestions || isLoadingQuestions}
+                                            disabled={isGeneratingQuestions}
                                             className={`text-[10px] px-3 py-1.5 rounded-lg border font-bold flex items-center gap-1.5 transition-colors ${isLight ? `bg-${accentColor}-50 text-${accentColor}-600 border-${accentColor}-100 hover:bg-${accentColor}-100` : `bg-${accentColor}-500/10 text-${accentColor}-400 border-${accentColor}-500/20 hover:bg-${accentColor}-500/20`}`}
                                         >
                                             {isGeneratingQuestions ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -441,13 +483,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                                     </form>
                                     
                                     <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
-                                        {isLoadingQuestions ? (
-                                            <div className="flex items-center justify-center py-20">
-                                                <Loader2 size={24} className={`animate-spin ${textSecondary}`} />
-                                            </div>
-                                        ) : interviewQuestions && interviewQuestions.length > 0 ? (
-                                            interviewQuestions.map((q, idx) => (
-                                                <div key={q.id} className={`group relative p-5 rounded-2xl border transition-all hover:shadow-md ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
+                                        {selectedFile.interviewQuestions && selectedFile.interviewQuestions.length > 0 ? (
+                                            selectedFile.interviewQuestions.map((q, idx) => (
+                                                <div key={q.id || idx} className={`group relative p-5 rounded-2xl border transition-all hover:shadow-md ${isLight ? 'bg-white border-slate-200' : 'bg-[#18181b] border-white/5'}`}>
                                                     <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button 
                                                             onClick={() => startEditing(q)}
@@ -508,9 +546,11 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded border ${q.type === 'AI' ? (isLight ? 'bg-purple-50 text-purple-600 border-purple-100' : 'bg-purple-500/10 text-purple-400 border-purple-500/20') : (isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/5 text-zinc-500 border-white/10')}`}>
                                                                     {q.type === 'AI' ? t('candidateDrawer.interview.aiGenerated') : t('candidateDrawer.interview.manualEntry')}
                                                                 </span>
-                                                                <span className={`text-[10px] ${textSecondary}`}>
-                                                                    {new Date(q.created_at).toLocaleDateString()}
-                                                                </span>
+                                                                {q.createdAt && (
+                                                                    <span className={`text-[10px] ${textSecondary}`}>
+                                                                        {new Date(q.createdAt).toLocaleDateString()}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
