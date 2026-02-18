@@ -403,16 +403,8 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                 {/* Full Screen Drawer */}
                 <CandidateDrawer
                     isOpen={!!selectedFile}
-                    selectedFile={selectedFile}
+                    candidateId={selectedFile?.id || null}
                     onClose={() => setSelectedFile(null)}
-                    isLight={isLight}
-                    accentColor={accentColor}
-                    isTopCandidate={selectedFile?.score !== undefined && selectedFile.score >= 80}
-                    onMarkContacted={onMarkContacted}
-                    onBatchUpdate={onBatchUpdate}
-                    currentUser={currentUser}
-                    textPrimary={textPrimary}
-                    textSecondary={textSecondary}
                 />
             </div>
         </div>

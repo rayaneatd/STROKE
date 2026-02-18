@@ -597,16 +597,8 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                 {/* Full Screen Drawer */}
                 <CandidateDrawer
                     isOpen={!!selectedFile}
-                    selectedFile={selectedFile}
+                    candidateId={selectedFile?.id || null}
                     onClose={() => setSelectedFile(null)}
-                    isLight={isLight}
-                    accentColor={accentColor}
-                    isTopCandidate={selectedFile?.rank === 1}
-                    onMarkContacted={onMarkContacted}
-                    onBatchUpdate={onBatchUpdate}
-                    currentUser={currentUser}
-                    textPrimary={textPrimary}
-                    textSecondary={textSecondary}
                 />
             </div>
         </div>
