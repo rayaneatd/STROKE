@@ -13,7 +13,7 @@
         "tabs": {
             "analysis": "Analyse",
             "interview": "Entretien",
-            "communication": "Email",
+            "communication": "Brouillon",
             "profile": "Profil"
         },
         "analysis": {
@@ -40,7 +40,8 @@
             "noQuestions": "Aucune question d'entretien pour le moment.",
             "generateSuggested": "Générer des questions suggérées",
             "aiGenerated": "Généré par IA",
-            "manualEntry": "Saisie manuelle"
+            "manualEntry": "Saisie manuelle",
+            "context": "Contexte :"
         },
         "email": {
             "aiComposer": "Compositeur IA",
@@ -65,12 +66,25 @@
             "match": "Correspondance",
             "added": "Ajouté le",
             "topCandidate": "Candidat Top",
-            "unknown": "Utilisateur inconnu"
+            "unknown": "Utilisateur inconnu",
+            "contact": "Contacter",
+            "copyEmail": "Copier l'email",
+            "copyPhone": "Copier le téléphone",
+            "openLinkedIn": "Ouvrir LinkedIn",
+            "openGithub": "Ouvrir GitHub"
         },
         "preview": {
             "openExternal": "Ouvrir externe",
             "quickPreview": "Aperçu rapide",
             "resumeContent": "Aperçu du contenu du CV"
+        },
+        "footer": {
+            "importedOn": "Importé le",
+            "openResume": "Voir le CV",
+            "fallbackResume": "CV original"
+        },
+        "error": {
+            "notFound": "Candidat introuvable"
         }
     },
     "common": {

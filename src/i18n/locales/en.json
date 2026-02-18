@@ -13,7 +13,7 @@
         "tabs": {
             "analysis": "Analysis",
             "interview": "Interview",
-            "communication": "Email",
+            "communication": "Draft",
             "profile": "Profile"
         },
         "analysis": {
@@ -40,7 +40,8 @@
             "noQuestions": "No interview questions yet.",
             "generateSuggested": "Generate suggested questions",
             "aiGenerated": "AI Generated",
-            "manualEntry": "Manual Entry"
+            "manualEntry": "Manual Entry",
+            "context": "Context:"
         },
         "email": {
             "aiComposer": "AI Composer",
@@ -65,12 +66,25 @@
             "match": "Match",
             "added": "Added",
             "topCandidate": "Top Candidate",
-            "unknown": "Unknown User"
+            "unknown": "Unknown User",
+            "contact": "Contact",
+            "copyEmail": "Copy email",
+            "copyPhone": "Copy phone",
+            "openLinkedIn": "Open LinkedIn",
+            "openGithub": "Open GitHub"
         },
         "preview": {
             "openExternal": "Open external",
             "quickPreview": "Quick Preview",
             "resumeContent": "Resume Content Preview"
+        },
+        "footer": {
+            "importedOn": "Imported on",
+            "openResume": "Open resume",
+            "fallbackResume": "Original resume"
+        },
+        "error": {
+            "notFound": "Candidate not found"
         }
     },
     "common": {
