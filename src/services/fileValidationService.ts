@@ -133,6 +133,11 @@ export const extractMetadataAndPreview = async (file: File): Promise<{ pageCount
     const textContent = await page.getTextContent();
     const textItems = textContent.items.map((item: any) => item.str).join(' ');
     
+    // Cleanup
+    page.cleanup();
+    pdf.cleanup();
+    pdf.destroy();
+    
     if (!textItems || textItems.trim().length === 0) {
        // Try checking if it's a scanned image PDF (not implemented here, but could warn)
        // For now, if strictly empty text, might be an issue, but some PDFs are just images.
