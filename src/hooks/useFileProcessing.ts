@@ -78,15 +78,28 @@ export const useFileProcessing = (
         const newPending: { file: File; id: FileId; metadata: FileMetadata }[] = [];
         const updates: { id: FileId; status: ProjectFile['status']; failureReasons?: string[] }[] = [];
 
+        // Initialize known hashes with currently pending files to prevent duplicates
+        const knownHashes = new Set(pendingUploadsRef.current.map(p => p.metadata.hash));
+
         results.forEach(({ item, result }) => {
             if (result.isValid && result.metadata) {
-                // Success -> Move to PENDING
-                newPending.push({
-                    file: item.file,
-                    id: item.id,
-                    metadata: result.metadata
-                });
-                updates.push({ id: item.id, status: 'PENDING' });
+                // Check for local duplicates (Pending or Intra-batch)
+                if (knownHashes.has(result.metadata.hash)) {
+                    updates.push({
+                        id: item.id,
+                        status: 'FAILED',
+                        failureReasons: ['DUPLICATE_FILE: Ce fichier est déjà dans la liste d\'attente ou a été ajouté en double.']
+                    });
+                } else {
+                    // Success -> Move to PENDING
+                    knownHashes.add(result.metadata.hash); // Add to known hashes for subsequent items in this loop
+                    newPending.push({
+                        file: item.file,
+                        id: item.id,
+                        metadata: result.metadata
+                    });
+                    updates.push({ id: item.id, status: 'PENDING' });
+                }
             } else {
                 // Failure -> Move to FAILED
                 updates.push({
