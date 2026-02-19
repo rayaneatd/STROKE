@@ -84,16 +84,16 @@ export const generateFileHash = async (file: File): Promise<string> => {
  * Check for duplicates in DB using hash
  */
 export const checkDuplicate = async (hash: string, projectId: string): Promise<boolean> => {
-  // Use a simplified query to avoid deep type instantiation issues
+  // Use a raw count query to avoid deep type instantiation issues with TypeScript
   const { count, error } = await supabase
     .from('candidates')
-    .select('id', { count: 'exact', head: true })
+    .select('*', { count: 'exact', head: true }) // Using '*' instead of 'id' sometimes helps TS inference
     .eq('project_id', projectId)
     .eq('file_hash', hash);
 
   if (error) {
     console.error('Error checking duplicate:', error);
-    return false; // Fail safe, assume not duplicate if DB error
+    return false; // Fail safe
   }
 
   return (count || 0) > 0;
