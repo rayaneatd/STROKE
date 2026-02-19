@@ -126,6 +126,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
     const [justUploaded, setJustUploaded] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const folderInputRef = useRef<HTMLInputElement>(null);
 
     // Theme Helpers
     const isLight = currentUser.preferences?.uiConfig?.theme === 'LIGHT';
@@ -209,7 +210,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         if (e.target.files && e.target.files.length > 0) {
             handleFilesAddedWrapper(Array.from(e.target.files));
         }
-        if (fileInputRef.current) fileInputRef.current.value = '';
+        if (e.target.value) e.target.value = '';
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -222,13 +223,51 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         setIsDragging(false);
     };
 
-    const handleDrop = (e: React.DragEvent) => {
+    // Helper to scan directory entries recursively
+    const scanFiles = async (item: FileSystemEntry): Promise<File[]> => {
+        if (item.isFile) {
+            return new Promise((resolve) => {
+                (item as FileSystemFileEntry).file((file) => {
+                    resolve([file]);
+                });
+            });
+        } else if (item.isDirectory) {
+            const dirReader = (item as FileSystemDirectoryEntry).createReader();
+            const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+                dirReader.readEntries((entries) => resolve(entries));
+            });
+            const files = await Promise.all(entries.map(scanFiles));
+            return files.flat();
+        }
+        return [];
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
         if (isReadOnly) return;
 
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            const acceptedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+        const items = Array.from(e.dataTransfer.items);
+        const acceptedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+
+        if (items.length > 0 && items[0].webkitGetAsEntry) {
+            // Modern Directory Handling
+            const filePromises = items.map(item => {
+                const entry = item.webkitGetAsEntry();
+                if (entry) return scanFiles(entry);
+                return Promise.resolve([]);
+            });
+
+            const allFiles = (await Promise.all(filePromises)).flat();
+            const validFiles = allFiles.filter(file => acceptedTypes.includes(file.type) || file.name.endsWith('.pdf') || file.name.endsWith('.docx') || file.name.endsWith('.doc')); 
+            
+            if (validFiles.length > 0) {
+                handleFilesAddedWrapper(validFiles);
+            } else {
+                 // Fallback or error if no valid files found in folders
+            }
+        } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+             // Fallback for browsers without webkitGetAsEntry
             const validFiles = Array.from(e.dataTransfer.files).filter((file: File) => acceptedTypes.includes(file.type));
 
             if (validFiles.length > 0) {
@@ -238,6 +277,29 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
             }
         }
     };
+
+    // Paste Handler
+    useEffect(() => {
+        const handlePaste = (e: ClipboardEvent) => {
+         if (isReadOnly || isProcessingActive) return;
+         if (e.clipboardData?.files && e.clipboardData.files.length > 0) {
+             e.preventDefault();
+             const files = Array.from(e.clipboardData.files);
+             const acceptedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+             const validFiles = files.filter(file => acceptedTypes.includes(file.type));
+             
+             if (validFiles.length > 0) {
+                 // Trigger visual feedback manually before processing
+                 setIsCardHovered(true);
+                 setTimeout(() => setIsCardHovered(false), 500);
+                 handleFilesAddedWrapper(validFiles);
+             }
+         }
+    };
+
+        document.addEventListener('paste', handlePaste);
+        return () => document.removeEventListener('paste', handlePaste);
+    }, [isReadOnly, isProcessingActive]);
 
     const handleExport = () => {
         const candidatesToExport = candidates;
@@ -350,6 +412,22 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                                 <div className="text-center relative z-10">
                                     <p className={`font-bold text-sm transition-colors duration-300 ${textPrimary} ${isCardHovered ? `text-${accentColor}-500` : ''}`}>Click to Browse</p>
                                     <p className={`text-xs mt-1 transition-colors duration-300 ${textSecondary} ${isCardHovered ? `text-${accentColor}-400/70` : ''}`}>or drag files here</p>
+                                    <p className={`text-[10px] mt-2 opacity-50 transition-opacity duration-300 ${isCardHovered ? 'opacity-100' : ''}`}>
+                                        <span className="font-mono bg-black/10 px-1 py-0.5 rounded mr-1">CTRL+V</span> to paste files
+                                    </p>
+                                </div>
+                                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                     <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            folderInputRef.current?.click();
+                                        }}
+                                        className={`p-2 rounded-lg bg-${accentColor}-500/10 hover:bg-${accentColor}-500/20 text-${accentColor}-500 text-xs font-bold flex items-center gap-1 transition-colors`}
+                                        title="Upload entire folder"
+                                     >
+                                        <FolderUp size={14} />
+                                        <span>Folder</span>
+                                     </button>
                                 </div>
                             </div>
                         ) : (
@@ -480,6 +558,13 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                         onChange={handleInputFileChange}
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                         disabled={isReadOnly}
+                    />
+                    <input
+                        type="file"
+                        ref={folderInputRef}
+                        className="hidden"
+                        {...{ webkitdirectory: "", directory: "" } as any}
+                        onChange={handleInputFileChange}
                     />
                 </div>
 
