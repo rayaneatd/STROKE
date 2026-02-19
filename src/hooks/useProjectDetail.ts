@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Project, ProjectRole, User as UserType, ProjectFile, OutreachStrategy, FileId, EmployeeAddPermission } from '../types';
 import { supabase } from '../lib/supabase';
@@ -133,18 +134,85 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     const isProjectOwner = currentUser.id === project?.ownerId;
     const isAdmin = currentUserRole === ProjectRole.ADMIN;
 
-    // Tab Management
-    const initialTab = useMemo(() => {
-        if (!project) return 'overview';
+    // Actions & Derived Permissions (Moved up for Tab Management)
+    const isActive = project?.status === 'ACTIVE';
+    const isArchived = project?.status === 'ARCHIVED';
+    const isCompleted = project?.status === 'COMPLETED';
+
+    const canManageTeam = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
+    
+    // Check if user can actually invite based on invitation policy
+    const canInviteMembers = useMemo(() => {
+        if (!project || !currentMemberRecord) return false;
+        
+        const perm = project.settings.employeeAddPermission;
+        
+        if (currentMemberRecord.role === ProjectRole.OWNER) {
+            return true; // Owner can always invite
+        }
+        
+        if (currentMemberRecord.role === ProjectRole.ADMIN) {
+            return perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS || perm === EmployeeAddPermission.OWNER_CONNECTIONS;
+        }
+        
+        return false;
+    }, [project, currentMemberRecord]);
+    
+    const canChat = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
+    const canScan = isActive;
+    const canEditProject = isProjectOwner || isAdmin;
+
+    const canViewOverview = isProjectOwner || isAdmin || currentPermissions.includes('ANALYZE');
+    const canViewResumes = isProjectOwner || isAdmin || currentPermissions.includes('SCAN');
+    const canAccessAdminChannel = isProjectOwner || isAdmin;
+
+    const isAnalyst = !isAdmin && !isProjectOwner && currentPermissions.includes('ANALYZE') && !currentPermissions.includes('SCAN');
+    const isScout = !isAdmin && !isProjectOwner && currentPermissions.includes('SCAN') && !currentPermissions.includes('ANALYZE');
+
+    const canViewActivityTab = isProjectOwner || isAdmin || (isAnalyst && project?.settings.analystCanViewActivity);
+
+    const canUseAntiGhosting = isProjectOwner || isAdmin ||
+        (isAnalyst && project?.settings.analystCanUseGhosting) ||
+        (isScout && project?.settings.scoutCanUseGhosting);
+
+    // Tab Management with URL Persistence
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+    const activeTab = useMemo(() => {
+        const tab = searchParams.get('tab');
+        
+        // Optimistic handling: if project is loading, preserve the tab from URL if it's a known valid tab
+        // This prevents the tab from flickering to 'overview' during initial load
+        if (!project) {
+            if (tab && ['overview', 'resumes', 'team', 'discussions', 'activity'].includes(tab)) {
+                return tab;
+            }
+            return 'overview';
+        }
+
+        // Validate tab existence and permissions
+        if (tab === 'overview' && canViewOverview) return 'overview';
+        if (tab === 'resumes' && canViewResumes) return 'resumes';
+        if (tab === 'team') return 'team';
+        if (tab === 'discussions' && canChat) return 'discussions';
+        if (tab === 'activity' && canViewActivityTab) return 'activity';
+        
+        // Fallback logic
         const me = currentMemberRecord;
         if (!me) return 'overview';
         if (me.role === ProjectRole.OWNER || me.role === ProjectRole.ADMIN) return 'overview';
         if (me.permissions.includes('ANALYZE')) return 'overview';
         if (me.permissions.includes('SCAN')) return 'resumes';
         return 'team';
-    }, [project, currentMemberRecord]);
+    }, [searchParams, project, currentMemberRecord, canViewOverview, canViewResumes, canChat, canViewActivityTab]);
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'resumes' | 'discussions' | 'activity'>(initialTab);
+    const setActiveTab = (tab: string) => {
+        setSearchParams(prev => {
+            const newParams = new URLSearchParams(prev);
+            newParams.set('tab', tab);
+            return newParams;
+        }, { replace: true });
+    };
 
     // Mutations
     const updateProjectMutation = useMutation({
@@ -304,46 +372,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     // We already have 'analytics', 'topCandidates', and 'contributionData' defined above using useProjectAnalytics hook.
     // The previous implementation here was redundant and used incomplete 'files' state (local only).
 
-    // Actions & Derived Permissions
-    const isActive = project?.status === 'ACTIVE';
-    const isArchived = project?.status === 'ARCHIVED';
-    const isCompleted = project?.status === 'COMPLETED';
-
-    const canManageTeam = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
-    
-    // Check if user can actually invite based on invitation policy
-    const canInviteMembers = useMemo(() => {
-        if (!project || !currentMemberRecord) return false;
-        
-        const perm = project.settings.employeeAddPermission;
-        
-        if (currentMemberRecord.role === ProjectRole.OWNER) {
-            return true; // Owner can always invite
-        }
-        
-        if (currentMemberRecord.role === ProjectRole.ADMIN) {
-            return perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS || perm === EmployeeAddPermission.OWNER_CONNECTIONS;
-        }
-        
-        return false;
-    }, [project, currentMemberRecord]);
-    
-    const canChat = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
-    const canScan = isActive;
-    const canEditProject = isProjectOwner || isAdmin;
-
-    const canViewOverview = isProjectOwner || isAdmin || currentPermissions.includes('ANALYZE');
-    const canViewResumes = isProjectOwner || isAdmin || currentPermissions.includes('SCAN');
-    const canAccessAdminChannel = isProjectOwner || isAdmin;
-
-    const isAnalyst = !isAdmin && !isProjectOwner && currentPermissions.includes('ANALYZE') && !currentPermissions.includes('SCAN');
-    const isScout = !isAdmin && !isProjectOwner && currentPermissions.includes('SCAN') && !currentPermissions.includes('ANALYZE');
-
-    const canViewActivityTab = isProjectOwner || isAdmin || (isAnalyst && project?.settings.analystCanViewActivity);
-
-    const canUseAntiGhosting = isProjectOwner || isAdmin ||
-        (isAnalyst && project?.settings.analystCanUseGhosting) ||
-        (isScout && project?.settings.scoutCanUseGhosting);
+    // Actions & Derived Permissions (Moved up for Tab Management)
 
     const handleEditClick = () => {
         if (canEditProject) setIsEditModalOpen(true);
