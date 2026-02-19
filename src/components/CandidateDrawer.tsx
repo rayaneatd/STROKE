@@ -69,6 +69,12 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
   const [isSending, setIsSending] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
 
+  // --- Interview Questions State ---
+  const [newQuestion, setNewQuestion] = useState('');
+  const [newContext, setNewContext] = useState('');
+  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
+  const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
+
   // --- Autosave Logic ---
   
   const saveDraft = useCallback(
@@ -245,6 +251,64 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
   const linkedinUrl = data?.social_links?.linkedin;
   const githubUrl = data?.social_links?.github;
 
+  // --- Interview Questions Logic ---
+
+  const handleAddQuestion = async () => {
+    if (!candidateId || !newQuestion.trim()) return;
+
+    setIsUpdatingQuestions(true);
+    try {
+      const currentQuestions = normalized.questions;
+      const updatedQuestions = [
+        ...currentQuestions,
+        { question: newQuestion.trim(), context: newContext.trim() || undefined }
+      ];
+
+      const { error } = await supabase.rpc('update_candidate_interview_questions', {
+        p_candidate_id: candidateId,
+        p_questions: updatedQuestions
+      });
+
+      if (error) throw error;
+
+      setData(prev => prev ? { ...prev, interview_questions: updatedQuestions } : null);
+      setNewQuestion('');
+      setNewContext('');
+      setIsAddingQuestion(false);
+    } catch (err) {
+      console.error('Failed to add question:', err);
+    } finally {
+      setIsUpdatingQuestions(false);
+    }
+  };
+
+  const handleDeleteQuestion = async (index: number) => {
+    if (!candidateId) return;
+
+    // Optimistic update
+    const currentQuestions = normalized.questions;
+    const updatedQuestions = currentQuestions.filter((_, i) => i !== index);
+    
+    // Save previous state for rollback
+    const previousData = data;
+    
+    // Update local state immediately
+    setData(prev => prev ? { ...prev, interview_questions: updatedQuestions } : null);
+
+    try {
+      const { error } = await supabase.rpc('update_candidate_interview_questions', {
+        p_candidate_id: candidateId,
+        p_questions: updatedQuestions
+      });
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Failed to delete question:', err);
+      // Rollback on error
+      setData(previousData);
+    }
+  };
+
   const renderAnalysis = () => (
     <div className="space-y-8 animate-fade-in">
       <div className="relative p-6 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-900/50 border border-white/5 shadow-sm">
@@ -406,12 +470,56 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
           <Mic className="w-4 h-4" />
           {t('candidateDrawer.interview.title')}
         </h3>
+        <button
+          onClick={() => setIsAddingQuestion(!isAddingQuestion)}
+          className="text-xs font-bold text-zinc-400 hover:text-white transition-colors border border-zinc-700 hover:border-zinc-500 rounded-lg px-3 py-1.5"
+        >
+          {isAddingQuestion ? t('common.cancel') : t('common.add')}
+        </button>
       </div>
+
+      {isAddingQuestion && (
+        <div className="p-4 rounded-xl bg-zinc-900 border border-purple-500/30 space-y-3 animate-fade-in">
+          <input
+            type="text"
+            placeholder={t('candidateDrawer.interview.questionPlaceholder') || "Question..."}
+            value={newQuestion}
+            onChange={(e) => setNewQuestion(e.target.value)}
+            className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-purple-500/50"
+            autoFocus
+          />
+          <input
+            type="text"
+            placeholder={t('candidateDrawer.interview.contextPlaceholder') || "Context (optional)..."}
+            value={newContext}
+            onChange={(e) => setNewContext(e.target.value)}
+            className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-purple-500/50"
+          />
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleAddQuestion}
+              disabled={!newQuestion.trim() || isUpdatingQuestions}
+              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isUpdatingQuestions ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+              {t('common.save')}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-3">
         {normalized.questions.length > 0 ? (
           normalized.questions.map((q, idx) => (
-            <div key={idx} className="p-4 rounded-xl bg-zinc-900 border border-white/5 hover:border-purple-500/30 transition-colors group">
-              <p className="text-sm text-zinc-200 font-medium group-hover:text-purple-100 transition-colors">"{q.question}"</p>
+            <div key={idx} className="relative p-4 rounded-xl bg-zinc-900 border border-white/5 hover:border-purple-500/30 transition-colors group">
+              <button
+                onClick={() => handleDeleteQuestion(idx)}
+                className="absolute top-2 right-2 p-1.5 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                title={t('common.delete')}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+              <p className="text-sm text-zinc-200 font-medium group-hover:text-purple-100 transition-colors pr-6">"{q.question}"</p>
               {q.context && (
                 <p className="mt-2 text-xs text-zinc-500 border-t border-white/5 pt-2">
                   <span className="font-semibold text-zinc-400">{t('candidateDrawer.interview.context')}</span> {q.context}
@@ -420,10 +528,18 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 border border-dashed border-white/10 rounded-2xl">
-            <MessageSquare className="w-8 h-8 text-zinc-700 mb-3" />
-            <p className="text-zinc-500 text-sm italic">{t('candidateDrawer.interview.noQuestions')}</p>
-          </div>
+          !isAddingQuestion && (
+            <div className="flex flex-col items-center justify-center py-12 border border-dashed border-white/10 rounded-2xl">
+              <MessageSquare className="w-8 h-8 text-zinc-700 mb-3" />
+              <p className="text-zinc-500 text-sm italic">{t('candidateDrawer.interview.noQuestions')}</p>
+              <button
+                onClick={() => setIsAddingQuestion(true)}
+                className="mt-4 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                {t('candidateDrawer.interview.addFirst')}
+              </button>
+            </div>
+          )
         )}
       </div>
     </div>
