@@ -332,42 +332,50 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                                             <div
                                                 key={f.id}
                                                 style={{ position: 'absolute', top: offsetTop, left: 0, width: '100%', height: PENDING_ITEM_HEIGHT - 8 }}
-                                                className={`group relative flex items-center p-3 rounded-xl border backdrop-blur-sm transition-all item-enter ${
+                                                className={`group relative flex items-center p-3 rounded-xl border backdrop-blur-sm transition-all item-enter electric-hover ${
                                                     isProcessing 
-                                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-lg shadow-blue-500/20 translate-x-2' 
-                                                    : isLight ? 'bg-white/60 border-slate-100' : 'bg-white/5 border-white/5'
+                                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-lg shadow-blue-500/20 translate-x-2 neon-border' 
+                                                    : isLight ? 'bg-white/60 border-slate-100 hover:bg-white' : 'bg-white/5 border-white/5 hover:bg-white/10'
                                                 }`}
                                             >
                                                 {/* Processing Glow Effect */}
-                                                {isProcessing && <div className="absolute inset-0 bg-blue-400/10 animate-pulse rounded-xl"></div>}
+                                                {isProcessing && (
+                                                    <div className="absolute inset-0 bg-blue-400/10 animate-pulse rounded-xl overflow-hidden">
+                                                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-blue-400/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                                                    </div>
+                                                )}
 
                                                 <div className="flex-shrink-0 mr-3 relative z-10">
                                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
                                                         isProcessing 
-                                                        ? 'bg-blue-500 border-blue-400 text-white shadow-blue-500/50 shadow-md scale-110' 
+                                                        ? 'bg-blue-500 border-blue-400 text-white shadow-blue-500/50 shadow-md scale-110 animate-pulse' 
                                                         : isLight ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-white/5 border-white/5 text-zinc-400'
                                                     }`}>
                                                         {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <FileText size={14} />}
                                                     </div>
                                                 </div>
                                                 <div className="flex-1 min-w-0 relative z-10">
-                                                    <div className={`text-xs font-bold truncate pr-6 ${isProcessing ? 'text-blue-400 neon-text' : textPrimary}`}>{f.name}</div>
+                                                    <div className={`text-xs font-bold truncate pr-6 transition-colors ${isProcessing ? 'text-blue-400 neon-text' : `${textPrimary} group-hover:text-blue-400`}`}>{f.name}</div>
                                                     <div className={`text-[10px] flex items-center gap-1 ${textSecondary}`}>
                                                         <span>{f.size}</span>
                                                         <span className="w-0.5 h-0.5 rounded-full bg-zinc-400"></span>
-                                                        <span className={`font-bold ${isProcessing ? 'text-blue-400' : `text-${accentColor}-500`}`}>
+                                                        <span className={`font-bold ${isProcessing ? 'text-blue-400 neon-text' : `text-${accentColor}-500`}`}>
                                                             {isProcessing ? '⚡ Analyzing...' : 'Ready'}
                                                         </span>
                                                     </div>
                                                 </div>
-                                                {!isProcessing && (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); onRemoveFile(f.id); }}
-                                                        className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100 ${isLight ? 'text-slate-400 hover:text-red-500 hover:bg-red-50' : 'text-zinc-500 hover:text-red-400 hover:bg-white/10'}`}
-                                                    >
-                                                        <X size={14} />
-                                                    </button>
-                                                )}
+                                                
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); onRemoveFile(f.id); }}
+                                                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-20 ${
+                                                        isLight 
+                                                        ? 'text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm' 
+                                                        : 'text-zinc-500 hover:text-red-400 hover:bg-red-500/20 hover:shadow-[0_0_10px_rgba(248,113,113,0.5)]'
+                                                    }`}
+                                                    title={isProcessing ? "Cancel" : "Remove"}
+                                                >
+                                                    <X size={14} />
+                                                </button>
                                             </div>
                                         );
                                     })}
