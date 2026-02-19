@@ -5,6 +5,8 @@
 @layer base {
   body {
     @apply antialiased font-sans;
+    /* Simulate 80% zoom scale */
+    zoom: 0.8;
   }
 }
 
