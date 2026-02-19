@@ -323,6 +323,28 @@
         "en": "English",
         "fr": "French"
     },
+        "candidateDrawer": {
+        "email": {
+            "title": "Send Email",
+            "send": "Send",
+            "sending": "Sending...",
+            "sent": "Sent",
+            "draft": "Draft",
+            "draftPlaceholder": "Draft your email here...",
+            "saved": "Saved",
+            "saving": "Saving...",
+            "error": "Error",
+            "sentAt": "Sent on {{date}}"
+        },
+        "interview": {
+            "title": "Interview Questions",
+            "addFirst": "Add first question",
+            "noQuestions": "No interview questions yet.",
+            "questionPlaceholder": "Enter your question...",
+            "contextPlaceholder": "Context (optional)...",
+            "context": "Context:"
+        }
+    },
     "dashboard": {
         "loadingIntelligence": "Loading Intelligence...",
         "header": {

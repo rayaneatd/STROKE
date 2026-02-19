@@ -274,11 +274,18 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
       setData(prev => prev ? { ...prev, interview_questions: updatedQuestions } : null);
       setNewQuestion('');
       setNewContext('');
-      setIsAddingQuestion(false);
+      // setIsAddingQuestion(false); // Keep open for rapid entry
     } catch (err) {
       console.error('Failed to add question:', err);
     } finally {
       setIsUpdatingQuestions(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAddQuestion();
     }
   };
 
@@ -485,6 +492,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
             placeholder={t('candidateDrawer.interview.questionPlaceholder') || "Question..."}
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-purple-500/50"
             autoFocus
           />
@@ -493,6 +501,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
             placeholder={t('candidateDrawer.interview.contextPlaceholder') || "Context (optional)..."}
             value={newContext}
             onChange={(e) => setNewContext(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-purple-500/50"
           />
           <div className="flex justify-end pt-2">

@@ -322,6 +322,28 @@
         "en": "Anglais",
         "fr": "Français"
     },
+        "candidateDrawer": {
+        "email": {
+            "title": "Envoyer un E-mail",
+            "send": "Envoyer",
+            "sending": "Envoi...",
+            "sent": "Envoyé",
+            "draft": "Brouillon",
+            "draftPlaceholder": "Rédigez votre e-mail ici...",
+            "saved": "Enregistré",
+            "saving": "Enregistrement...",
+            "error": "Erreur",
+            "sentAt": "Envoyé le {{date}}"
+        },
+        "interview": {
+            "title": "Questions d'Entretien",
+            "addFirst": "Ajouter une première question",
+            "noQuestions": "Aucune question d'entretien pour le moment.",
+            "questionPlaceholder": "Saisissez votre question...",
+            "contextPlaceholder": "Contexte (optionnel)...",
+            "context": "Contexte :"
+        }
+    },
     "dashboard": {
         "loadingIntelligence": "Chargement de l'intelligence...",
         "header": {
