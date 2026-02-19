@@ -65,66 +65,82 @@ export const useFileProcessing = (
         // Add scanning files to UI
         setFiles(prev => [...scanningFiles, ...prev]);
 
-        // 3. Async Pipeline (Hash, Sanitize, PDF Analysis)
-        // Process in parallel
-        const results = await Promise.all(
-            scanningFiles.map(async (item) => {
-                const result = await processFilePipeline(item.file, projectId);
-                return { item, result };
-            })
-        );
-
-        // 4. Handle Results
+        // 3. Async Pipeline (Hash, Sanitize, PDF Analysis) - Batched to prevent UI freeze
+        // Batch size reduced to 10 to minimize memory usage (File.arrayBuffer) and ensure fluid UI updates
+        const BATCH_SIZE = 10;
         const newPending: { file: File; id: FileId; metadata: FileMetadata }[] = [];
         const updates: { id: FileId; status: ProjectFile['status']; failureReasons?: string[] }[] = [];
-
+        
         // Initialize known hashes with currently pending files to prevent duplicates
+        // We do this ONCE before the loop so duplicate checks work across batches
         const knownHashes = new Set(pendingUploadsRef.current.map(p => p.metadata.hash));
 
-        results.forEach(({ item, result }) => {
-            if (result.isValid && result.metadata) {
-                // Check for local duplicates (Pending or Intra-batch)
-                if (knownHashes.has(result.metadata.hash)) {
-                    updates.push({
+        for (let i = 0; i < scanningFiles.length; i += BATCH_SIZE) {
+            const batch = scanningFiles.slice(i, i + BATCH_SIZE);
+            
+            // Process batch in parallel
+            const batchResults = await Promise.all(
+                batch.map(async (item) => {
+                    // processFilePipeline is already async (hashing off-main-thread, etc.)
+                    const result = await processFilePipeline(item.file, projectId);
+                    return { item, result };
+                })
+            );
+
+            // Handle Batch Results immediately to update UI incrementally
+            const batchUpdates: { id: FileId; status: ProjectFile['status']; failureReasons?: string[] }[] = [];
+
+            batchResults.forEach(({ item, result }) => {
+                if (result.isValid && result.metadata) {
+                    // Check for local duplicates (Pending or Intra-batch)
+                    if (knownHashes.has(result.metadata.hash)) {
+                        batchUpdates.push({
+                            id: item.id,
+                            status: 'FAILED',
+                            failureReasons: ['DUPLICATE_FILE: Ce fichier est déjà dans la liste d\'attente ou a été ajouté en double.']
+                        });
+                    } else {
+                        // Success -> Move to PENDING
+                        knownHashes.add(result.metadata.hash); // Add to known hashes for subsequent items
+                        newPending.push({
+                            file: item.file,
+                            id: item.id,
+                            metadata: result.metadata
+                        });
+                        batchUpdates.push({ id: item.id, status: 'PENDING' });
+                    }
+                } else {
+                    // Failed validation in pipeline (e.g. empty PDF content)
+                    batchUpdates.push({
                         id: item.id,
                         status: 'FAILED',
-                        failureReasons: ['DUPLICATE_FILE: Ce fichier est déjà dans la liste d\'attente ou a été ajouté en double.']
+                        failureReasons: result.failure?.reason ? [result.failure.errorMessage || result.failure.reason] : ['Validation failed']
                     });
-                } else {
-                    // Success -> Move to PENDING
-                    knownHashes.add(result.metadata.hash); // Add to known hashes for subsequent items in this loop
-                    newPending.push({
-                        file: item.file,
-                        id: item.id,
-                        metadata: result.metadata
-                    });
-                    updates.push({ id: item.id, status: 'PENDING' });
                 }
-            } else {
-                // Failure -> Move to FAILED
-                updates.push({
-                    id: item.id,
-                    status: 'FAILED',
-                    failureReasons: [result.failure?.errorMessage || 'Unknown validation error']
+            });
+
+            // Update local accumulators
+            updates.push(...batchUpdates);
+
+            // Update UI State incrementally for this batch
+            setFiles(prev => {
+                const next = [...prev];
+                batchUpdates.forEach(u => {
+                    const idx = next.findIndex(f => f.id === u.id);
+                    if (idx !== -1) {
+                        next[idx] = { ...next[idx], status: u.status, failureReasons: u.failureReasons };
+                    }
                 });
-            }
-        });
+                return next;
+            });
 
-        // Update Ref
+            // Yield to main thread to allow UI to render (prevent freeze)
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+
+        // 4. Finalize
+        // Add all valid files to the pending upload queue
         pendingUploadsRef.current = [...pendingUploadsRef.current, ...newPending];
-
-        // Update State
-        setFiles(prev => prev.map(f => {
-            const update = updates.find(u => u.id === f.id);
-            if (update) {
-                return {
-                    ...f,
-                    status: update.status,
-                    failureReasons: update.failureReasons
-                };
-            }
-            return f;
-        }));
 
     }, [projectId, currentUser.id]);
 
