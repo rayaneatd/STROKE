@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css'; // Added global CSS
 import App from './App';
 import './i18n/config'; // Import i18n config
 import { ThemeProvider } from './context/ThemeContext';

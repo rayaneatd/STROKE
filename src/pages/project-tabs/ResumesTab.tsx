@@ -258,32 +258,47 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
 
 
+    const isProcessingActive = pendingFiles.some(f => f.status === 'PROCESSING');
+
     return (
         <div className="relative h-[calc(100vh-220px)] min-h-[600px] animate-fade-in flex flex-col lg:flex-row gap-6">
             {/* Left Panel: Upload Area */}
             <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg overflow-hidden">
                 <div
-                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-300 ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01]` : ''}`}
+                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-300 ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01]` : ''} ${isProcessingActive ? 'neon-border' : ''}`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                 >
-                    {/* Decoration */}
+                    {/* Decoration - Lightning Effect when Processing */}
+                    {isProcessingActive && (
+                        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                             <div className="scan-line-effect"></div>
+                             <div className="absolute inset-0 bg-blue-500/5 animate-pulse-fast"></div>
+                             {/* Lightning Flash Overlay */}
+                             <div className="absolute inset-0 bg-white mix-blend-overlay animate-lightning"></div>
+                        </div>
+                    )}
+
                     <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,${isLight ? 'rgba(14,165,233,0.08)' : 'rgba(56,189,248,0.03)'},transparent)] opacity-70 pointer-events-none`}></div>
 
                     <div className="relative z-10 flex-1 flex flex-col p-6 h-full overflow-hidden">
                         <div className="flex justify-between items-start mb-6 shrink-0">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className={`p-1.5 rounded-lg shadow-sm ${isLight ? `bg-${accentColor}-500 text-white shadow-${accentColor}-200` : `bg-${accentColor}-500 shadow-${accentColor}-500/20`}`}>
-                                        <FileUp size={16} className="text-white" />
+                                    <div className={`p-1.5 rounded-lg shadow-sm transition-all duration-300 ${isProcessingActive ? 'bg-blue-600 shadow-blue-500/50 scale-110' : isLight ? `bg-${accentColor}-500 text-white shadow-${accentColor}-200` : `bg-${accentColor}-500 shadow-${accentColor}-500/20`}`}>
+                                        <FileUp size={16} className={`text-white ${isProcessingActive ? 'animate-bounce' : ''}`} />
                                     </div>
-                                    <h3 className={`font-bold text-lg tracking-tight ${textPrimary}`}>Upload Center</h3>
+                                    <h3 className={`font-bold text-lg tracking-tight ${textPrimary} ${isProcessingActive ? 'neon-text' : ''}`}>
+                                        {isProcessingActive ? 'HYPER-SPEED UPLOAD' : 'Upload Center'}
+                                    </h3>
                                 </div>
-                                <p className={`text-xs font-medium ${textSecondary}`}>Drag & Drop resumes to analyze</p>
+                                <p className={`text-xs font-medium ${textSecondary}`}>
+                                    {isProcessingActive ? 'Processing at max velocity...' : 'Drag & Drop resumes to analyze'}
+                                </p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <span className={`text-3xl font-black leading-none tracking-tighter ${textPrimary}`}>{pendingFiles.length}</span>
+                                <span className={`text-3xl font-black leading-none tracking-tighter transition-all duration-200 ${isProcessingActive ? 'text-blue-500 scale-110' : textPrimary}`}>{pendingFiles.length}</span>
                                 <span className={`text-[10px] uppercase font-bold tracking-widest ${textSecondary}`}>Pending</span>
                             </div>
                         </div>
@@ -317,20 +332,31 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                                             <div
                                                 key={f.id}
                                                 style={{ position: 'absolute', top: offsetTop, left: 0, width: '100%', height: PENDING_ITEM_HEIGHT - 8 }}
-                                                className={`group relative flex items-center p-3 rounded-xl border backdrop-blur-sm transition-all ${isLight ? 'bg-white/60 border-slate-100' : 'bg-white/5 border-white/5'}`}
+                                                className={`group relative flex items-center p-3 rounded-xl border backdrop-blur-sm transition-all item-enter ${
+                                                    isProcessing 
+                                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-lg shadow-blue-500/20 translate-x-2' 
+                                                    : isLight ? 'bg-white/60 border-slate-100' : 'bg-white/5 border-white/5'
+                                                }`}
                                             >
-                                                <div className="flex-shrink-0 mr-3">
-                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isLight ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-white/5 border-white/5 text-zinc-400'}`}>
-                                                        {isProcessing ? <Loader2 size={14} className="animate-spin text-brand-500" /> : <FileText size={14} />}
+                                                {/* Processing Glow Effect */}
+                                                {isProcessing && <div className="absolute inset-0 bg-blue-400/10 animate-pulse rounded-xl"></div>}
+
+                                                <div className="flex-shrink-0 mr-3 relative z-10">
+                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
+                                                        isProcessing 
+                                                        ? 'bg-blue-500 border-blue-400 text-white shadow-blue-500/50 shadow-md scale-110' 
+                                                        : isLight ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-white/5 border-white/5 text-zinc-400'
+                                                    }`}>
+                                                        {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <FileText size={14} />}
                                                     </div>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className={`text-xs font-bold truncate pr-6 ${textPrimary}`}>{f.name}</div>
+                                                <div className="flex-1 min-w-0 relative z-10">
+                                                    <div className={`text-xs font-bold truncate pr-6 ${isProcessing ? 'text-blue-400 neon-text' : textPrimary}`}>{f.name}</div>
                                                     <div className={`text-[10px] flex items-center gap-1 ${textSecondary}`}>
                                                         <span>{f.size}</span>
                                                         <span className="w-0.5 h-0.5 rounded-full bg-zinc-400"></span>
-                                                        <span className={`font-bold ${isProcessing ? 'text-amber-500' : `text-${accentColor}-500`}`}>
-                                                            {isProcessing ? 'Analyzing...' : 'Ready'}
+                                                        <span className={`font-bold ${isProcessing ? 'text-blue-400' : `text-${accentColor}-500`}`}>
+                                                            {isProcessing ? '⚡ Analyzing...' : 'Ready'}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -352,17 +378,34 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                         <div className={`mt-6 pt-4 border-t shrink-0 space-y-3 ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
                             <button
                                 onClick={onScan}
-                                disabled={isUploading || isReadOnly || pendingFiles.length === 0}
-                                className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] relative overflow-hidden group ${isUploading
-                                    ? 'bg-zinc-700 text-zinc-400 cursor-wait'
+                                disabled={isUploading || isReadOnly || pendingFiles.length === 0 || isProcessingActive}
+                                className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] relative overflow-hidden group ${
+                                    isUploading || isProcessingActive
+                                    ? 'bg-zinc-800 text-zinc-500 cursor-wait border border-zinc-700'
                                     : pendingFiles.length === 0
                                         ? isLight ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                        : `bg-${accentColor}-600 text-white hover:bg-${accentColor}-500 shadow-${accentColor}-900/20`
+                                        : `bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02]`
                                     }`}
                             >
-                                <span className="relative flex items-center gap-2">
-                                    {isUploading ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} className={pendingFiles.length > 0 ? "fill-current" : ""} />}
-                                    {isUploading ? 'Processing Batch...' : 'Start AI Analysis'}
+                                {/* Button Shine Effect */}
+                                {!isUploading && !isProcessingActive && pendingFiles.length > 0 && (
+                                    <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
+                                )}
+                                
+                                <span className="relative flex items-center gap-2 z-20">
+                                    {isUploading || isProcessingActive ? (
+                                        <>
+                                            <Loader2 className="animate-spin text-blue-500" size={18} />
+                                            <span className={`font-mono tracking-wider ${isProcessingActive ? 'text-blue-400 animate-pulse' : 'text-zinc-400'}`}>
+                                                 {isProcessingActive ? '⚡ SYSTEM BUSY: PROCESSING' : 'INITIALIZING...'}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Zap size={18} className={pendingFiles.length > 0 ? "fill-current animate-pulse" : ""} />
+                                            {pendingFiles.length > 0 ? `IGNITE ANALYSIS (${pendingFiles.length})` : 'Start AI Analysis'}
+                                        </>
+                                    )}
                                 </span>
                             </button>
 
