@@ -63,7 +63,7 @@ export const processUploads = async (
   onBatchComplete: (count: number) => void
 ): Promise<FailedFile[]> => {
   const uploadFailures: FailedFile[] = [];
-  const UPLOAD_CONCURRENCY = 3;
+  const UPLOAD_CONCURRENCY = 30;
 
   for (let i = 0; i < files.length; i += UPLOAD_CONCURRENCY) {
     const chunk = files.slice(i, i + UPLOAD_CONCURRENCY);

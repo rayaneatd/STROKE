@@ -118,7 +118,8 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         addFiles,
         removeFile,
         retryFile,
-        queueFilesForProcessing
+        queueFilesForProcessing,
+        uploadPendingFiles
     } = useFileProcessing(projectId, currentUser, project, () => { });
 
     // Sync files state with candidates from DB
@@ -457,6 +458,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                 setQuotaError(result.error || 'Failed to deduct credits');
                 return;
             }
+
+            // Upload files first
+            await uploadPendingFiles();
 
             // Delegate real processing to useFileProcessing or an edge function
             queueFilesForProcessing(pendingFiles);
