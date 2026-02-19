@@ -109,3 +109,48 @@
   from { transform: translateX(-20px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* Turbo Mode / Intense Processing */
+@keyframes turbo-glow {
+  0% {
+    box-shadow: 0 0 10px var(--theme-color, #3b82f6), 0 0 20px var(--theme-color, #3b82f6), inset 0 0 5px var(--theme-color, #3b82f6);
+    border-color: var(--theme-color, #3b82f6);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--theme-color, #3b82f6), 0 0 50px var(--theme-color, #3b82f6), inset 0 0 15px var(--theme-color, #3b82f6);
+    border-color: #ffffff;
+  }
+  100% {
+    box-shadow: 0 0 10px var(--theme-color, #3b82f6), 0 0 20px var(--theme-color, #3b82f6), inset 0 0 5px var(--theme-color, #3b82f6);
+    border-color: var(--theme-color, #3b82f6);
+  }
+}
+
+@keyframes shake-violent {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-1px, -1px); }
+  20% { transform: translate(1px, 1px); }
+  30% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  50% { transform: translate(-1px, 2px); }
+  60% { transform: translate(1px, -2px); }
+  70% { transform: translate(0, 1px); }
+  80% { transform: translate(-1px, 0); }
+  90% { transform: translate(1px, 0); }
+  100% { transform: translate(0, 0); }
+}
+
+.turbo-mode {
+  animation: turbo-glow 0.8s ease-in-out infinite, shake-violent 0.5s linear infinite;
+  z-index: 20;
+}
+
+.turbo-mode::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2), transparent 70%);
+  mix-blend-mode: overlay;
+  animation: pulse 0.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+}

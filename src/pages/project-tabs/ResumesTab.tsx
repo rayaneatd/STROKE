@@ -41,6 +41,16 @@ const ITEM_HEIGHT = 80;
 const CONTAINER_HEIGHT = 600;
 const PENDING_ITEM_HEIGHT = 56; // Smaller height for upload list
 
+const ACCENT_HEX_MAP: Record<string, string> = {
+    slate: '#64748b',
+    blue: '#3b82f6',
+    cyan: '#06b6d4',
+    emerald: '#10b981',
+    violet: '#8b5cf6',
+    rose: '#f43f5e',
+    amber: '#f59e0b',
+};
+
 type SortOption = 'SCORE_DESC' | 'SCORE_ASC' | 'DATE_DESC' | 'DATE_ASC' | 'NAME_ASC';
 type ScoreFilter = 'HIGH' | 'MID' | 'LOW';
 type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED';
@@ -118,6 +128,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
     // Theme Helpers
     const isLight = currentUser.preferences?.uiConfig?.theme === 'LIGHT';
     const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'blue';
+    const themeColorHex = ACCENT_HEX_MAP[accentColor] || '#3b82f6';
 
     const cardBg = isLight ? 'bg-white border-slate-200' : 'bg-[#0e0e10] border-white/5';
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
@@ -265,7 +276,8 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
             {/* Left Panel: Upload Area */}
             <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg overflow-hidden">
                 <div
-                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-300 ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01]` : ''} ${isProcessingActive ? 'neon-border' : ''}`}
+                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-300 ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01]` : ''} ${isProcessingActive ? 'turbo-mode' : ''}`}
+                    style={isProcessingActive ? { '--theme-color': themeColorHex } as React.CSSProperties : {}}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
@@ -273,8 +285,8 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                     {/* Decoration - Lightning Effect when Processing */}
                     {isProcessingActive && (
                         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                             <div className="scan-line-effect"></div>
-                             <div className="absolute inset-0 bg-blue-500/5 animate-pulse-fast"></div>
+                             <div className="scan-line-effect" style={{ background: `linear-gradient(to right, transparent, ${themeColorHex}, transparent)`, boxShadow: `0 0 8px ${themeColorHex}` }}></div>
+                             <div className={`absolute inset-0 bg-${accentColor}-500/10 animate-pulse-fast`}></div>
                              {/* Lightning Flash Overlay */}
                              <div className="absolute inset-0 bg-white mix-blend-overlay animate-lightning"></div>
                         </div>
@@ -286,10 +298,10 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                         <div className="flex justify-between items-start mb-6 shrink-0">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className={`p-1.5 rounded-lg shadow-sm transition-all duration-300 ${isProcessingActive ? 'bg-blue-600 shadow-blue-500/50 scale-110' : isLight ? `bg-${accentColor}-500 text-white shadow-${accentColor}-200` : `bg-${accentColor}-500 shadow-${accentColor}-500/20`}`}>
+                                    <div className={`p-1.5 rounded-lg shadow-sm transition-all duration-300 ${isProcessingActive ? `bg-${accentColor}-600 shadow-${accentColor}-500/50 scale-110` : isLight ? `bg-${accentColor}-500 text-white shadow-${accentColor}-200` : `bg-${accentColor}-500 shadow-${accentColor}-500/20`}`}>
                                         <FileUp size={16} className={`text-white ${isProcessingActive ? 'animate-bounce' : ''}`} />
                                     </div>
-                                    <h3 className={`font-bold text-lg tracking-tight ${textPrimary} ${isProcessingActive ? 'neon-text' : ''}`}>
+                                    <h3 className={`font-bold text-lg tracking-tight ${textPrimary} ${isProcessingActive ? 'neon-text' : ''}`} style={isProcessingActive ? { textShadow: `0 0 10px ${themeColorHex}` } : {}}>
                                         {isProcessingActive ? 'HYPER-SPEED UPLOAD' : 'Upload Center'}
                                     </h3>
                                 </div>
@@ -298,7 +310,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                                 </p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <span className={`text-3xl font-black leading-none tracking-tighter transition-all duration-200 ${isProcessingActive ? 'text-blue-500 scale-110' : textPrimary}`}>{pendingFiles.length}</span>
+                                <span className={`text-3xl font-black leading-none tracking-tighter transition-all duration-200 ${isProcessingActive ? `text-${accentColor}-500 scale-110` : textPrimary}`}>{pendingFiles.length}</span>
                                 <span className={`text-[10px] uppercase font-bold tracking-widest ${textSecondary}`}>Pending</span>
                             </div>
                         </div>
@@ -389,7 +401,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                                 disabled={isUploading || isReadOnly || pendingFiles.length === 0 || isProcessingActive}
                                 className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] relative overflow-hidden group ${
                                     isUploading || isProcessingActive
-                                    ? 'bg-zinc-800 text-zinc-500 cursor-wait border border-zinc-700'
+                                    ? `bg-zinc-900/90 backdrop-blur-md text-${accentColor}-400 cursor-progress border border-${accentColor}-500/50 shadow-[0_0_15px_rgba(0,0,0,0.5)]`
                                     : pendingFiles.length === 0
                                         ? isLight ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                                         : `bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02]`
@@ -399,13 +411,21 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                                 {!isUploading && !isProcessingActive && pendingFiles.length > 0 && (
                                     <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
                                 )}
+
+                                {/* Processing Background Effect */}
+                                {(isUploading || isProcessingActive) && (
+                                    <>
+                                        <div className={`absolute inset-0 opacity-20 bg-[linear-gradient(45deg,transparent_25%,theme('colors.${accentColor}.500')_50%,transparent_75%)] bg-[length:250%_250%] animate-[shimmer_2s_linear_infinite]`}></div>
+                                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+                                    </>
+                                )}
                                 
                                 <span className="relative flex items-center gap-2 z-20">
                                     {isUploading || isProcessingActive ? (
                                         <>
-                                            <Loader2 className="animate-spin text-blue-500" size={18} />
-                                            <span className={`font-mono tracking-wider ${isProcessingActive ? 'text-blue-400 animate-pulse' : 'text-zinc-400'}`}>
-                                                 {isProcessingActive ? '⚡ SYSTEM BUSY: PROCESSING' : 'INITIALIZING...'}
+                                            <Loader2 className={`animate-spin text-${accentColor}-500`} size={18} />
+                                            <span className={`font-mono tracking-wider font-bold ${isProcessingActive ? `text-${accentColor}-400 animate-pulse` : 'text-zinc-400'}`}>
+                                                 {isProcessingActive ? '⚡ SYSTEM OVERDRIVE' : 'INITIALIZING...'}
                                             </span>
                                         </>
                                     ) : (
