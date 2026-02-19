@@ -16,13 +16,12 @@
     /* 
       Clean 80% Zoom Implementation using CSS Transforms
       Scale 0.8 means we need 1 / 0.8 = 1.25 (125%) space to fill the viewport 
+      NOTE: Moved to Layout.tsx for better context propagation and layout control.
+      We just ensure full size here.
     */
-    width: 125vw;
-    height: 125vh;
-    transform: scale(0.8);
-    transform-origin: top left;
-    overflow-y: auto; /* Handle scrolling within the scaled app container */
-    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 }
 

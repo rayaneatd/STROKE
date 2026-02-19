@@ -56,7 +56,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
   };
 
   return (
-    <div className={`min-h-full ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white`}>
+    <div 
+      className={`min-h-[125vh] w-[125vw] origin-top-left scale-[0.8] ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white`}
+      style={{ overflowY: 'auto', overflowX: 'hidden', height: '125vh' }}
+    >
       
       {/* Dynamic Style Injection for selection color & scrollbars */}
       <style>{`
