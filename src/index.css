@@ -52,6 +52,21 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     @apply bg-slate-300 dark:bg-zinc-700;
   }
+
+  /* Premium Text Gradient */
+  .premium-text-gradient {
+    background: linear-gradient(to right, var(--theme-color, #3b82f6), #ffffff, var(--theme-color, #3b82f6));
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: textShine 3s linear infinite;
+  }
+
+  .premium-border-glow:hover {
+    box-shadow: 0 0 15px var(--theme-color-alpha, rgba(59, 130, 246, 0.3));
+    border-color: var(--theme-color, #3b82f6);
+  }
 }
 
 @keyframes fadeIn {
@@ -152,5 +167,22 @@
   background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2), transparent 70%);
   mix-blend-mode: overlay;
   animation: pulse 0.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes textShine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes spark-flash {
+  0% { opacity: 0; transform: scale(0.8) rotate(0deg); filter: brightness(1); }
+  20% { opacity: 1; transform: scale(1.5) rotate(15deg); filter: brightness(2); }
+  100% { opacity: 0; transform: scale(2) rotate(30deg); filter: brightness(0); }
+}
+
+.animate-spark {
+  animation: spark-flash 0.6s ease-out forwards;
   pointer-events: none;
 }

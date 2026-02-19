@@ -122,6 +122,8 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
     // Drag & Drop State
     const [isDragging, setIsDragging] = useState(false);
+    const [isCardHovered, setIsCardHovered] = useState(false);
+    const [justUploaded, setJustUploaded] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -196,9 +198,16 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
     // --- Handlers ---
 
+    const handleFilesAddedWrapper = (files: File[]) => {
+        // Trigger Spark Effect
+        setJustUploaded(true);
+        setTimeout(() => setJustUploaded(false), 800);
+        handleFilesAdded(files);
+    };
+
     const handleInputFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            handleFilesAdded(Array.from(e.target.files));
+            handleFilesAddedWrapper(Array.from(e.target.files));
         }
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
@@ -223,7 +232,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
             const validFiles = Array.from(e.dataTransfer.files).filter((file: File) => acceptedTypes.includes(file.type));
 
             if (validFiles.length > 0) {
-                handleFilesAdded(validFiles);
+                handleFilesAddedWrapper(validFiles);
             } else {
                 alert(t('project.resumes.errors.invalidFileType'));
             }
@@ -276,12 +285,23 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
             {/* Left Panel: Upload Area */}
             <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg overflow-hidden">
                 <div
-                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-300 ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01]` : ''} ${isProcessingActive ? 'turbo-mode' : ''}`}
-                    style={isProcessingActive ? { '--theme-color': themeColorHex } as React.CSSProperties : {}}
+                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-500 premium-border-glow ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01] shadow-2xl shadow-${accentColor}-500/20` : ''} ${isProcessingActive ? 'turbo-mode' : ''} ${isCardHovered && !isProcessingActive ? `shadow-2xl shadow-${accentColor}-500/10 -translate-y-1` : ''}`}
+                    style={{ '--theme-color': themeColorHex } as React.CSSProperties}
+                    onMouseEnter={() => setIsCardHovered(true)}
+                    onMouseLeave={() => setIsCardHovered(false)}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                 >
+                    {/* Spark Effect on Upload */}
+                    {justUploaded && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none overflow-hidden rounded-[2rem]">
+                            <div className="absolute inset-0 bg-white/20 animate-spark mix-blend-overlay"></div>
+                            <div className={`absolute inset-0 bg-${accentColor}-500/10 animate-pulse-fast`}></div>
+                            <Zap size={120} className="text-white animate-spark absolute drop-shadow-[0_0_25px_rgba(255,255,255,1)]" />
+                        </div>
+                    )}
+
                     {/* Decoration - Lightning Effect when Processing */}
                     {isProcessingActive && (
                         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -292,40 +312,44 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                         </div>
                     )}
 
-                    <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,${isLight ? 'rgba(14,165,233,0.08)' : 'rgba(56,189,248,0.03)'},transparent)] opacity-70 pointer-events-none`}></div>
+                    {/* Subtle Background Mesh/Gradient that reacts to hover */}
+                    <div className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,${isLight ? 'rgba(14,165,233,0.08)' : 'rgba(56,189,248,0.03)'},transparent)] opacity-70 pointer-events-none transition-all duration-700 ${isCardHovered ? 'scale-110 opacity-100' : ''}`}></div>
+                    <div className={`absolute -right-20 -top-20 w-64 h-64 bg-${accentColor}-500/5 rounded-full blur-3xl transition-all duration-700 ${isCardHovered ? 'scale-150 opacity-20' : ''}`}></div>
+                    <div className={`absolute -left-20 -bottom-20 w-64 h-64 bg-${accentColor}-500/5 rounded-full blur-3xl transition-all duration-700 ${isCardHovered ? 'scale-150 opacity-20' : ''}`}></div>
 
                     <div className="relative z-10 flex-1 flex flex-col p-6 h-full overflow-hidden">
                         <div className="flex justify-between items-start mb-6 shrink-0">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className={`p-1.5 rounded-lg shadow-sm transition-all duration-300 ${isProcessingActive ? `bg-${accentColor}-600 shadow-${accentColor}-500/50 scale-110` : isLight ? `bg-${accentColor}-500 text-white shadow-${accentColor}-200` : `bg-${accentColor}-500 shadow-${accentColor}-500/20`}`}>
+                                    <div className={`p-1.5 rounded-lg shadow-sm transition-all duration-300 ${isProcessingActive ? `bg-${accentColor}-600 shadow-${accentColor}-500/50 scale-110` : isLight ? `bg-${accentColor}-500 text-white shadow-${accentColor}-200` : `bg-${accentColor}-500 shadow-${accentColor}-500/20`} ${isCardHovered ? 'rotate-3 scale-110' : ''}`}>
                                         <FileUp size={16} className={`text-white ${isProcessingActive ? 'animate-bounce' : ''}`} />
                                     </div>
-                                    <h3 className={`font-bold text-lg tracking-tight ${textPrimary} ${isProcessingActive ? 'neon-text' : ''}`} style={isProcessingActive ? { textShadow: `0 0 10px ${themeColorHex}` } : {}}>
+                                    <h3 className={`font-bold text-lg tracking-tight transition-all duration-300 ${textPrimary} ${isProcessingActive ? 'neon-text' : ''} ${isCardHovered ? 'premium-text-gradient' : ''}`} style={isProcessingActive ? { textShadow: `0 0 10px ${themeColorHex}` } : {}}>
                                         {isProcessingActive ? 'HYPER-SPEED UPLOAD' : 'Upload Center'}
                                     </h3>
                                 </div>
-                                <p className={`text-xs font-medium ${textSecondary}`}>
+                                <p className={`text-xs font-medium transition-colors duration-300 ${textSecondary} ${isCardHovered ? `text-${accentColor}-500/80` : ''}`}>
                                     {isProcessingActive ? 'Processing at max velocity...' : 'Drag & Drop resumes to analyze'}
                                 </p>
                             </div>
-                            <div className="flex flex-col items-end">
-                                <span className={`text-3xl font-black leading-none tracking-tighter transition-all duration-200 ${isProcessingActive ? `text-${accentColor}-500 scale-110` : textPrimary}`}>{pendingFiles.length}</span>
-                                <span className={`text-[10px] uppercase font-bold tracking-widest ${textSecondary}`}>Pending</span>
+                            <div className="flex flex-col items-end group/counter">
+                                <span className={`text-3xl font-black leading-none tracking-tighter transition-all duration-300 ${isProcessingActive ? `text-${accentColor}-500 scale-110` : textPrimary} ${isCardHovered ? `text-${accentColor}-500 scale-110 drop-shadow-lg` : ''}`}>{pendingFiles.length}</span>
+                                <span className={`text-[10px] uppercase font-bold tracking-widest transition-all duration-300 ${textSecondary} ${isCardHovered ? `text-${accentColor}-400` : ''}`}>Pending</span>
                             </div>
                         </div>
 
                         {pendingFiles.length === 0 ? (
                             <div
                                 onClick={() => !isReadOnly && fileInputRef.current?.click()}
-                                className={`flex-1 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group ${isLight ? 'border-slate-200 hover:border-brand-400 hover:bg-slate-50' : 'border-white/10 hover:border-brand-500/50 hover:bg-white/5'} ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''}`}
+                                className={`flex-1 rounded-2xl border-2 border-dashed transition-all duration-500 cursor-pointer flex flex-col items-center justify-center gap-4 group ${isLight ? 'border-slate-200 hover:border-brand-400 hover:bg-slate-50' : 'border-white/10 hover:border-brand-500/50 hover:bg-white/5'} ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''} ${isCardHovered ? `border-${accentColor}-400/50 bg-${accentColor}-500/5` : ''}`}
                             >
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform border ${isLight ? 'bg-white border-slate-100 text-slate-400 group-hover:text-brand-500 group-hover:border-brand-200' : 'bg-white/5 border-white/10 text-zinc-500 group-hover:text-brand-400 group-hover:border-brand-500/30'}`}>
-                                    <Upload size={24} />
+                                <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 border relative ${isLight ? 'bg-white border-slate-100 text-slate-400' : 'bg-white/5 border-white/10 text-zinc-500'} ${isCardHovered ? `scale-110 border-${accentColor}-400 text-${accentColor}-500 shadow-[0_0_30px_rgba(59,130,246,0.2)]` : ''}`}>
+                                    <div className={`absolute inset-0 rounded-full border border-${accentColor}-500/30 scale-110 opacity-0 transition-all duration-500 ${isCardHovered ? 'scale-125 opacity-100 animate-pulse' : ''}`}></div>
+                                    <Upload size={32} className={`transition-transform duration-500 ${isCardHovered ? 'animate-bounce' : ''}`} />
                                 </div>
-                                <div className="text-center">
-                                    <p className={`font-bold text-sm ${textPrimary}`}>Click to Browse</p>
-                                    <p className={`text-xs mt-1 ${textSecondary}`}>or drag files here</p>
+                                <div className="text-center relative z-10">
+                                    <p className={`font-bold text-sm transition-colors duration-300 ${textPrimary} ${isCardHovered ? `text-${accentColor}-500` : ''}`}>Click to Browse</p>
+                                    <p className={`text-xs mt-1 transition-colors duration-300 ${textSecondary} ${isCardHovered ? `text-${accentColor}-400/70` : ''}`}>or drag files here</p>
                                 </div>
                             </div>
                         ) : (
