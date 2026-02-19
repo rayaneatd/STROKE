@@ -1,6 +1,8 @@
+
 import React, { useState, useCallback, useRef } from 'react';
-import { ProjectFile, Project, User, FileId } from '../types';
-import { validateFiles, processUploads } from '../services/uploadService';
+import { ProjectFile, Project, User, FileId, FailedFile } from '../types';
+import { processValidatedUploads } from '../services/uploadService';
+import { checkConstraints, processFilePipeline, FileMetadata } from '../services/fileValidationService';
 import { supabase } from '../lib/supabase';
 
 export const useFileProcessing = (
@@ -13,57 +15,104 @@ export const useFileProcessing = (
     const [files, setFiles] = useState<ProjectFile[]>([]);
     
     // Store File objects locally for upload
-    const pendingUploadsRef = useRef<{ file: File; id: FileId }[]>([]);
+    const pendingUploadsRef = useRef<{ file: File; id: FileId; metadata: FileMetadata }[]>([]);
 
     // UI Loading State
     const [isUploading, setIsUploading] = useState(false);
 
-    const addFiles = useCallback((rawFiles: File[]) => {
-        // 1. Validation
-        const { valid, failed } = validateFiles(rawFiles);
+    const addFiles = useCallback(async (rawFiles: File[]) => {
+        // 1. Instant Validation (Sync)
+        const validForScan: File[] = [];
+        const immediateFailures: ProjectFile[] = [];
 
-        // Immediately add failed files to list so user sees them (local only)
-        const failedProjectFiles: ProjectFile[] = failed.map(f => ({
-            id: `fail-${Date.now()}-${Math.random()}` as FileId,
-            projectId: projectId as any,
-            name: f.file.name,
-            size: `${(f.file.size / 1024 / 1024).toFixed(2)} MB`,
-            status: 'FAILED',
-            uploadedAt: new Date().toISOString(),
-            uploadedByUserId: currentUser.id,
-            failureReasons: [f.errorMessage || f.reason]
-        }));
+        rawFiles.forEach(file => {
+            const constraintError = checkConstraints(file);
+            if (constraintError) {
+                immediateFailures.push({
+                    id: `fail-${Date.now()}-${Math.random()}` as FileId,
+                    projectId: projectId as any,
+                    name: file.name,
+                    size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+                    status: 'FAILED',
+                    uploadedAt: new Date().toISOString(),
+                    uploadedByUserId: currentUser.id,
+                    failureReasons: [constraintError.errorMessage || constraintError.reason]
+                });
+            } else {
+                validForScan.push(file);
+            }
+        });
 
-        if (failedProjectFiles.length > 0) {
-            setFiles(prev => [...failedProjectFiles, ...prev]);
+        // Add immediate failures to state
+        if (immediateFailures.length > 0) {
+            setFiles(prev => [...immediateFailures, ...prev]);
         }
 
-        if (valid.length === 0) {
-            return;
-        }
+        if (validForScan.length === 0) return;
 
-        // Create pending files with IDs
-        const pendingLocalFiles: { file: File; id: FileId }[] = valid.map((file, index) => ({
+        // 2. Prepare "Scanning" placeholders
+        const scanningFiles = validForScan.map((file, index) => ({
             file,
-            id: `local-${Date.now()}-${index}-${Math.random()}` as FileId
-        }));
-
-        // Update Ref with new files
-        pendingUploadsRef.current = [...pendingUploadsRef.current, ...pendingLocalFiles];
-
-        const pendingProjectFiles: ProjectFile[] = pendingLocalFiles.map(({ file, id }) => ({
-            id,
+            id: `local-${Date.now()}-${index}-${Math.random()}` as FileId,
             projectId: projectId as any,
             name: file.name,
             size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-            status: 'PENDING',
+            status: 'SCANNING' as const, // Show spinner/progress
             uploadedAt: new Date().toISOString(),
             uploadedByUserId: currentUser.id
         }));
 
-        setFiles(prev => [...pendingProjectFiles, ...prev]);
-        
-        // Removed: processUploads call (now manual)
+        // Add scanning files to UI
+        setFiles(prev => [...scanningFiles, ...prev]);
+
+        // 3. Async Pipeline (Hash, Sanitize, PDF Analysis)
+        // Process in parallel
+        const results = await Promise.all(
+            scanningFiles.map(async (item) => {
+                const result = await processFilePipeline(item.file, projectId);
+                return { item, result };
+            })
+        );
+
+        // 4. Handle Results
+        const newPending: { file: File; id: FileId; metadata: FileMetadata }[] = [];
+        const updates: { id: FileId; status: ProjectFile['status']; failureReasons?: string[] }[] = [];
+
+        results.forEach(({ item, result }) => {
+            if (result.isValid && result.metadata) {
+                // Success -> Move to PENDING
+                newPending.push({
+                    file: item.file,
+                    id: item.id,
+                    metadata: result.metadata
+                });
+                updates.push({ id: item.id, status: 'PENDING' });
+            } else {
+                // Failure -> Move to FAILED
+                updates.push({
+                    id: item.id,
+                    status: 'FAILED',
+                    failureReasons: [result.failure?.errorMessage || 'Unknown validation error']
+                });
+            }
+        });
+
+        // Update Ref
+        pendingUploadsRef.current = [...pendingUploadsRef.current, ...newPending];
+
+        // Update State
+        setFiles(prev => prev.map(f => {
+            const update = updates.find(u => u.id === f.id);
+            if (update) {
+                return {
+                    ...f,
+                    status: update.status,
+                    failureReasons: update.failureReasons
+                };
+            }
+            return f;
+        }));
+
     }, [projectId, currentUser.id]);
 
     const uploadPendingFiles = useCallback(async () => {
@@ -72,11 +121,9 @@ export const useFileProcessing = (
 
         setIsUploading(true);
 
-        const filesToUpload = pendingFiles.map(p => p.file);
-
         // 2. Process Uploads (Storage -> DB)
-        const processingFailures = await processUploads(
-            filesToUpload,
+        const processingFailures = await processValidatedUploads(
+            pendingFiles,
             projectId,
             currentUser.id,
             (count) => {

@@ -44,7 +44,16 @@ export interface WebhookPayload {
 
 export interface FailedFile {
   file: File;
-  reason: 'SIZE_LIMIT' | 'INVALID_FORMAT' | 'CORRUPTION' | 'STORAGE_UPLOAD_FAILED' | 'WEBHOOK_FAILED';
+  reason: 
+    | 'SIZE_LIMIT' 
+    | 'INVALID_FORMAT' 
+    | 'CORRUPTION' 
+    | 'STORAGE_UPLOAD_FAILED' 
+    | 'WEBHOOK_FAILED'
+    | 'DUPLICATE_FILE'
+    | 'PASSWORD_PROTECTED'
+    | 'TOO_MANY_PAGES'
+    | 'EMPTY_FILE';
   errorMessage?: string;
 }
 
@@ -230,7 +239,7 @@ export interface ProjectFile {
   projectId: ProjectId;
   name: string;
   size: string;
-  status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'SCANNING';
   uploadedAt: string;
   score?: number;
   candidateName?: string;

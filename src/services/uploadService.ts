@@ -1,41 +1,15 @@
-import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '../lib/supabase';
-import { FailedFile, ProjectId, UserId } from '../types';
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // PDF & DOCX
+import { supabase } from '../lib/supabase';
+import { FailedFile } from '../types';
+import { FileMetadata } from './fileValidationService';
+
 const STORAGE_BUCKET = 'resumes';
 
 /**
- * 1. Validate Files
- * Filters based on size, type, and corruption (0 byte).
+ * Upload a single file to Supabase Storage using sanitized name
  */
-export const validateFiles = (files: File[]): { valid: File[]; failed: FailedFile[] } => {
-  const valid: File[] = [];
-  const failed: FailedFile[] = [];
-
-  files.forEach((file) => {
-    if (file.size > MAX_SIZE_BYTES) {
-      failed.push({ file, reason: 'SIZE_LIMIT', errorMessage: 'File exceeds 5MB limit' });
-    } else if (!ALLOWED_TYPES.includes(file.type)) {
-      failed.push({ file, reason: 'INVALID_FORMAT', errorMessage: 'Only PDF and DOCX allowed' });
-    } else if (file.size === 0) {
-      failed.push({ file, reason: 'CORRUPTION', errorMessage: 'File is empty' });
-    } else {
-      valid.push(file);
-    }
-  });
-
-  return { valid, failed };
-};
-
-/**
- * Helper: Upload a single file to Supabase Storage
- */
-const uploadToStorage = async (file: File, projectId: string): Promise<string | null> => {
-  const fileExt = file.name.split('.').pop();
-  const uniqueName = `${uuidv4()}.${fileExt}`;
-  const filePath = `${projectId}/${uniqueName}`;
+const uploadToStorage = async (file: File, projectId: string, storageName: string): Promise<string | null> => {
+  const filePath = `${projectId}/${storageName}`;
 
   const { error } = await supabase.storage
     .from(STORAGE_BUCKET)
@@ -53,11 +27,11 @@ const uploadToStorage = async (file: File, projectId: string): Promise<string | 
 };
 
 /**
- * 2. Orchestrator: Process Uploads
- * Handles the full flow: Validation -> Storage -> DB Insert
+ * Orchestrator: Process Validated Uploads
+ * Handles: Storage Upload -> DB Insert (with metadata)
  */
-export const processUploads = async (
-  files: File[],
+export const processValidatedUploads = async (
+  items: { file: File; metadata: FileMetadata }[],
   projectId: string,
   userId: string,
   onBatchComplete: (count: number) => void
@@ -65,26 +39,49 @@ export const processUploads = async (
   const uploadFailures: FailedFile[] = [];
   const UPLOAD_CONCURRENCY = 30;
 
-  for (let i = 0; i < files.length; i += UPLOAD_CONCURRENCY) {
-    const chunk = files.slice(i, i + UPLOAD_CONCURRENCY);
+  for (let i = 0; i < items.length; i += UPLOAD_CONCURRENCY) {
+    const chunk = items.slice(i, i + UPLOAD_CONCURRENCY);
 
-    await Promise.all(chunk.map(async (file) => {
+    await Promise.all(chunk.map(async ({ file, metadata }) => {
       try {
-        // A. Upload to Storage
-        const storagePath = await uploadToStorage(file, projectId);
+        // A. Upload to Storage using sanitized name
+        const storagePath = await uploadToStorage(file, projectId, metadata.sanitizedName);
         if (!storagePath) {
           throw new Error("Failed to upload to storage");
         }
 
-        // B. Insert into DB
+        // B. Insert into DB with enriched metadata
         const { error: dbError } = await supabase
           .from('candidates')
           .insert({
             project_id: projectId,
-            name: file.name,
+            name: metadata.sanitizedName, // Use sanitized name for record? Or original? 
+            // Usually 'name' is display name. 'original_resume_name' is original filename.
+            // Let's use Original Name for 'name' (display) and store sanitized path.
+            // But wait, user said "sanitizeFileName... avoid bugs with special chars".
+            // So DB 'name' should probably be clean too?
+            // "On sépare le nom original (pour l'affichage) et on génère l'UUID pour le stockage."
+            // So: 'original_resume_name' = originalName, 'name' = originalName (or sanitized?), 'storage_path' = uuid.
+            // Let's put originalName in 'original_resume_name' and also 'name' (for UI).
+            // But 'name' column in DB is often used for display.
+            
+            name: metadata.originalName, 
+            original_resume_name: metadata.originalName,
+            
             size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
             uploaded_by: userId,
-            // storage_path: storagePath, // Add this if you want to track the path
+            
+            // New fields
+            file_hash: metadata.hash,
+            page_count: metadata.pageCount,
+            
+            // We don't have a storage_path column in the INSERT above in old code, 
+            // but we might want to store it if needed. 
+            // The old code didn't insert storage_path.
+            // If the table has it, we should.
+            // Let's assume we rely on standard path convention or if column exists.
+            // The previous code had it commented out: // storage_path: storagePath
+            // I'll leave it out unless I know it exists.
           });
 
         if (dbError) {
