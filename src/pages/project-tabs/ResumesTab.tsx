@@ -285,7 +285,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
             {/* Left Panel: Upload Area */}
             <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg overflow-hidden">
                 <div
-                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-500 premium-border-glow ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01] shadow-2xl shadow-${accentColor}-500/20` : ''} ${isProcessingActive ? 'turbo-mode' : ''} ${isCardHovered && !isProcessingActive ? `shadow-2xl shadow-${accentColor}-500/10 -translate-y-1` : ''}`}
+                    className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-500 premium-border-glow ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01] shadow-2xl shadow-${accentColor}-500/20 z-50` : ''} ${isProcessingActive ? 'turbo-mode z-50' : ''} ${isCardHovered && !isProcessingActive && !isDragging ? `shadow-2xl shadow-${accentColor}-500/10 -translate-y-1 z-40` : ''}`}
                     style={{ '--theme-color': themeColorHex } as React.CSSProperties}
                     onMouseEnter={() => setIsCardHovered(true)}
                     onMouseLeave={() => setIsCardHovered(false)}
