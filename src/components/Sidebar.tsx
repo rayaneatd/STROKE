@@ -75,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
 
   return (
     <aside 
-        className={`fixed left-0 top-16 h-[calc(100vh-64px)] w-64 border-r flex flex-col justify-between p-4 z-40 transition-all duration-300 ${blurClass} ${borderColor}`}
+        className={`absolute left-0 top-16 bottom-0 w-64 border-r flex flex-col justify-between p-4 z-40 transition-all duration-300 ${blurClass} ${borderColor}`}
         style={{ backgroundColor: bgColor }}
     >
       <div className={`${gapSize} mt-2`}>

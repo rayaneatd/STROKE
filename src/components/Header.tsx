@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
 
   return (
     <header 
-        className={`fixed top-0 w-full h-16 z-50 flex items-center justify-between px-6 border-b transition-all duration-300 ${blurClass} ${borderColor}`}
+        className={`absolute top-0 w-full h-16 z-50 flex items-center justify-between px-6 border-b transition-all duration-300 ${blurClass} ${borderColor}`}
         style={{ backgroundColor: bgColor }}
     >
       
