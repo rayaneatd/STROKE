@@ -3,17 +3,26 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    /* Ensure background color covers the entire viewport, especially when zoomed */
-    @apply bg-[#0e0e10]; /* Default dark background to match app */
+  html, body {
+    @apply antialiased font-sans bg-[#0e0e10];
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent double scrollbars on body */
   }
-  
-  body {
-    @apply antialiased font-sans;
-    /* Simulate 80% zoom scale */
-    zoom: 0.8;
-    /* Compensate for zoom to ensure full height coverage */
-    min-height: 125vh;
+
+  #root {
+    /* 
+      Clean 80% Zoom Implementation using CSS Transforms
+      Scale 0.8 means we need 1 / 0.8 = 1.25 (125%) space to fill the viewport 
+    */
+    width: 125vw;
+    height: 125vh;
+    transform: scale(0.8);
+    transform-origin: top left;
+    overflow-y: auto; /* Handle scrolling within the scaled app container */
+    overflow-x: hidden;
   }
 }
 
