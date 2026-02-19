@@ -3,10 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    /* Ensure background color covers the entire viewport, especially when zoomed */
+    @apply bg-[#0e0e10]; /* Default dark background to match app */
+  }
+  
   body {
     @apply antialiased font-sans;
     /* Simulate 80% zoom scale */
     zoom: 0.8;
+    /* Compensate for zoom to ensure full height coverage */
+    min-height: 125vh;
   }
 }
 

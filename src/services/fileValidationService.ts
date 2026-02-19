@@ -84,19 +84,19 @@ export const generateFileHash = async (file: File): Promise<string> => {
  * Check for duplicates in DB using hash
  */
 export const checkDuplicate = async (hash: string, projectId: string): Promise<boolean> => {
-  const { data, error } = await supabase
+  // Use a simplified query to avoid deep type instantiation issues
+  const { count, error } = await supabase
     .from('candidates')
-    .select('id')
+    .select('id', { count: 'exact', head: true })
     .eq('project_id', projectId)
-    .eq('file_hash', hash)
-    .maybeSingle();
+    .eq('file_hash', hash);
 
   if (error) {
     console.error('Error checking duplicate:', error);
     return false; // Fail safe, assume not duplicate if DB error
   }
 
-  return !!data;
+  return (count || 0) > 0;
 };
 
 /**

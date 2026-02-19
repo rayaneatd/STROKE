@@ -4,7 +4,7 @@ import {
         Upload, Loader2, FileText, Clock,
         X, Search, Filter, Zap,
         SortAsc, SortDesc,
-        Download, FileCheck,
+        Download, FileCheck, FolderUp,
         Medal, Trophy, Sparkles, User as UserIcon, Mail, Phone, MapPin, ExternalLink, Eye, GraduationCap,
         FileUp, AlertCircle, Crown, Award, Send, ThumbsUp, ThumbsDown, BrainCircuit, Wand2, Ghost, MailCheck, Edit3, Check, EyeOff, RotateCcw, AlertTriangle,
         Linkedin, Github, Briefcase, TrendingUp, AlertOctagon, HelpCircle, MessageSquare
@@ -56,7 +56,26 @@ type ScoreFilter = 'HIGH' | 'MID' | 'LOW';
 type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED';
 type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
-    const ResumesTab: React.FC<ResumesTabProps> = ({
+    // Helper to scan directory entries recursively (Moved outside component to avoid re-creation and potential scope issues)
+const scanFiles = async (item: FileSystemEntry): Promise<File[]> => {
+    if (item.isFile) {
+        return new Promise((resolve) => {
+            (item as FileSystemFileEntry).file((file) => {
+                resolve([file]);
+            });
+        });
+    } else if (item.isDirectory) {
+        const dirReader = (item as FileSystemDirectoryEntry).createReader();
+        const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+            dirReader.readEntries((entries) => resolve(entries));
+        });
+        const files = await Promise.all(entries.map(entry => scanFiles(entry)));
+        return files.flat();
+    }
+    return [];
+};
+
+const ResumesTab: React.FC<ResumesTabProps> = ({
         projectId,
     files = [],
     members = [],
@@ -223,25 +242,6 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         setIsDragging(false);
     };
 
-    // Helper to scan directory entries recursively
-    const scanFiles = async (item: FileSystemEntry): Promise<File[]> => {
-        if (item.isFile) {
-            return new Promise((resolve) => {
-                (item as FileSystemFileEntry).file((file) => {
-                    resolve([file]);
-                });
-            });
-        } else if (item.isDirectory) {
-            const dirReader = (item as FileSystemDirectoryEntry).createReader();
-            const entries = await new Promise<FileSystemEntry[]>((resolve) => {
-                dirReader.readEntries((entries) => resolve(entries));
-            });
-            const files = await Promise.all(entries.map(scanFiles));
-            return files.flat();
-        }
-        return [];
-    };
-
     const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
@@ -250,12 +250,19 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
         const items = Array.from(e.dataTransfer.items);
         const acceptedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
 
-        if (items.length > 0 && items[0].webkitGetAsEntry) {
+        // Check if any item is a directory
+        const hasDirectory = items.some(item => {
+             // Use type assertion for non-standard webkitGetAsEntry
+             const entry = (item as any).webkitGetAsEntry ? (item as any).webkitGetAsEntry() : null;
+             return entry && entry.isDirectory;
+        });
+
+        if (hasDirectory) {
             // Modern Directory Handling
             const filePromises = items.map(item => {
-                const entry = item.webkitGetAsEntry();
+                const entry = (item as any).webkitGetAsEntry ? (item as any).webkitGetAsEntry() : null;
                 if (entry) return scanFiles(entry);
-                return Promise.resolve([]);
+                return Promise.resolve([] as File[]);
             });
 
             const allFiles = (await Promise.all(filePromises)).flat();
@@ -295,7 +302,7 @@ type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
                  handleFilesAddedWrapper(validFiles);
              }
          }
-    };
+        };
 
         document.addEventListener('paste', handlePaste);
         return () => document.removeEventListener('paste', handlePaste);

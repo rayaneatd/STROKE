@@ -55,16 +55,7 @@ export const processValidatedUploads = async (
           .from('candidates')
           .insert({
             project_id: projectId,
-            name: metadata.sanitizedName, // Use sanitized name for record? Or original? 
-            // Usually 'name' is display name. 'original_resume_name' is original filename.
-            // Let's use Original Name for 'name' (display) and store sanitized path.
-            // But wait, user said "sanitizeFileName... avoid bugs with special chars".
-            // So DB 'name' should probably be clean too?
-            // "On sépare le nom original (pour l'affichage) et on génère l'UUID pour le stockage."
-            // So: 'original_resume_name' = originalName, 'name' = originalName (or sanitized?), 'storage_path' = uuid.
-            // Let's put originalName in 'original_resume_name' and also 'name' (for UI).
-            // But 'name' column in DB is often used for display.
-            
+            // name: metadata.sanitizedName, // REMOVED DUPLICATE: We use originalName below for better display
             name: metadata.originalName, 
             original_resume_name: metadata.originalName,
             
@@ -74,14 +65,6 @@ export const processValidatedUploads = async (
             // New fields
             file_hash: metadata.hash,
             page_count: metadata.pageCount,
-            
-            // We don't have a storage_path column in the INSERT above in old code, 
-            // but we might want to store it if needed. 
-            // The old code didn't insert storage_path.
-            // If the table has it, we should.
-            // Let's assume we rely on standard path convention or if column exists.
-            // The previous code had it commented out: // storage_path: storagePath
-            // I'll leave it out unless I know it exists.
           });
 
         if (dbError) {
