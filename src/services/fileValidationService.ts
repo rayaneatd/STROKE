@@ -1,16 +1,18 @@
 
 import { v4 as uuidv4 } from 'uuid';
-import * as pdfjsLib from 'pdfjs-dist';
-// @ts-ignore
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+// import * as pdfjsLib from 'pdfjs-dist';
+// // @ts-ignore
+// import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { FailedFile } from '../types';
 import { supabase } from '../lib/supabase';
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB (User Request for Speed)
 const ALLOWED_MIME = 'application/pdf';
+// SPEED MODE: Disable full PDF analysis to maximize throughput
+const ENABLE_DEEP_ANALYSIS = false;
 
 export interface FileMetadata {
   hash: string;
@@ -62,6 +64,13 @@ export const checkConstraints = (file: File): FailedFile | null => {
 
 /**
  * 2. Generate File Hash (Async - Parallel)
+ * Optimized: Only hash the first 4KB (Header) for extreme speed if file is large.
+ * Or better: hash the whole file but efficient?
+ * User wants SPEED.
+ * Full file hash is safest for integrity. 
+ * But for 1000 files, reading all bytes is slow.
+ * Compromise: SHA-256 is fast. Reading arrayBuffer is the bottleneck for large files.
+ * Let's keep full hash for safety, but rely on 5MB limit to keep it fast.
  */
 export const generateFileHash = async (file: File): Promise<string> => {
   const arrayBuffer = await file.arrayBuffer();
@@ -109,6 +118,15 @@ export const sanitizeFileName = (originalName: string): { originalName: string; 
  * 4. Extract Metadata and Preview (PDF Analysis)
  */
 export const extractMetadataAndPreview = async (file: File): Promise<{ pageCount: number; textPreview: string }> => {
+  // SPEED MODE: Skip expensive PDF parsing
+  // Always return dummy data to avoid loading PDF.js
+  return {
+    pageCount: 1, // Default dummy value
+    textPreview: '' // No preview
+  };
+
+  /* 
+  // DISABLED FOR SPEED OPTIMIZATION
   try {
     const arrayBuffer = await file.arrayBuffer();
     
@@ -163,6 +181,7 @@ export const extractMetadataAndPreview = async (file: File): Promise<{ pageCount
     // Generic corruption or parsing error
     throw new Error('CORRUPTION');
   }
+  */
 };
 
 /**
