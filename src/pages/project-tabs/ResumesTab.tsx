@@ -173,6 +173,8 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         return files.filter(f => f.status === 'FAILED');
     }, [files]);
 
+    const isProcessingActive = pendingFiles.some(f => f.status === 'PROCESSING');
+
     const activeFiltersCount = filterScores.length + filterActivities.length;
 
     // --- Filtering & Sorting ---
@@ -347,10 +349,8 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
 
 
-    const isProcessingActive = pendingFiles.some(f => f.status === 'PROCESSING');
-
     return (
-        <div className="relative h-[calc(100vh-220px)] min-h-[600px] animate-fade-in flex flex-col lg:flex-row gap-6">
+        <div className="relative h-[calc(125vh-220px)] min-h-[600px] animate-fade-in flex flex-col lg:flex-row gap-6">
             {/* Left Panel: Upload Area */}
             <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg overflow-hidden">
                 <div
