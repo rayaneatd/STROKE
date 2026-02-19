@@ -41,7 +41,10 @@
             "generateSuggested": "Générer des questions suggérées",
             "aiGenerated": "Généré par IA",
             "manualEntry": "Saisie manuelle",
-            "context": "Contexte :"
+            "context": "Contexte :",
+            "addFirst": "Ajouter la première question",
+            "questionPlaceholder": "Saisissez votre question...",
+            "contextPlaceholder": "Contexte (optionnel)..."
         },
         "email": {
             "aiComposer": "Compositeur IA",
@@ -88,6 +91,7 @@
         }
     },
     "common": {
+        "add": "Ajouter",
         "loading": "Chargement...",
         "error": "Une erreur est survenue",
         "save": "Enregistrer",

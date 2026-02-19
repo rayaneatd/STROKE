@@ -41,7 +41,10 @@
             "generateSuggested": "Generate suggested questions",
             "aiGenerated": "AI Generated",
             "manualEntry": "Manual Entry",
-            "context": "Context:"
+            "context": "Context:",
+            "addFirst": "Add first question",
+            "questionPlaceholder": "Enter your question...",
+            "contextPlaceholder": "Context (optional)..."
         },
         "email": {
             "aiComposer": "AI Composer",
@@ -88,6 +91,7 @@
         }
     },
     "common": {
+        "add": "Add",
         "loading": "Loading...",
         "error": "An error occurred",
         "save": "Save",
