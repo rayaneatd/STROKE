@@ -373,9 +373,9 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
 
     return (
-        <div className="relative h-[calc(125vh-240px)] min-h-[500px] animate-fade-in flex flex-col lg:flex-row gap-6 overflow-hidden">
+        <div className="relative h-[calc(125vh-240px)] min-h-[500px] animate-fade-in flex flex-col lg:flex-row gap-6">
             {/* Left Panel: Upload Area */}
-            <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg overflow-hidden">
+            <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg relative">
                 <div
                     className={`flex-1 rounded-[2rem] border relative overflow-hidden flex flex-col shadow-sm transition-all duration-500 premium-border-glow ${uploadAreaClass} ${isDragging ? `ring-2 ring-${accentColor}-500/50 scale-[1.01] shadow-2xl shadow-${accentColor}-500/20 z-50` : ''} ${isProcessingActive ? 'turbo-mode z-50' : ''} ${isCardHovered && !isProcessingActive && !isDragging ? `shadow-2xl shadow-${accentColor}-500/10 -translate-y-1 z-40` : ''}`}
                     style={{ '--theme-color': themeColorHex } as React.CSSProperties}
@@ -601,7 +601,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
                 {/* Enhanced Failed Section */}
                 {failedFiles.length > 0 && (
-                    <div className={`rounded-2xl border flex flex-col overflow-hidden max-h-[300px] shrink-0 ${isLight ? 'bg-rose-50 border-rose-100' : 'bg-rose-500/5 border-rose-500/10'}`}>
+                    <div className={`absolute left-0 right-0 top-[calc(100%+1rem)] z-50 shadow-xl rounded-2xl border flex flex-col overflow-hidden max-h-[300px] shrink-0 ${isLight ? 'bg-rose-50 border-rose-100' : 'bg-rose-500/5 border-rose-500/10'}`}>
                         <div
                             className="p-4 flex items-center justify-between cursor-pointer"
                             onClick={() => setShowFailedDetails(!showFailedDetails)}
