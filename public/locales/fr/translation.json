@@ -857,6 +857,10 @@
             "requestSent": "Demande Envoyée",
             "notifyManager": "Notifier le Manager"
         },
+        "quotaExceeded": {
+            "title": "Quota Atteint",
+            "description": "Vous avez atteint votre limite personnelle de {{quota}} scans pour ce projet. Veuillez contacter un administrateur pour augmenter votre quota."
+        },
         "deleteAccount": {
             "title": "Supprimer le Compte ?",
             "description": "Vous êtes sur le point de supprimer définitivement votre compte et toutes les données associées. Cette action est irréversible.",

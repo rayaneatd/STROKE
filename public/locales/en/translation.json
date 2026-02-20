@@ -683,9 +683,13 @@
         },
         "noScans": {
             "title": "Out of Scans",
-            "description": "The project owner, {{ownerName}}, has no scans remaining. Only the owner can purchase more scans.",
+            "description": "The project owner, {{ownerName}}, has run out of scans. Only the owner can purchase more scans.",
             "requestSent": "Request Sent",
             "notifyManager": "Notify Manager"
+        },
+        "quotaExceeded": {
+            "title": "Quota Exceeded",
+            "description": "You have reached your personal limit of {{quota}} scans for this project. Please contact an administrator to increase your quota."
         },
         "deleteAccount": {
             "title": "Delete Account?",

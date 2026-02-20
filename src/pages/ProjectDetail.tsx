@@ -20,6 +20,7 @@ import AddMemberModal from '../components/modals/AddMemberModal';
 import EditProjectModal from '../components/modals/EditProjectModal';
 import UpgradePlanModal from '../components/modals/UpgradePlanModal';
 import NoScansModal from '../components/modals/NoScansModal';
+import QuotaExceededModal from '../components/modals/QuotaExceededModal';
 import OwnerBannedModal from '../components/modals/OwnerBannedModal';
 import ProjectLockedModal from '../components/modals/ProjectLockedModal';
 import LowCreditsBanner from '../components/LowCreditsBanner';
@@ -75,6 +76,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
         setIsUpgradeModalOpen,
         isNoScansModalOpen,
         setIsNoScansModalOpen,
+        isQuotaExceededModalOpen,
+        setIsQuotaExceededModalOpen,
         isOwnerBannedModalOpen,
         setIsOwnerBannedModalOpen,
         isProjectLockedModalOpen,
@@ -98,6 +101,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
         retryFile,
         projectOwner,
         ownerScans,
+        currentMemberQuota,
+        currentMemberUsed,
         isInvestmentMode,
         displayBalance,
         centralizedEmailAddress,
@@ -457,6 +462,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                 onClose={() => setIsNoScansModalOpen(false)}
                 onNotifyOwner={() => notifyOwner(project.ownerId, currentUser.id)}
                 ownerName={projectOwner?.displayName || 'Project Owner'}
+            />
+
+            <QuotaExceededModal
+                isOpen={isQuotaExceededModalOpen}
+                onClose={() => setIsQuotaExceededModalOpen(false)}
+                quota={typeof currentMemberQuota === 'number' ? currentMemberQuota : 0}
+                used={currentMemberUsed || 0}
             />
 
             <OwnerBannedModal

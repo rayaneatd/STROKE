@@ -25,6 +25,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
     const [isNoScansModalOpen, setIsNoScansModalOpen] = useState(false);
+    const [isQuotaExceededModalOpen, setIsQuotaExceededModalOpen] = useState(false);
     const [isOwnerBannedModalOpen, setIsOwnerBannedModalOpen] = useState(false);
     const [isProjectLockedModalOpen, setIsProjectLockedModalOpen] = useState(false);
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -430,6 +431,13 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
         const cost = pendingFiles.length;
 
+        // Check Member Quota FIRST
+        if (currentMemberRecord?.scanQuota !== 'UNLIMITED' && 
+            (currentMemberRecord?.scansUsed || 0) + cost > (currentMemberRecord?.scanQuota || 0)) {
+            setIsQuotaExceededModalOpen(true);
+            return;
+        }
+
         if (displayBalance < cost) {
             if (isProjectOwner) {
                 if (isInvestmentMode) {
@@ -547,6 +555,8 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         setIsUpgradeModalOpen,
         isNoScansModalOpen,
         setIsNoScansModalOpen,
+        isQuotaExceededModalOpen,
+        setIsQuotaExceededModalOpen,
         isOwnerBannedModalOpen,
         setIsOwnerBannedModalOpen,
         isProjectLockedModalOpen,
@@ -578,6 +588,8 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         markExported: markExportedMutation.mutate,
         projectOwner: project?.members.find(m => m.role === ProjectRole.OWNER)?.user,
         ownerScans: project?.members.find(m => m.role === ProjectRole.OWNER)?.user?.scansBalance || 0,
+        currentMemberQuota: currentMemberRecord?.scanQuota,
+        currentMemberUsed: currentMemberRecord?.scansUsed,
         isInvestmentMode: project?.settings.billingMode === 'PROJECT_INVESTMENT',
         displayBalance: project?.settings.billingMode === 'PROJECT_INVESTMENT'
             ? project.investmentBalance

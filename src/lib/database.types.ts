@@ -528,6 +528,44 @@ export type Database = {
                     subscription_plan: string | null
                 }[]
             }
+            get_user_projects: {
+                Args: { target_user_id: string }
+                Returns: {
+                    id: string
+                    title: string | null
+                    description: string | null
+                    owner_id: string
+                    created_at: string | null
+                    status: string | null
+                    settings: Json | null
+                    investment_balance: number | null
+                    total_invested: number | null
+                    member_count: number | null
+                    members: Json[] | null
+                }[]
+            }
+            create_project_with_funding: {
+                Args: {
+                    p_project_data: Json
+                    p_owner_id: string
+                    p_investment_amount: number
+                }
+                Returns: {
+                    success: boolean
+                    error?: string
+                    new_balance?: number
+                }
+            }
+            update_project: {
+                Args: {
+                    p_project_id: string
+                    p_title: string
+                    p_description: string
+                    p_status: string
+                    p_settings: Json
+                }
+                Returns: void
+            }
             mark_candidate_exported: {
                 Args: { candidate_id: string; user_id: string }
                 Returns: undefined
