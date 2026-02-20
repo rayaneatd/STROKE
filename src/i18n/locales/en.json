@@ -645,7 +645,13 @@
             "enterQuota": "Enter maximum scans per member",
             "quotaNote": "Note: This sets the default quota for new members. Existing member quotas are not changed.",
             "lockedTitle": "Advanced Billing Locked",
-            "lockedDesc": "Upgrade to Pro or Team plan to allocate specific budgets per project and control member quotas."
+            "lockedDesc": "Upgrade to Pro or Team plan to allocate specific budgets per project and control member quotas.",
+            "roleQuotas": "Role-based Quotas",
+            "roleQuotasDesc": "Set specific scan limits for each member role.",
+            "adminQuota": "Admin Quota",
+            "scoutQuota": "Scout Quota",
+            "partnerQuota": "Partner Quota",
+            "analystQuota": "Analyst Quota"
         },
         "ai": {
             "title": "AI Calibration Engine",

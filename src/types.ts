@@ -216,6 +216,10 @@ export interface ProjectSettings {
   ownerOutreachEmailId?: string; // If OWNER_IDENTITY, which email ID to use?
 
   defaultScanQuota: number | 'UNLIMITED';
+  adminScanQuota?: number | 'UNLIMITED';
+  scoutScanQuota?: number | 'UNLIMITED';
+  partnerScanQuota?: number | 'UNLIMITED';
+  analystScanQuota?: number | 'UNLIMITED';
   billingMode: ProjectBillingMode;
 }
 

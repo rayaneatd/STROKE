@@ -47,6 +47,67 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
         }));
     };
 
+    const renderQuotaInput = (
+        label: string, 
+        value: number | 'UNLIMITED' | undefined, 
+        onChange: (val: number | 'UNLIMITED') => void
+    ) => {
+        const isUnlimited = value === 'UNLIMITED' || value === undefined;
+        // If undefined, treat as UNLIMITED for display, but actual value might be undefined in state until changed
+        const numericValue = typeof value === 'number' ? value : 50;
+
+        return (
+            <div className="space-y-2">
+                <label className={`text-xs font-bold ${textSecondary}`}>{label}</label>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => onChange('UNLIMITED')}
+                        className={`p-2 rounded-lg border flex-1 flex items-center justify-center gap-2 transition-all ${
+                            isUnlimited
+                            ? (isLight ? `border-${accent}-500 bg-${accent}-50 text-${accent}-700 shadow-sm` : `border-${accent}-500 bg-${accent}-500/10 text-${accent}-400`)
+                            : (isLight ? 'border-slate-200 bg-white text-slate-500 hover:border-slate-300' : 'border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10')
+                        }`}
+                    >
+                        <Infinity size={16} />
+                        <span className="text-xs font-bold">{t('modal.billing.unlimited')}</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (isUnlimited) onChange(50);
+                        }}
+                        className={`p-2 rounded-lg border flex-1 flex items-center justify-center gap-2 transition-all ${
+                            !isUnlimited
+                            ? (isLight ? `border-${accent}-500 bg-${accent}-50 text-${accent}-700 shadow-sm` : `border-${accent}-500 bg-${accent}-500/10 text-${accent}-400`)
+                            : (isLight ? 'border-slate-200 bg-white text-slate-500 hover:border-slate-300' : 'border-white/10 bg-white/5 text-zinc-400 hover:bg-white/10')
+                        }`}
+                    >
+                        <Calculator size={16} />
+                        <span className="text-xs font-bold">{t('modal.billing.customLimit')}</span>
+                    </button>
+                </div>
+                {!isUnlimited && (
+                    <div className="relative animate-fade-in">
+                        <input 
+                            type="number" 
+                            min="1"
+                            value={numericValue}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                onChange(isNaN(val) ? 0 : val);
+                            }}
+                            className={`w-full px-3 py-2 pl-3 pr-12 rounded-lg border focus:ring-2 focus:outline-none transition-all font-bold text-sm ${isLight ? `bg-white border-${accent}-100 focus:border-${accent}-500 focus:ring-${accent}-500/10 text-slate-900` : `bg-black/20 border-white/10 focus:border-${accent}-500 focus:ring-${accent}-500/20 text-white`}`}
+                        />
+                        <div className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
+                            {t('modal.billing.scans').toUpperCase()}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="space-y-8 animate-fade-in">
             <div>
@@ -170,67 +231,53 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
 
                         {/* Member Quotas */}
                         {userHasPlan && (
-                            <div className="space-y-3 pt-4 border-t border-dashed border-white/10">
-                                <label className={`text-sm font-bold ${textSecondary}`}>{t('modal.billing.defaultQuota')}</label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, defaultScanQuota: 'UNLIMITED' } }))}
-                                        className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${
-                                            formData.settings?.defaultScanQuota === 'UNLIMITED'
-                                            ? (isLight ? `border-${accent}-500 bg-${accent}-50 text-${accent}-700 shadow-sm` : `border-${accent}-500 bg-${accent}-500/10 text-${accent}-400`)
-                                            : (isLight ? 'border-slate-100 bg-white text-slate-500 hover:border-slate-200' : 'border-white/5 bg-white/5 text-zinc-400 hover:bg-white/10')
-                                        }`}
-                                    >
-                                        <Infinity size={20} />
-                                        <span className="font-bold text-sm">{t('modal.billing.unlimited')}</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (formData.settings?.defaultScanQuota === 'UNLIMITED') {
-                                                setFormData(prev => ({ ...prev, settings: { ...prev.settings!, defaultScanQuota: 50 } }));
-                                            }
-                                        }}
-                                        className={`p-3 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${
-                                            formData.settings?.defaultScanQuota !== 'UNLIMITED'
-                                            ? (isLight ? `border-${accent}-500 bg-${accent}-50 text-${accent}-700 shadow-sm` : `border-${accent}-500 bg-${accent}-500/10 text-${accent}-400`)
-                                            : (isLight ? 'border-slate-100 bg-white text-slate-500 hover:border-slate-200' : 'border-white/5 bg-white/5 text-zinc-400 hover:bg-white/10')
-                                        }`}
-                                    >
-                                        <Calculator size={20} />
-                                        <span className="font-bold text-sm">{t('modal.billing.customLimit')}</span>
-                                    </button>
+                            <div className="space-y-6 pt-6 border-t border-dashed border-white/10">
+                                {/* Default Quota Section */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.defaultQuota')}</h3>
+                                    </div>
+                                    <p className={`text-xs mb-4 ${textSecondary}`}>{t('modal.billing.quotaNote')}</p>
+                                    
+                                    <div className="max-w-md">
+                                        {renderQuotaInput(
+                                            t('modal.billing.defaultQuota'), 
+                                            formData.settings?.defaultScanQuota, 
+                                            (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, defaultScanQuota: val } }))
+                                        )}
+                                    </div>
                                 </div>
 
-                                {formData.settings?.defaultScanQuota !== 'UNLIMITED' && (
-                                    <div className="relative animate-fade-in">
-                                        <div className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
-                                            <Calculator size={18} />
-                                        </div>
-                                        <input 
-                                            type="number" 
-                                            min="1"
-                                            value={formData.settings?.defaultScanQuota}
-                                            onChange={(e) => {
-                                                const val = parseInt(e.target.value);
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    settings: { ...prev.settings!, defaultScanQuota: isNaN(val) ? 0 : val }
-                                                }));
-                                            }}
-                                            className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 focus:ring-4 focus:outline-none transition-all font-bold ${isLight ? `bg-white border-${accent}-100 focus:border-${accent}-500 focus:ring-${accent}-500/10 text-slate-900` : `bg-black/20 border-white/10 focus:border-${accent}-500 focus:ring-${accent}-500/20 text-white`}`}
-                                            placeholder={t('modal.billing.enterQuota')}
-                                        />
-                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
-                                            {t('modal.billing.scans').toUpperCase()}
-                                        </div>
+                                {/* Role-based Quotas Section */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.roleQuotas')}</h3>
                                     </div>
-                                )}
-                                <p className="text-[10px] text-zinc-500 mt-2">
-                                    {t('modal.billing.quotaNote')}
-                                </p>
+                                    <p className={`text-xs mb-4 ${textSecondary}`}>{t('modal.billing.roleQuotasDesc')}</p>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {renderQuotaInput(
+                                            t('modal.billing.adminQuota'), 
+                                            formData.settings?.adminScanQuota ?? 'UNLIMITED', 
+                                            (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, adminScanQuota: val } }))
+                                        )}
+                                        {renderQuotaInput(
+                                            t('modal.billing.partnerQuota'), 
+                                            formData.settings?.partnerScanQuota ?? 'UNLIMITED', 
+                                            (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, partnerScanQuota: val } }))
+                                        )}
+                                        {renderQuotaInput(
+                                            t('modal.billing.scoutQuota'), 
+                                            formData.settings?.scoutScanQuota ?? 'UNLIMITED', 
+                                            (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, scoutScanQuota: val } }))
+                                        )}
+                                        {renderQuotaInput(
+                                            t('modal.billing.analystQuota'), 
+                                            formData.settings?.analystScanQuota ?? 'UNLIMITED', 
+                                            (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, analystScanQuota: val } }))
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
