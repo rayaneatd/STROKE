@@ -540,6 +540,16 @@ export type Database = {
                 Args: { p_action: string; p_amount: number; p_project_id: string }
                 Returns: Json
             }
+            update_user_profile: {
+                Args: {
+                    p_preferences: Json
+                    p_billing_type: string
+                    p_overage_cap: number
+                    p_company?: string
+                    p_industry?: string
+                }
+                Returns: undefined
+            }
         }
         Enums: {
             [_ in never]: never

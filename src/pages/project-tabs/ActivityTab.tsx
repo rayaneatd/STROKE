@@ -209,7 +209,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                 `"${c.matchScore || 0}"`,
                 `"${c.status}"`,
                 `"${new Date(c.uploadedAt).toLocaleDateString()}"`,
-                `"${userMap.get(c.uploadedBy)?.displayName || 'Unknown'}"`
+                `"${userMap.get(c.uploadedByUserId)?.displayName || 'Unknown'}"`
             ].join(','))
         ].join('\n');
 

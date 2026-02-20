@@ -291,7 +291,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                 return Promise.resolve([] as File[]);
             });
 
-            const allFiles = (await Promise.all(filePromises)).flat();
+            const allFiles = (await Promise.all(filePromises)).flat() as File[];
             const validFiles = allFiles.filter((file: File) => acceptedTypes.includes(file.type) || file.name.endsWith('.pdf') || file.name.endsWith('.docx') || file.name.endsWith('.doc')); 
             
             if (validFiles.length > 0) {
