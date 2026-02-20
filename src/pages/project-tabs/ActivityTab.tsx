@@ -459,10 +459,10 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                         </div>
                         <div>
                             <div className={`text-xs font-bold uppercase tracking-wider ${textSecondary}`}>
-                                {selectedIds.size > 0 ? 'Selection Action' : 'Anti Ghosting'}
+                                {selectedIds.size > 0 ? t('antiGhosting.selectionAction') : t('antiGhosting.title')}
                             </div>
                             <div className={`text-sm font-bold ${textPrimary}`}>
-                                {selectedIds.size > 0 ? `${selectedIds.size} Selected` : `${candidates.length} Visible Candidates`}
+                                {selectedIds.size > 0 ? t('antiGhosting.selected', { count: selectedIds.size }) : t('antiGhosting.visibleCandidates', { count: candidates.length })}
                             </div>
                         </div>
                     </div>
@@ -471,22 +471,22 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                         {selectedIds.size > 0 ? (
                             <>
                                 <button
-                                    onClick={() => handleBulkDraft(selectedCandidates)}
-                                    disabled={isDrafting || selectedCandidates.length === 0}
+                                    onClick={() => handleBulkDraft(selectedNoDraft)}
+                                    disabled={isDrafting || selectedNoDraft.length === 0}
                                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
                                         ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                                         : 'bg-white/5 border border-white/5 text-zinc-300 hover:bg-white/10'}`}
                                 >
                                     {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <PenTool size={14} />}
-                                    Write Drafts ({selectedCandidates.length})
+                                    {t('antiGhosting.writeDrafts')} ({selectedNoDraft.length})
                                 </button>
                                 <button
-                                    onClick={() => handleBulkSend(selectedCandidates)}
-                                    disabled={isSending || selectedCandidates.length === 0}
+                                    onClick={() => handleBulkSend(selectedWithDraft)}
+                                    disabled={isSending || selectedWithDraft.length === 0}
                                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-white transition-colors bg-${accentColor}-600 hover:bg-${accentColor}-500 shadow-lg shadow-${accentColor}-500/20`}
                                 >
                                     {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                    Send Selection ({selectedCandidates.length})
+                                    {t('antiGhosting.sendSelection')} ({selectedWithDraft.length})
                                 </button>
                             </>
                         ) : (
@@ -500,7 +500,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                     title="Generate drafts for visible candidates without a draft"
                                 >
                                     {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
-                                    Bulk Draft ({visibleNoDraft.length})
+                                    {t('antiGhosting.bulkDraft')} ({visibleNoDraft.length})
                                 </button>
                                 <button
                                     onClick={() => handleBulkSend(visibleWithDraft)}
@@ -511,7 +511,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                     title="Send emails to visible candidates with a draft ready"
                                 >
                                     {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                    Send Drafts ({visibleWithDraft.length})
+                                    {t('antiGhosting.sendDrafts')} ({visibleWithDraft.length})
                                 </button>
                             </>
                         )}

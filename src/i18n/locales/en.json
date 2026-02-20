@@ -1110,5 +1110,15 @@
             "description": "Only <1>{{percent}}%</1> of the allocated budget remains. Transfer credits from your wallet to keep this project active.",
             "allocateFunds": "Allocate Funds"
         }
+    },
+    "antiGhosting": {
+        "title": "Anti Ghosting",
+        "selectionAction": "Selection Action",
+        "visibleCandidates": "{{count}} Visible Candidates",
+        "selected": "{{count}} Selected",
+        "bulkDraft": "Bulk Draft",
+        "sendDrafts": "Send Drafts",
+        "writeDrafts": "Write Drafts",
+        "sendSelection": "Send Selection"
     }
 }

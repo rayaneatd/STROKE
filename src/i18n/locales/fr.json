@@ -1104,5 +1104,15 @@
             "description": "Seulement <1>{{percent}}%</1> du budget alloué reste. Transférez des crédits de votre portefeuille pour garder ce projet actif.",
             "allocateFunds": "Allouer Fonds"
         }
+    },
+    "antiGhosting": {
+        "title": "Anti Ghosting",
+        "selectionAction": "Action de sélection",
+        "visibleCandidates": "{{count}} Candidats Visibles",
+        "selected": "{{count}} Sélectionnés",
+        "bulkDraft": "Bulk Draft",
+        "sendDrafts": "Envoyer les Brouillons",
+        "writeDrafts": "Écrire des Brouillons",
+        "sendSelection": "Envoyer la Sélection"
     }
 }
