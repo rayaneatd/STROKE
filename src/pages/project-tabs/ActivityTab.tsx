@@ -124,8 +124,30 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                 setDraftTone(String(data || 'PROFESSIONAL').toUpperCase());
             };
             fetchTone();
+
+            // Realtime subscription for owner's profile changes
+            const channel = supabase
+                .channel(`owner_profile_changes_${project.ownerId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'profiles',
+                        filter: `id=eq.${project.ownerId}`
+                    },
+                    () => {
+                        // Refetch tone when owner profile updates
+                        fetchTone();
+                    }
+                )
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
-    }, [canUseAntiGhosting, project.id]);
+    }, [canUseAntiGhosting, project.id, project.ownerId]);
 
     // Handlers
     const handleSearch = (val: string) => setSearch(val);
