@@ -58,6 +58,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const [isExporting, setIsExporting] = useState(false);
     const [isDrafting, setIsDrafting] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
 
     // --- Selection State ---
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -211,6 +212,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         await onBatchUpdate(updates);
         setIsSending(false);
         if (selectedIds.size > 0) setSelectedIds(new Set());
+    };
+
+    const handleBulkClearDrafts = async (targetCandidates: ProjectFile[]) => {
+        if (!onBatchUpdate || targetCandidates.length === 0) return;
+        setIsClearing(true);
+        
+        const updates = targetCandidates.map(c => ({
+            id: c.id,
+            changes: { emailDraft: null as any }
+        }));
+        
+        await onBatchUpdate(updates);
+        setIsClearing(false);
     };
 
     return (
@@ -489,6 +503,19 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                                         {t('antiGhosting.sendSelection')} ({selectedWithDraft.length})
                                     </button>
+                                    {selectedWithDraft.length > 0 && (
+                                        <button
+                                            onClick={() => handleBulkClearDrafts(selectedWithDraft)}
+                                            disabled={isClearing}
+                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                                ? 'bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100'
+                                                : 'bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20'}`}
+                                            title="Clear drafts for selected candidates"
+                                        >
+                                            {isClearing ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+                                            Clear drafts ({selectedWithDraft.length})
+                                        </button>
+                                    )}
                                 </>
                             ) : (
                                 <>
