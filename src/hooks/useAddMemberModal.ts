@@ -142,16 +142,16 @@ export const useAddMemberModal = ({
 
         // Add each selected user
         selectedUsersToAdd.forEach(userId => {
-            let quota: number | 'UNLIMITED' = project.settings.defaultScanQuota || 'UNLIMITED';
+            let quota: number | 'UNLIMITED' = (project.settings.defaultScanQuota === -1 || String(project.settings.defaultScanQuota) === '-1') ? 'UNLIMITED' : (project.settings.defaultScanQuota || 'UNLIMITED');
 
             // Apply Role-Based Quotas if defined
             if (role === ProjectRole.ADMIN && project.settings.adminScanQuota) {
-                quota = project.settings.adminScanQuota;
+                quota = (project.settings.adminScanQuota === -1 || String(project.settings.adminScanQuota) === '-1') ? 'UNLIMITED' : project.settings.adminScanQuota;
             } else if (role === ProjectRole.EMPLOYEE) {
                 if (selectedEmployeeSubRole === 'PARTNER' && project.settings.partnerScanQuota) {
-                    quota = project.settings.partnerScanQuota;
+                    quota = (project.settings.partnerScanQuota === -1 || String(project.settings.partnerScanQuota) === '-1') ? 'UNLIMITED' : project.settings.partnerScanQuota;
                 } else if (selectedEmployeeSubRole === 'SCOUT' && project.settings.scoutScanQuota) {
-                    quota = project.settings.scoutScanQuota;
+                    quota = (project.settings.scoutScanQuota === -1 || String(project.settings.scoutScanQuota) === '-1') ? 'UNLIMITED' : project.settings.scoutScanQuota;
                 } else if (selectedEmployeeSubRole === 'ANALYST') {
                     quota = 0;
                 }

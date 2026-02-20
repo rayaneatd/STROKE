@@ -52,7 +52,7 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
         value: number | 'UNLIMITED' | undefined, 
         onChange: (val: number | 'UNLIMITED') => void
     ) => {
-        const isUnlimited = value === 'UNLIMITED' || value === undefined;
+        const isUnlimited = value === 'UNLIMITED' || value === undefined || value === -1 || String(value) === '-1';
         // If undefined, treat as UNLIMITED for display, but actual value might be undefined in state until changed
         const numericValue = typeof value === 'number' ? value : 50;
 

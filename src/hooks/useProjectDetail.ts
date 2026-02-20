@@ -60,7 +60,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                     role: m.role as ProjectRole,
                     permissions: m.permissions || [],
                     scansUsed: m.scansUsed ?? m.scans_used ?? 0,
-                    scanQuota: (m.scanQuota ?? m.scan_quota) === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota ?? m.scan_quota),
+                    scanQuota: ((m.scanQuota ?? m.scan_quota) === 'UNLIMITED' || String(m.scanQuota ?? m.scan_quota) === '-1') ? 'UNLIMITED' : Number(m.scanQuota ?? m.scan_quota),
                     joinedAt: m.joinedAt ?? m.joined_at,
                     user: m.user ? {
                         id: m.user.id,

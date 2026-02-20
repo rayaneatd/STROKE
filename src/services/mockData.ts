@@ -316,7 +316,7 @@ export const processScanTransaction = (projectId: string, userId: string, amount
     if (!member) return { success: false, error: 'Member not found' };
 
     // Check Member Quota
-    if (member.scanQuota !== 'UNLIMITED' && (member.scansUsed + amount) > member.scanQuota) {
+    if (member.scanQuota !== 'UNLIMITED' && member.scanQuota !== -1 && String(member.scanQuota) !== '-1' && (member.scansUsed + amount) > member.scanQuota) {
         return { success: false, error: 'Member quota exceeded' };
     }
 

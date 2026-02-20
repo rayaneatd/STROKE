@@ -77,7 +77,7 @@ export const useEditProjectModal = ({
                         analystCanViewActivity: currentUser.preferences?.defaultAnalystCanViewActivity !== undefined ? currentUser.preferences?.defaultAnalystCanViewActivity : true,
                         analystCanUseGhosting: currentUser.preferences?.defaultAnalystCanUseGhosting || false,
                         scoutCanUseGhosting: currentUser.preferences?.defaultScoutCanUseGhosting || false,
-                        defaultScanQuota: currentUser.preferences?.defaultScanQuota || 'UNLIMITED',
+                        defaultScanQuota: (currentUser.preferences?.defaultScanQuota === -1 || String(currentUser.preferences?.defaultScanQuota) === '-1' ? 'UNLIMITED' : currentUser.preferences?.defaultScanQuota) || 'UNLIMITED',
                         adminScanQuota: 'UNLIMITED',
                         scoutScanQuota: 'UNLIMITED',
                         partnerScanQuota: 'UNLIMITED',

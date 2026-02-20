@@ -130,7 +130,9 @@ export const runProjectDiagnostics = (project: Project, owner: User): Calibratio
             const suggestedQuota = Math.ceil(meanUsage + stdDev);
             const safeQuota = Math.max(20, Math.ceil(suggestedQuota / 10) * 10); // Round to nearest 10, min 20
 
-            if (project.settings.defaultScanQuota === 'UNLIMITED' || project.settings.defaultScanQuota > safeQuota * 1.5) {
+            const currentQuota = (project.settings.defaultScanQuota === -1 || String(project.settings.defaultScanQuota) === '-1') ? 'UNLIMITED' : project.settings.defaultScanQuota;
+            
+            if (currentQuota === 'UNLIMITED' || (typeof currentQuota === 'number' && currentQuota > safeQuota * 1.5)) {
                 recommendations.quota = safeQuota;
                 recommendations.reasoning.push({
                     icon: 'Users',
@@ -140,7 +142,7 @@ export const runProjectDiagnostics = (project: Project, owner: User): Calibratio
             }
         } else if (dailyVelocity < 1 && project.members.length < 5) {
             // Low usage, trusted team
-            if (project.settings.defaultScanQuota !== 'UNLIMITED') {
+            if (project.settings.defaultScanQuota !== 'UNLIMITED' && project.settings.defaultScanQuota !== -1 && String(project.settings.defaultScanQuota) !== '-1') {
                 recommendations.quota = 'UNLIMITED';
                 recommendations.reasoning.push({
                     icon: 'CheckCircle',
@@ -161,7 +163,7 @@ export const runProjectDiagnostics = (project: Project, owner: User): Calibratio
     } else if (typeof runwayDays === 'number' && runwayDays < 7) {
         riskLevel = 'HIGH';
         healthScore -= 20;
-    } else if (variance > 100 && project.settings.defaultScanQuota === 'UNLIMITED') {
+    } else if (variance > 100 && (project.settings.defaultScanQuota === 'UNLIMITED' || project.settings.defaultScanQuota === -1 || String(project.settings.defaultScanQuota) === '-1')) {
         riskLevel = 'MODERATE';
         healthScore -= 15;
     }

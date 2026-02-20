@@ -228,7 +228,7 @@ const EmployeeSubList = React.memo(({
     const startEditingQuota = (userId: string, currentQuota: number | 'UNLIMITED') => {
         if (!canEditQuota) return;
         setEditingQuotaId(userId);
-        setQuotaInput(currentQuota === 'UNLIMITED' ? '' : currentQuota.toString());
+        setQuotaInput(currentQuota === 'UNLIMITED' || currentQuota === -1 || String(currentQuota) === '-1' ? '' : currentQuota.toString());
     };
 
     const saveQuota = (userId: string, val: number | 'UNLIMITED') => {
@@ -280,7 +280,7 @@ const EmployeeSubList = React.memo(({
                     const isAnalystOnly = m.permissions.includes('ANALYZE') && !m.permissions.includes('SCAN');
                     
                     // Exhaustion Check
-                    const isExhausted = m.scanQuota !== 'UNLIMITED' && m.scansUsed >= m.scanQuota;
+                    const isExhausted = m.scanQuota !== 'UNLIMITED' && m.scanQuota !== -1 && String(m.scanQuota) !== '-1' && m.scansUsed >= m.scanQuota;
                     const usageColor = isExhausted ? 'text-red-500 font-bold' : (isLight ? 'text-slate-500' : 'text-zinc-400');
                     const borderColor = isExhausted ? 'border-red-500/50' : (isLight ? 'border-slate-100' : 'border-white/5');
                     const bgBadge = isExhausted ? (isLight ? 'bg-red-50' : 'bg-red-500/10') : (isLight ? 'bg-slate-50' : 'bg-white/5');
@@ -332,7 +332,7 @@ const EmployeeSubList = React.memo(({
                                                     onClick={() => startEditingQuota(m.userId, m.scanQuota)}
                                                     title={canEditQuota ? "Click to edit quota" : "Quota locked"}
                                                 >
-                                                    {m.scanQuota === 'UNLIMITED' ? <Infinity size={14} className="inline" /> : m.scanQuota}
+                                                    {m.scanQuota === 'UNLIMITED' || m.scanQuota === -1 || String(m.scanQuota) === '-1' ? <Infinity size={14} className="inline" /> : m.scanQuota}
                                                 </span>
                                             )}
                                         </div>

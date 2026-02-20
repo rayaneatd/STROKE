@@ -64,7 +64,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                                 role: m.role as ProjectRole,
                                 permissions: m.permissions || [],
                                 scansUsed: m.scansUsed || 0,
-                                scanQuota: m.scanQuota === 'UNLIMITED' ? 'UNLIMITED' : Number(m.scanQuota),
+                                scanQuota: (m.scanQuota === 'UNLIMITED' || String(m.scanQuota) === '-1') ? 'UNLIMITED' : Number(m.scanQuota),
                                 joinedAt: m.joinedAt,
                                 user: m.user ? {
                                     id: m.user.id,
