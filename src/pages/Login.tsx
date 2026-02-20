@@ -29,7 +29,7 @@ const Login: React.FC = () => {
     const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
     return (
-        <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="h-[125vh] w-[125vw] origin-top-left transform scale-[0.8] bg-[#050505] flex items-center justify-center p-4 relative overflow-hidden">
             {/* Ambient Background Effects */}
             <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />

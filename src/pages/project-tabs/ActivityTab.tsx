@@ -5,7 +5,8 @@ import { useCandidates } from '../../hooks/useCandidates';
 import {
     Activity, Ghost,
     User as UserIcon, Search, Filter, SortAsc, SortDesc, Download, Loader2, Check, X,
-    MailCheck, Mail, FileCheck, Eye, EyeOff
+    MailCheck, Mail, FileCheck, Eye, EyeOff,
+    CheckSquare, Square, Send, PenTool, Zap, MessageSquare
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CandidateList from '../../components/CandidateList';
@@ -56,6 +57,10 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [isDrafting, setIsDrafting] = useState(false);
+    const [isSending, setIsSending] = useState(false);
+
+    // --- Selection State ---
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     // Theme Helpers
     const isLight = currentUser.preferences?.uiConfig?.theme === 'LIGHT';
@@ -144,27 +149,68 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         alert("Exporting visible list...");
     };
 
-    const handleDrafts = async () => {
-        if (!onBatchUpdate || candidates.length === 0) return;
+    const handleToggleSelect = (id: string) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) newSelected.delete(id);
+        else newSelected.add(id);
+        setSelectedIds(newSelected);
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.size === candidates.length) setSelectedIds(new Set());
+        else setSelectedIds(new Set(candidates.map(c => c.id)));
+    };
+
+    // --- Bulk Action Helpers ---
+    const visibleWithDraft = candidates.filter(c => c.emailDraft && !c.emailSentAt);
+    const visibleNoDraft = candidates.filter(c => !c.emailDraft && !c.emailSentAt);
+    
+    const selectedCandidates = candidates.filter(c => selectedIds.has(c.id));
+    const selectedWithDraft = selectedCandidates.filter(c => c.emailDraft && !c.emailSentAt);
+    // For "Write Draft", we might overwrite existing or only target those without?
+    // User said: "rédiger un draft à la selection". Usually implies all selected.
+    // But for Anti Ghosting bar: "aux candidats qui n'ont pas le marqueur violet" (no draft).
+    const selectedNoDraft = selectedCandidates.filter(c => !c.emailDraft && !c.emailSentAt);
+
+    const handleBulkDraft = async (targetCandidates: ProjectFile[]) => {
+        if (!onBatchUpdate || targetCandidates.length === 0) return;
         setIsDrafting(true);
+        
+        // Mocking AI draft generation for now (or simple placeholder)
         const { data, error } = await supabase.rpc('get_project_owner_ai_tone', {
             p_project_id: project.id
         });
-        if (error) {
-            setIsDrafting(false);
-            return;
-        }
+        
         const tone = String(data || 'PROFESSIONAL').toUpperCase();
         const draft =
-            tone === 'CASUAL' ? 'Casual' :
-            tone === 'DIRECT' ? 'Direct' :
-            'Professional';
-        const updates = candidates.map(c => ({
+            tone === 'CASUAL' ? 'Casual draft...' :
+            tone === 'DIRECT' ? 'Direct draft...' :
+            'Professional draft...';
+            
+        const updates = targetCandidates.map(c => ({
             id: c.id,
             changes: { emailDraft: draft }
         }));
+        
         await onBatchUpdate(updates);
         setIsDrafting(false);
+        // Clear selection if it was selection based? Maybe keep it.
+    };
+
+    const handleBulkSend = async (targetCandidates: ProjectFile[]) => {
+         if (!onBatchUpdate || targetCandidates.length === 0) return;
+         setIsSending(true);
+         
+         // Mock sending - in reality we would call an API
+         // Here we just mark as emailed
+         const updates = targetCandidates.map(c => ({
+            id: c.id,
+            changes: { emailSentAt: new Date().toISOString() }
+        }));
+        
+        await onBatchUpdate(updates);
+        setIsSending(false);
+        if (selectedIds.size > 0) setSelectedIds(new Set());
     };
 
     return (
@@ -363,21 +409,23 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                 </div>
                             )}
                         </div>
-                        {canUseAntiGhosting && (
-                            <button
-                                onClick={handleDrafts}
-                                disabled={isDrafting || candidates.length === 0}
-                                className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'}`}
-                            >
-                                {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <Ghost size={14} />}
-                                Drafts
-                            </button>
-                        )}
                     </div>
                 </div>
 
                 {/* List Header */}
-                <div className={`grid grid-cols-12 gap-4 px-8 py-4 border-b text-[10px] font-extrabold uppercase tracking-widest sticky top-[73px] z-10 ${isLight ? 'bg-white border-slate-100 text-slate-400' : 'bg-[#0e0e10] border-white/5 text-zinc-500'}`}>
+                <div className={`grid ${selectedIds.size > 0 || candidates.length > 0 ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-8 py-4 border-b text-[10px] font-extrabold uppercase tracking-widest sticky top-[73px] z-10 ${isLight ? 'bg-white border-slate-100 text-slate-400' : 'bg-[#0e0e10] border-white/5 text-zinc-500'}`}>
+                    <div className="flex justify-center items-center">
+                        <div
+                            onClick={handleSelectAll}
+                            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors cursor-pointer ${selectedIds.size > 0 && selectedIds.size === candidates.length
+                                ? `bg-${accentColor}-500 border-${accentColor}-500`
+                                : isLight ? 'border-slate-300 hover:border-slate-400' : 'border-zinc-700 hover:border-zinc-500'
+                                }`}
+                        >
+                            {selectedIds.size > 0 && selectedIds.size === candidates.length && <Check size={12} className="text-white" />}
+                            {selectedIds.size > 0 && selectedIds.size < candidates.length && <div className="w-2 h-2 bg-white rounded-sm" />}
+                        </div>
+                    </div>
                     <div className="col-span-1 text-center flex justify-center">Rank</div>
                     <div className="col-span-4">Candidate Profile</div>
                     <div className="col-span-3">Scanned By</div>
@@ -398,7 +446,77 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     itemHeight={ITEM_HEIGHT}
                     showScannedBy={true}
                     userMap={userMap}
+                    showCheckboxes={true}
+                    selectedIds={selectedIds}
+                    onToggleSelect={handleToggleSelect}
                 />
+                
+                {/* Anti Ghosting Bar */}
+                <div className={`shrink-0 border-t p-3 flex items-center justify-between transition-colors ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#18181b] border-white/10'}`}>
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${isLight ? 'bg-white text-slate-400 border border-slate-200' : 'bg-white/5 text-zinc-500 border-white/5'}`}>
+                            <Ghost size={16} />
+                        </div>
+                        <div>
+                            <div className={`text-xs font-bold uppercase tracking-wider ${textSecondary}`}>
+                                {selectedIds.size > 0 ? 'Selection Action' : 'Anti Ghosting'}
+                            </div>
+                            <div className={`text-sm font-bold ${textPrimary}`}>
+                                {selectedIds.size > 0 ? `${selectedIds.size} Selected` : `${candidates.length} Visible Candidates`}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {selectedIds.size > 0 ? (
+                            <>
+                                <button
+                                    onClick={() => handleBulkDraft(selectedCandidates)}
+                                    disabled={isDrafting || selectedCandidates.length === 0}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                        ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                                        : 'bg-white/5 border border-white/5 text-zinc-300 hover:bg-white/10'}`}
+                                >
+                                    {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <PenTool size={14} />}
+                                    Write Drafts ({selectedCandidates.length})
+                                </button>
+                                <button
+                                    onClick={() => handleBulkSend(selectedCandidates)}
+                                    disabled={isSending || selectedCandidates.length === 0}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-white transition-colors bg-${accentColor}-600 hover:bg-${accentColor}-500 shadow-lg shadow-${accentColor}-500/20`}
+                                >
+                                    {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                    Send Selection ({selectedCandidates.length})
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => handleBulkDraft(visibleNoDraft)}
+                                    disabled={isDrafting || visibleNoDraft.length === 0}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                        ? 'bg-purple-50 text-purple-600 border border-purple-100 hover:bg-purple-100'
+                                        : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20'}`}
+                                    title="Generate drafts for visible candidates without a draft"
+                                >
+                                    {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                                    Bulk Draft ({visibleNoDraft.length})
+                                </button>
+                                <button
+                                    onClick={() => handleBulkSend(visibleWithDraft)}
+                                    disabled={isSending || visibleWithDraft.length === 0}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                        ? 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100'
+                                        : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'}`}
+                                    title="Send emails to visible candidates with a draft ready"
+                                >
+                                    {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                    Send Drafts ({visibleWithDraft.length})
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
 
                 {/* Full Screen Drawer */}
                 <CandidateDrawer

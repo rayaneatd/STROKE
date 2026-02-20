@@ -20,6 +20,9 @@ interface CandidateListProps {
     containerHeight?: number;
     showScannedBy?: boolean;
     userMap?: Map<string, User>;
+    showCheckboxes?: boolean;
+    selectedIds?: Set<string>;
+    onToggleSelect?: (id: string) => void;
 }
 
 const CandidateList: React.FC<CandidateListProps> = ({
@@ -34,7 +37,10 @@ const CandidateList: React.FC<CandidateListProps> = ({
     itemHeight = 80,
     containerHeight,
     showScannedBy = false,
-    userMap
+    userMap,
+    showCheckboxes = false,
+    selectedIds,
+    onToggleSelect
 }) => {
     const { t } = useTranslation();
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
@@ -164,11 +170,29 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 height: itemHeight
                             }}
                             onClick={() => onSelect(file)}
-                            className={`grid grid-cols-12 gap-4 px-6 md:px-8 items-center transition-colors group cursor-pointer border-b ${
-                                isLight ? 'border-slate-50 hover:bg-slate-50' : 'border-white/5 hover:bg-white/5'
-                            } ${isSelected ? (isLight ? `bg-${accentColor}-50` : 'bg-brand-500/10') : ''}`}
+                            className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center transition-all duration-300 cursor-pointer group ${isSelected
+                                ? `bg-${accentColor}-500/10 border-l-4 border-l-${accentColor}-500 ${isLight ? 'border-b-slate-100' : 'border-b-white/5'}`
+                                : `border-l-4 border-l-transparent hover:bg-${accentColor}-500/5 ${isLight ? 'border-b-slate-50 hover:border-l-slate-300' : 'border-b-white/5 hover:border-l-zinc-700'}`
+                                }`}
                         >
-                            <div className="col-span-1 text-center flex justify-center text-xs">
+                            {/* Checkbox for Bulk Actions */}
+                            {showCheckboxes && (
+                                <div
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onToggleSelect && onToggleSelect(file.id);
+                                    }}
+                                    className={`w-5 h-5 rounded border flex items-center justify-center transition-colors cursor-pointer ${selectedIds?.has(file.id)
+                                        ? `bg-${accentColor}-500 border-${accentColor}-500`
+                                        : isLight ? 'border-slate-300 hover:border-slate-400' : 'border-zinc-700 hover:border-zinc-500'
+                                        }`}
+                                >
+                                    {selectedIds?.has(file.id) && <Check size={12} className="text-white" />}
+                                </div>
+                            )}
+
+                            {/* Rank Column */}
+                            <div className="col-span-1 text-center flex justify-center">
                                 {rankDisplay}
                             </div>
                             <div className={`${showScannedBy ? 'col-span-4' : 'col-span-5'} min-w-0`}>
