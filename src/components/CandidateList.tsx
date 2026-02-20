@@ -4,7 +4,7 @@ import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
     Loader2, FileText, Clock, Calendar,
-    Medal, Eye, MailCheck, FileCheck, FileEdit
+    Medal, Eye, MailCheck, FileCheck, FileEdit, Check
 } from 'lucide-react';
 
 interface CandidateListProps {
