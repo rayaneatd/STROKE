@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
@@ -40,7 +40,34 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
     const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
 
-    const effectiveContainerHeight = containerHeight ?? 600;
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [measuredHeight, setMeasuredHeight] = useState<number>(containerHeight || 600);
+
+    useEffect(() => {
+        if (containerHeight) {
+            setMeasuredHeight(containerHeight);
+            return;
+        }
+
+        const element = containerRef.current;
+        if (!element) return;
+
+        // Initial measurement
+        setMeasuredHeight(element.clientHeight || 600);
+
+        const observer = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                if (entry.contentRect) {
+                    setMeasuredHeight(entry.contentRect.height);
+                }
+            }
+        });
+
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [containerHeight]);
+
+    const effectiveContainerHeight = measuredHeight;
 
     const { visibleItems, totalHeight, onScroll: onVirtualScroll } = useVirtualizer({
         itemCount: candidates.length,
@@ -55,7 +82,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
     if (candidates.length === 0) {
         return (
-            <div className={`flex flex-col items-center justify-center h-64 ${textSecondary}`}>
+            <div className={`flex flex-col items-center justify-center h-full min-h-[256px] ${textSecondary}`}>
                 <FileText size={48} className="opacity-20 mb-3" />
                 <p className="text-sm font-medium">{t('candidateList.noCandidates')}</p>
             </div>
@@ -64,6 +91,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
     return (
         <div
+            ref={containerRef}
             className={`flex-1 overflow-y-auto custom-scrollbar min-h-0 ${isLight ? 'bg-white' : 'bg-[#0e0e10]'}`}
             onScroll={handleScroll}
             style={{ height: containerHeight ?? '100%', position: 'relative' }}

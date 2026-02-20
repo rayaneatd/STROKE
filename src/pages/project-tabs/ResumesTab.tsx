@@ -207,11 +207,34 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     };
 
     // --- Virtualization for Pending/Upload List (Optimization) ---
-    const pendingContainerHeight = 300;
+    const pendingListRef = useRef<HTMLDivElement>(null);
+    const [measuredPendingHeight, setMeasuredPendingHeight] = useState(300);
+
+    useEffect(() => {
+        if (pendingFiles.length === 0) return;
+
+        const element = pendingListRef.current;
+        if (!element) return;
+
+        // Initial measurement
+        setMeasuredPendingHeight(element.clientHeight || 300);
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.contentRect) {
+                    setMeasuredPendingHeight(entry.contentRect.height);
+                }
+            }
+        });
+
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [pendingFiles.length > 0]);
+
     const { visibleItems: visiblePending, totalHeight: totalPendingHeight, onScroll: onPendingScroll } = useVirtualizer({
         itemCount: pendingFiles.length,
         itemHeight: PENDING_ITEM_HEIGHT,
-        containerHeight: pendingContainerHeight,
+        containerHeight: measuredPendingHeight,
     });
 
     const handlePendingScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -350,7 +373,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
 
     return (
-        <div className="relative flex-1 min-h-[600px] animate-fade-in flex flex-col lg:flex-row gap-6">
+        <div className="relative h-[calc(125vh-240px)] min-h-[500px] animate-fade-in flex flex-col lg:flex-row gap-6 overflow-hidden">
             {/* Left Panel: Upload Area */}
             <div className="flex-1 flex flex-col gap-4 h-full min-w-0 lg:max-w-md xl:max-w-lg overflow-hidden">
                 <div
@@ -410,7 +433,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                         {pendingFiles.length === 0 ? (
                             <div
                                 onClick={() => !isReadOnly && fileInputRef.current?.click()}
-                                className={`flex-1 rounded-2xl border-2 border-dashed transition-all duration-500 cursor-pointer flex flex-col items-center justify-center gap-4 group ${isLight ? 'border-slate-200 hover:border-brand-400 hover:bg-slate-50' : 'border-white/10 hover:border-brand-500/50 hover:bg-white/5'} ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''} ${isCardHovered ? `border-${accentColor}-400/50 bg-${accentColor}-500/5` : ''}`}
+                                className={`flex-1 rounded-2xl border-2 border-dashed transition-all duration-500 cursor-pointer flex flex-col items-center justify-center gap-4 group min-h-[250px] ${isLight ? 'border-slate-200 hover:border-brand-400 hover:bg-slate-50' : 'border-white/10 hover:border-brand-500/50 hover:bg-white/5'} ${isReadOnly ? 'cursor-not-allowed opacity-50' : ''} ${isCardHovered ? `border-${accentColor}-400/50 bg-${accentColor}-500/5` : ''}`}
                             >
                                 <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 border relative ${isLight ? 'bg-white border-slate-100 text-slate-400' : 'bg-white/5 border-white/10 text-zinc-500'} ${isCardHovered ? `scale-110 border-${accentColor}-400 text-${accentColor}-500 shadow-[0_0_30px_rgba(59,130,246,0.2)]` : ''}`}>
                                     <div className={`absolute inset-0 rounded-full border border-${accentColor}-500/30 scale-110 opacity-0 transition-all duration-500 ${isCardHovered ? 'scale-125 opacity-100 animate-pulse' : ''}`}></div>
@@ -439,6 +462,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                             </div>
                         ) : (
                             <div
+                                ref={pendingListRef}
                                 className="flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0"
                                 onScroll={handlePendingScroll}
                                 style={{ position: 'relative' }}
@@ -627,7 +651,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
             </div>
 
             {/* --- RIGHT PANEL: Candidates List --- */}
-            <div className={`flex-[2] flex flex-col rounded-[2rem] border shadow-sm overflow-hidden min-w-0 relative ${cardBg}`}>
+            <div className={`flex-[2] flex flex-col h-full rounded-[2rem] border shadow-sm overflow-hidden min-w-0 relative ${cardBg}`}>
 
                 {/* Toolbar */}
                 <div className={`p-4 border-b flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-20 ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/5'}`}>
@@ -768,18 +792,19 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                 </div>
 
                 {/* Candidate List Component */}
-                <CandidateList
-                    candidates={candidates}
-                    selectedFileId={selectedFile?.id || null}
-                    onSelect={handleCandidateClick}
-                    currentUser={currentUser}
-                    sortOption={sortOption}
-                    isLight={isLight}
-                    accentColor={accentColor}
-                    onScroll={handleScroll}
-                    itemHeight={ITEM_HEIGHT}
-                    containerHeight={CONTAINER_HEIGHT}
-                />
+                <div className="flex-1 min-h-0 relative">
+                    <CandidateList
+                        candidates={candidates}
+                        selectedFileId={selectedFile?.id || null}
+                        onSelect={handleCandidateClick}
+                        currentUser={currentUser}
+                        sortOption={sortOption}
+                        isLight={isLight}
+                        accentColor={accentColor}
+                        onScroll={handleScroll}
+                        itemHeight={ITEM_HEIGHT}
+                    />
+                </div>
 
                 {/* Full Screen Drawer */}
                 <CandidateDrawer
