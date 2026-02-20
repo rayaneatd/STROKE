@@ -6,7 +6,7 @@ import {
     Activity, Ghost,
     User as UserIcon, Search, Filter, SortAsc, SortDesc, Download, Loader2, Check, X,
     MailCheck, Mail, FileCheck, Eye, EyeOff,
-    CheckSquare, Square, Send, PenTool, Zap, MessageSquare
+    CheckSquare, Square, Send, PenTool, Zap, MessageSquare, Code, FileText
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CandidateList from '../../components/CandidateList';
@@ -56,6 +56,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     // --- Drawer State ---
     const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
     const [isDrafting, setIsDrafting] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [isClearing, setIsClearing] = useState(false);
@@ -168,6 +169,15 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         setSelectedFile(file);
     };
 
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setIsFilterOpen(false);
+            setIsExportMenuOpen(false);
+        };
+        if (isFilterOpen || isExportMenuOpen) document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [isFilterOpen, isExportMenuOpen]);
+
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
         if (scrollHeight - scrollTop - clientHeight < 200 && hasNextPage && !isFetchingNextPage) {
@@ -179,6 +189,61 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         // Simple export logic for now, similar to ResumesTab but maybe for all listed
         // For now just alert or simple mock
         alert("Exporting visible list...");
+    };
+
+    const handleExportCSV = () => {
+        const candidatesToExport = candidates;
+
+        if (candidatesToExport.length === 0) {
+            alert("No candidates to export");
+            return;
+        }
+
+        const headers = ['Name', 'Email', 'Phone', 'Match Score', 'Status', 'Uploaded Date', 'Scanned By'];
+        const csvContent = [
+            headers.join(','),
+            ...candidatesToExport.map(c => [
+                `"${c.name}"`,
+                `"${c.email || ''}"`,
+                `"${c.phone || ''}"`,
+                `"${c.matchScore || 0}"`,
+                `"${c.status}"`,
+                `"${new Date(c.uploadedAt).toLocaleDateString()}"`,
+                `"${userMap.get(c.uploadedBy)?.displayName || 'Unknown'}"`
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `activity_export_${new Date().getTime()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setIsExportMenuOpen(false);
+    };
+
+    const handleExportJSON = () => {
+        const candidatesToExport = candidates;
+
+        if (candidatesToExport.length === 0) {
+            alert("No candidates to export");
+            return;
+        }
+
+        const jsonContent = JSON.stringify(candidatesToExport, null, 2);
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `activity_export_${new Date().getTime()}.json`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        setIsExportMenuOpen(false);
     };
 
     const handleToggleSelect = (id: string) => {
@@ -451,6 +516,36 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                             </div>
                                         )}
                                     </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setIsExportMenuOpen(!isExportMenuOpen); }}
+                                disabled={isExporting || candidates.length === 0}
+                                className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-xs font-bold transition-colors disabled:opacity-50 ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' : 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'}`}
+                            >
+                                {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                                Export
+                            </button>
+
+                            {isExportMenuOpen && (
+                                <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-xl border z-30 animate-fade-in-up p-2 ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}>
+                                    <button
+                                        onClick={handleExportCSV}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors ${isLight ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-white/5 text-zinc-300'}`}
+                                    >
+                                        <FileText size={14} />
+                                        {t('candidateList.exportCSV')}
+                                    </button>
+                                    <button
+                                        onClick={handleExportJSON}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors ${isLight ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-white/5 text-zinc-300'}`}
+                                    >
+                                        <Code size={14} />
+                                        {t('candidateList.exportJSON')}
+                                    </button>
                                 </div>
                             )}
                         </div>

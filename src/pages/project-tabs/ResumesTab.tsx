@@ -843,13 +843,6 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                             {isExportMenuOpen && (
                                 <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-xl border z-30 animate-fade-in-up p-2 ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}>
                                     <button
-                                        onClick={() => { handleExport(); setIsExportMenuOpen(false); }}
-                                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors ${isLight ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-white/5 text-zinc-300'}`}
-                                    >
-                                        <FileText size={14} />
-                                        {t('candidateList.exportPDF')}
-                                    </button>
-                                    <button
                                         onClick={handleExportCSV}
                                         className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-colors ${isLight ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-white/5 text-zinc-300'}`}
                                     >
