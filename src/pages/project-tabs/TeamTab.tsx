@@ -155,11 +155,6 @@ const TeamListSection = React.memo(({
                                                 <div className={`font-bold text-sm flex items-center gap-2 ${textPrimary}`}>
                                                 {user.displayName}
                                                 {isSelf && <span className={`text-[10px] px-1.5 py-0.5 rounded border ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/10 text-zinc-400 border-white/5'}`}>{t('project.team.you')}</span>}
-                                                {showScans && (
-                                                    <span className={`text-[10px] font-normal px-1.5 py-0.5 rounded-md ${isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/10 text-zinc-400'}`}>
-                                                        {m.scansUsed} / {m.scanQuota === 'UNLIMITED' || m.scanQuota === -1 || String(m.scanQuota) === '-1' ? '∞' : m.scanQuota}
-                                                    </span>
-                                                )}
                                             </div>
                                                 <div className={`text-xs flex items-center gap-1.5 ${textSecondary}`}>
                                                     {user.email}
@@ -302,11 +297,6 @@ const EmployeeSubList = React.memo(({
                                 <div className="min-w-0">
                                     <div className={`text-sm font-bold truncate flex items-center gap-2 ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>
                                         {user.displayName}
-                                        {showScans && !isAnalystOnly && (
-                                            <span className={`text-[10px] font-normal px-1.5 py-0.5 rounded-md ${isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/10 text-zinc-400'}`}>
-                                                {m.scansUsed} / {m.scanQuota === 'UNLIMITED' || m.scanQuota === -1 || String(m.scanQuota) === '-1' ? '∞' : m.scanQuota}
-                                            </span>
-                                        )}
                                     </div>
                                     <div className={`text-[11px] truncate leading-tight ${textSecondary}`}>{user.email}</div>
                                     <div className={`text-xs font-medium mt-0.5 ${roleLabel.includes('Partner') ? 'text-purple-500' : roleLabel.includes('Scout') ? `text-${accentColor}-500` : 'text-blue-500'}`}>{roleLabel}</div>
