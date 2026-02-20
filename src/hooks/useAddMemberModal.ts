@@ -152,8 +152,8 @@ export const useAddMemberModal = ({
                     quota = project.settings.partnerScanQuota;
                 } else if (selectedEmployeeSubRole === 'SCOUT' && project.settings.scoutScanQuota) {
                     quota = project.settings.scoutScanQuota;
-                } else if (selectedEmployeeSubRole === 'ANALYST' && project.settings.analystScanQuota) {
-                    quota = project.settings.analystScanQuota;
+                } else if (selectedEmployeeSubRole === 'ANALYST') {
+                    quota = 0;
                 }
             }
 

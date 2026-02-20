@@ -219,7 +219,6 @@ export interface ProjectSettings {
   adminScanQuota?: number | 'UNLIMITED';
   scoutScanQuota?: number | 'UNLIMITED';
   partnerScanQuota?: number | 'UNLIMITED';
-  analystScanQuota?: number | 'UNLIMITED';
   billingMode: ProjectBillingMode;
 }
 

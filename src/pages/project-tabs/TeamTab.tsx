@@ -276,6 +276,15 @@ const EmployeeSubList = React.memo(({
                     const isSelected = selectedMemberIds.has(m.userId);
                     const isEditing = editingQuotaId === m.userId;
 
+                    // Analyst Check (No SCAN permission)
+                    const isAnalystOnly = m.permissions.includes('ANALYZE') && !m.permissions.includes('SCAN');
+                    
+                    // Exhaustion Check
+                    const isExhausted = m.scanQuota !== 'UNLIMITED' && m.scansUsed >= m.scanQuota;
+                    const usageColor = isExhausted ? 'text-red-500 font-bold' : (isLight ? 'text-slate-500' : 'text-zinc-400');
+                    const borderColor = isExhausted ? 'border-red-500/50' : (isLight ? 'border-slate-100' : 'border-white/5');
+                    const bgBadge = isExhausted ? (isLight ? 'bg-red-50' : 'bg-red-500/10') : (isLight ? 'bg-slate-50' : 'bg-white/5');
+
                     return (
                         <div key={m.userId} onClick={() => canManageTeam && !isSelf && toggleMemberSelection(m.userId)} className={`p-3 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between group relative cursor-pointer ${cardClass} ${isSelected ? `ring-1 ring-${accentColor}-500 border-${accentColor}-500` : ''}`}>
                             <div className="flex items-center gap-3 overflow-hidden mb-2 sm:mb-0">
@@ -292,9 +301,9 @@ const EmployeeSubList = React.memo(({
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-7 sm:ml-0">
-                                {showScans && (
+                                {showScans && !isAnalystOnly && (
                                     <div className="flex items-center gap-2">
-                                        <div onClick={(e) => e.stopPropagation()} className={`text-xs font-medium px-2 py-1 rounded flex items-center gap-1 border ${isLight ? 'bg-slate-50 text-slate-500 border-slate-100' : 'bg-white/5 text-zinc-400 border-white/5'}`}>
+                                        <div onClick={(e) => e.stopPropagation()} className={`text-xs font-medium px-2 py-1 rounded flex items-center gap-1 border ${bgBadge} ${usageColor} ${borderColor}`}>
                                             <span>{m.scansUsed}</span>
                                             <span className="opacity-50">/</span>
                                             {isEditing ? (

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Wallet, Calculator, Coins, Lock, Infinity, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Project, User, ProjectBillingMode } from '../../../types';
+import { Project, User, ProjectBillingMode, SubscriptionPlan } from '../../../types';
 import { useTheme } from '../../../context/ThemeContext';
 
 interface BillingQuotaTabProps {
@@ -271,22 +271,43 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
                                             formData.settings?.scoutScanQuota ?? 'UNLIMITED', 
                                             (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, scoutScanQuota: val } }))
                                         )}
-                                        {renderQuotaInput(
-                                            t('modal.billing.analystQuota'), 
-                                            formData.settings?.analystScanQuota ?? 'UNLIMITED', 
-                                            (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, analystScanQuota: val } }))
-                                        )}
                                     </div>
                                 </div>
                             </div>
                         )}
                     </div>
                 ) : (
-                    <div className={`p-6 rounded-2xl text-center border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-zinc-500 ${isLight ? 'bg-white' : 'bg-white/5'}`}><Lock size={20} /></div>
-                        <h4 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.lockedTitle')}</h4>
-                        <p className={`text-xs mt-1 mb-4 max-w-xs mx-auto ${textSecondary}`}>{t('modal.billing.lockedDesc')}</p>
-                    </div>
+                    <>
+                        <div className={`p-6 rounded-2xl text-center border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-zinc-500 ${isLight ? 'bg-white' : 'bg-white/5'}`}><Lock size={20} /></div>
+                            <h4 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.lockedTitle')}</h4>
+                            <p className={`text-xs mt-1 mb-4 max-w-xs mx-auto ${textSecondary}`}>{t('modal.billing.lockedDesc')}</p>
+                        </div>
+
+                        {currentUser.subscriptionPlan === SubscriptionPlan.PRO && (
+                            <div className="relative mt-6 pt-6 border-t border-dashed border-white/10 opacity-50 pointer-events-none select-none">
+                                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                                    <div className={`text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-2 shadow-xl border backdrop-blur-md ${isLight ? 'bg-white/90 text-slate-800 border-slate-200' : 'bg-zinc-900/90 text-white border-zinc-700'}`}>
+                                        <Lock size={12} className="text-amber-500" /> {t('modal.billing.upgradeToTeam', 'Upgrade to Team to unlock quotas')}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.defaultQuota')}</h3>
+                                    </div>
+                                    <p className={`text-xs mb-4 ${textSecondary}`}>{t('modal.billing.quotaNote')}</p>
+                                    
+                                    <div className="max-w-md blur-[1px]">
+                                        {renderQuotaInput(
+                                            t('modal.billing.defaultQuota'), 
+                                            50, 
+                                            () => {}
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>

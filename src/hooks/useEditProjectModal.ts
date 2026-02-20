@@ -81,7 +81,6 @@ export const useEditProjectModal = ({
                         adminScanQuota: 'UNLIMITED',
                         scoutScanQuota: 'UNLIMITED',
                         partnerScanQuota: 'UNLIMITED',
-                        analystScanQuota: 'UNLIMITED',
                         billingMode: currentUser.preferences?.defaultBillingMode || 'OWNER_WALLET',
                         outreachStrategy: currentUser.preferences?.defaultOutreachStrategy || OutreachStrategy.INDIVIDUAL_IDENTITY,
                         ownerOutreachEmailId: currentUser.preferences?.defaultOwnerOutreachEmailId
