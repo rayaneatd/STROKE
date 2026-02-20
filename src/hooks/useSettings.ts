@@ -112,6 +112,23 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             onUpdateUser({ preferences: prefs, billingType, overageCap });
             setMessage({ type: 'success', text: 'Preferences saved successfully.' });
+
+            // Broadcast change to other users
+            // We use a channel specific to this user so others can subscribe
+            if (user?.id) {
+                const channel = supabase.channel(`user-updates-${user.id}`);
+                channel.subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        channel.send({
+                            type: 'broadcast',
+                            event: 'profile_updated',
+                            payload: { userId: user.id }
+                        });
+                        // Remove channel after a short delay to allow message to send
+                        setTimeout(() => supabase.removeChannel(channel), 5000);
+                    }
+                });
+            }
         },
         onError: (err: any) => {
             console.error('Save settings error:', err);

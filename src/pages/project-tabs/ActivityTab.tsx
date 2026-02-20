@@ -126,18 +126,14 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
             fetchTone();
 
             // Realtime subscription for owner's profile changes
+            // We use a Broadcast channel because RLS on 'profiles' table might prevent other users from seeing updates via postgres_changes
             const channel = supabase
-                .channel(`owner_profile_changes_${project.ownerId}`)
+                .channel(`user-updates-${project.ownerId}`)
                 .on(
-                    'postgres_changes',
-                    {
-                        event: 'UPDATE',
-                        schema: 'public',
-                        table: 'profiles',
-                        filter: `id=eq.${project.ownerId}`
-                    },
+                    'broadcast',
+                    { event: 'profile_updated' },
                     () => {
-                        // Refetch tone when owner profile updates
+                        console.log('Received profile update broadcast for owner, refetching tone...');
                         fetchTone();
                     }
                 )
