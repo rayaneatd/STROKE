@@ -232,22 +232,6 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
                         {/* Member Quotas */}
                         {userHasPlan && (
                             <div className="space-y-6 pt-6 border-t border-dashed border-white/10">
-                                {/* Default Quota Section */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.defaultQuota')}</h3>
-                                    </div>
-                                    <p className={`text-xs mb-4 ${textSecondary}`}>{t('modal.billing.quotaNote')}</p>
-                                    
-                                    <div className="max-w-md">
-                                        {renderQuotaInput(
-                                            t('modal.billing.defaultQuota'), 
-                                            formData.settings?.defaultScanQuota, 
-                                            (val) => setFormData(prev => ({ ...prev, settings: { ...prev.settings!, defaultScanQuota: val } }))
-                                        )}
-                                    </div>
-                                </div>
-
                                 {/* Role-based Quotas Section */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
@@ -293,16 +277,14 @@ const BillingQuotaTab: React.FC<BillingQuotaTabProps> = ({
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <h3 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.defaultQuota')}</h3>
+                                        <h3 className={`font-bold text-sm ${textPrimary}`}>{t('modal.billing.roleQuotas')}</h3>
                                     </div>
-                                    <p className={`text-xs mb-4 ${textSecondary}`}>{t('modal.billing.quotaNote')}</p>
+                                    <p className={`text-xs mb-4 ${textSecondary}`}>{t('modal.billing.roleQuotasDesc')}</p>
                                     
-                                    <div className="max-w-md blur-[1px]">
-                                        {renderQuotaInput(
-                                            t('modal.billing.defaultQuota'), 
-                                            50, 
-                                            () => {}
-                                        )}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 blur-[1px]">
+                                        {renderQuotaInput(t('modal.billing.adminQuota'), 'UNLIMITED', () => {})}
+                                        {renderQuotaInput(t('modal.billing.partnerQuota'), 50, () => {})}
+                                        {renderQuotaInput(t('modal.billing.scoutQuota'), 20, () => {})}
                                     </div>
                                 </div>
                             </div>
