@@ -6,6 +6,9 @@
         "emailSent": "Email envoyé",
         "draftReady": "Brouillon prêt",
         "exported": "Exporté en PDF",
+        "exportCSV": "Exporter en CSV",
+        "exportJSON": "Exporter en JSON",
+        "exportPDF": "Exporter en PDF",
         "viewedByYou": "Vu par vous",
         "unknownUser": "Utilisateur inconnu"
     },
