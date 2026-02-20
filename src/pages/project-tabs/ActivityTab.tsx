@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ProjectFile, User, Project } from '../../types';
 import { debounce } from '../../utils/performance';
 import { useCandidates } from '../../hooks/useCandidates';
@@ -59,6 +59,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const [isDrafting, setIsDrafting] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [isClearing, setIsClearing] = useState(false);
+    const [draftTone, setDraftTone] = useState<string>('');
 
     // --- Selection State ---
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -113,6 +114,18 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
 
     const uniqueScanners = contributionData.length;
+
+    useEffect(() => {
+        if (canUseAntiGhosting) {
+            const fetchTone = async () => {
+                const { data } = await supabase.rpc('get_project_owner_ai_tone', {
+                    p_project_id: project.id
+                });
+                setDraftTone(String(data || 'PROFESSIONAL').toUpperCase());
+            };
+            fetchTone();
+        }
+    }, [canUseAntiGhosting, project.id]);
 
     // Handlers
     const handleSearch = (val: string) => setSearch(val);
@@ -482,6 +495,13 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                             </div>
                         </div>
 
+                        {draftTone && (
+                            <div className={`px-3 py-1.5 rounded-full border text-xs font-medium flex items-center gap-2 ${isLight ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'}`}>
+                                <MessageSquare size={12} />
+                                {t('antiGhosting.draftStyle', { style: t(`ai.personality.tone.${draftTone.toLowerCase()}`, draftTone) })}
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-2">
                             {selectedIds.size > 0 ? (
                                 <>
@@ -510,10 +530,10 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
                                                 ? 'bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100'
                                                 : 'bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20'}`}
-                                            title="Clear drafts for selected candidates"
+                                            title={t('antiGhosting.clearDraftsTooltip')}
                                         >
                                             {isClearing ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
-                                            Clear drafts ({selectedWithDraft.length})
+                                            {t('antiGhosting.clearDrafts')} ({selectedWithDraft.length})
                                         </button>
                                     )}
                                 </>

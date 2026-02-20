@@ -1113,6 +1113,9 @@
         "bulkDraft": "Bulk Draft",
         "sendDrafts": "Envoyer les Brouillons",
         "writeDrafts": "Écrire des Brouillons",
-        "sendSelection": "Envoyer la Sélection"
+        "sendSelection": "Envoyer la Sélection",
+        "clearDrafts": "Effacer brouillons",
+        "clearDraftsTooltip": "Effacer les brouillons pour les candidats sélectionnés",
+        "draftStyle": "Style de rédaction : {{style}}"
     }
 }

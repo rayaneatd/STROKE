@@ -1119,6 +1119,9 @@
         "bulkDraft": "Bulk Draft",
         "sendDrafts": "Send Drafts",
         "writeDrafts": "Write Drafts",
-        "sendSelection": "Send Selection"
+        "sendSelection": "Send Selection",
+        "clearDrafts": "Clear drafts",
+        "clearDraftsTooltip": "Clear drafts for selected candidates",
+        "draftStyle": "Draft Style: {{style}}"
     }
 }
