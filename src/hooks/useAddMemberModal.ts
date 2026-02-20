@@ -142,11 +142,26 @@ export const useAddMemberModal = ({
 
         // Add each selected user
         selectedUsersToAdd.forEach(userId => {
+            let quota: number | 'UNLIMITED' = project.settings.defaultScanQuota || 'UNLIMITED';
+
+            // Apply Role-Based Quotas if defined
+            if (role === ProjectRole.ADMIN && project.settings.adminScanQuota) {
+                quota = project.settings.adminScanQuota;
+            } else if (role === ProjectRole.EMPLOYEE) {
+                if (selectedEmployeeSubRole === 'PARTNER' && project.settings.partnerScanQuota) {
+                    quota = project.settings.partnerScanQuota;
+                } else if (selectedEmployeeSubRole === 'SCOUT' && project.settings.scoutScanQuota) {
+                    quota = project.settings.scoutScanQuota;
+                } else if (selectedEmployeeSubRole === 'ANALYST' && project.settings.analystScanQuota) {
+                    quota = project.settings.analystScanQuota;
+                }
+            }
+
             addMember({
                 userId,
                 role,
                 permissions: perms,
-                quota: project.settings.defaultScanQuota || 'UNLIMITED'
+                quota
             });
         });
 

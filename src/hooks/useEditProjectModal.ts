@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Project, User, ProjectRole, SubscriptionPlan, EmployeeAddPermission, OutreachStrategy } from '../types';
 import { runProjectDiagnostics, CalibrationResult } from '../services/aiCalibrationEngine';
@@ -78,6 +78,10 @@ export const useEditProjectModal = ({
                         analystCanUseGhosting: currentUser.preferences?.defaultAnalystCanUseGhosting || false,
                         scoutCanUseGhosting: currentUser.preferences?.defaultScoutCanUseGhosting || false,
                         defaultScanQuota: currentUser.preferences?.defaultScanQuota || 'UNLIMITED',
+                        adminScanQuota: 'UNLIMITED',
+                        scoutScanQuota: 'UNLIMITED',
+                        partnerScanQuota: 'UNLIMITED',
+                        analystScanQuota: 'UNLIMITED',
                         billingMode: currentUser.preferences?.defaultBillingMode || 'OWNER_WALLET',
                         outreachStrategy: currentUser.preferences?.defaultOutreachStrategy || OutreachStrategy.INDIVIDUAL_IDENTITY,
                         ownerOutreachEmailId: currentUser.preferences?.defaultOwnerOutreachEmailId

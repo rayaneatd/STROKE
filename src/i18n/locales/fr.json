@@ -815,12 +815,12 @@
             "enterQuota": "Entrer le maximum de scans par membre",
             "quotaNote": "Note : Ceci définit le quota par défaut pour les nouveaux membres. Les quotas des membres existants ne sont pas modifiés.",
             "lockedTitle": "Facturation Avancée Verrouillée",
-            "lockedDesc": "Passez au plan Pro ou Équipe pour allouer des budgets spécifiques par projet et contrôler les quotas des membres.",
-            "roleQuotas": "Quotas par Rôle",
-            "roleQuotasDesc": "Définir des limites de scan spécifiques pour chaque rôle.",
+            "lockedDesc": "Passez au forfait Pro ou Équipe pour allouer des budgets spécifiques par projet et contrôler les quotas des membres.",
+            "roleQuotas": "Quotas par rôle",
+            "roleQuotasDesc": "Définir des limites de scan spécifiques pour chaque rôle de membre.",
             "adminQuota": "Quota Admin",
-            "scoutQuota": "Quota Scout",
-            "partnerQuota": "Quota Partner",
+            "partnerQuota": "Quota Partenaire",
+            "scoutQuota": "Quota Éclaireur",
             "analystQuota": "Quota Analyste"
         },
         "createProject": {

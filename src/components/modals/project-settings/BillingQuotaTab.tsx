@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Wallet, Calculator, Coins, Lock, Infinity, RefreshCw } from 'lucide-react';
+import { Wallet, Calculator, Coins, Lock, Infinity, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Project, User, ProjectBillingMode } from '../../../types';
 import { useTheme } from '../../../context/ThemeContext';
