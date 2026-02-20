@@ -301,7 +301,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
             }
         } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
              // Fallback for browsers without webkitGetAsEntry
-            const validFiles = Array.from(e.dataTransfer.files).filter((file: File) => acceptedTypes.includes(file.type));
+            const validFiles = Array.from(e.dataTransfer.files).filter((file: File) => acceptedTypes.includes(file.type)) as File[];
 
             if (validFiles.length > 0) {
                 handleFilesAddedWrapper(validFiles);
