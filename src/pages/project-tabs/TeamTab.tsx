@@ -696,7 +696,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                                         icon={<Search size={14} />}
                                         members={project.members.filter(m => m.role === ProjectRole.EMPLOYEE && m.permissions.includes('SCAN') && !m.permissions.includes('ANALYZE'))}
                                         showScans={true}
-                                        canManageTeam={canManageTeam}
+                                        canManageTeam={canManageTeam && (currentUserRole === ProjectRole.OWNER || currentUserRole === ProjectRole.ADMIN)}
                                         selectedMemberIds={selectedMemberIds}
                                         toggleSelectAll={toggleSelectAll}
                                         toggleMemberSelection={toggleMemberSelection}
@@ -711,7 +711,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                                         icon={<Briefcase size={14} />}
                                         members={project.members.filter(m => m.role === ProjectRole.EMPLOYEE && m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE'))}
                                         showScans={true}
-                                        canManageTeam={canManageTeam}
+                                        canManageTeam={canManageTeam && (currentUserRole === ProjectRole.OWNER || currentUserRole === ProjectRole.ADMIN)}
                                         selectedMemberIds={selectedMemberIds}
                                         toggleSelectAll={toggleSelectAll}
                                         toggleMemberSelection={toggleMemberSelection}
@@ -726,7 +726,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                                         icon={<BarChart2 size={14} />}
                                         members={project.members.filter(m => m.role === ProjectRole.EMPLOYEE && m.permissions.includes('ANALYZE') && !m.permissions.includes('SCAN'))}
                                         showScans={false}
-                                        canManageTeam={canManageTeam}
+                                        canManageTeam={canManageTeam && (currentUserRole === ProjectRole.OWNER || currentUserRole === ProjectRole.ADMIN)}
                                         selectedMemberIds={selectedMemberIds}
                                         toggleSelectAll={toggleSelectAll}
                                         toggleMemberSelection={toggleMemberSelection}
@@ -751,7 +751,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                     showScans={false}
                     onAdd={(currentUserRole === ProjectRole.OWNER || currentUserRole === ProjectRole.ADMIN) ? () => handleAddClick('VISITOR') : undefined}
                     addLabel="Add Visitor"
-                    canSelect={canManageTeam}
+                    canSelect={canManageTeam && (currentUserRole === ProjectRole.OWNER || currentUserRole === ProjectRole.ADMIN)}
                     selectedMemberIds={selectedMemberIds}
                     toggleSelectAll={toggleSelectAll}
                     toggleMemberSelection={toggleMemberSelection}
