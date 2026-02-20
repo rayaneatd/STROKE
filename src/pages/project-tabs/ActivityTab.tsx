@@ -452,77 +452,80 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                 />
                 
                 {/* Anti Ghosting Bar */}
-                <div className={`shrink-0 border-t p-3 flex items-center justify-between transition-colors ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#18181b] border-white/10'}`}>
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${isLight ? 'bg-white text-slate-400 border border-slate-200' : 'bg-white/5 text-zinc-500 border-white/5'}`}>
-                            <Ghost size={16} />
-                        </div>
-                        <div>
-                            <div className={`text-xs font-bold uppercase tracking-wider ${textSecondary}`}>
-                                {selectedIds.size > 0 ? t('antiGhosting.selectionAction') : t('antiGhosting.title')}
+                {canUseAntiGhosting && (
+                    <div className={`shrink-0 border-t p-3 flex items-center justify-between transition-colors ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#18181b] border-white/10'}`}>
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${isLight ? 'bg-white text-slate-400 border border-slate-200' : 'bg-white/5 text-zinc-500 border-white/5'}`}>
+                                <Ghost size={16} />
                             </div>
-                            <div className={`text-sm font-bold ${textPrimary}`}>
-                                {selectedIds.size > 0 ? t('antiGhosting.selected', { count: selectedIds.size }) : t('antiGhosting.visibleCandidates', { count: candidates.length })}
+                            <div>
+                                <div className={`text-xs font-bold uppercase tracking-wider ${textSecondary}`}>
+                                    {selectedIds.size > 0 ? t('antiGhosting.selectionAction') : t('antiGhosting.title')}
+                                </div>
+                                <div className={`text-sm font-bold ${textPrimary}`}>
+                                    {selectedIds.size > 0 ? t('antiGhosting.selected', { count: selectedIds.size }) : t('antiGhosting.visibleCandidates', { count: candidates.length })}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                        {selectedIds.size > 0 ? (
-                            <>
-                                <button
-                                    onClick={() => handleBulkDraft(selectedNoDraft)}
-                                    disabled={isDrafting || selectedNoDraft.length === 0}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
-                                        ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                                        : 'bg-white/5 border border-white/5 text-zinc-300 hover:bg-white/10'}`}
-                                >
-                                    {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <PenTool size={14} />}
-                                    {t('antiGhosting.writeDrafts')} ({selectedNoDraft.length})
-                                </button>
-                                <button
-                                    onClick={() => handleBulkSend(selectedWithDraft)}
-                                    disabled={isSending || selectedWithDraft.length === 0}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-white transition-colors bg-${accentColor}-600 hover:bg-${accentColor}-500 shadow-lg shadow-${accentColor}-500/20`}
-                                >
-                                    {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                    {t('antiGhosting.sendSelection')} ({selectedWithDraft.length})
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={() => handleBulkDraft(visibleNoDraft)}
-                                    disabled={isDrafting || visibleNoDraft.length === 0}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
-                                        ? 'bg-purple-50 text-purple-600 border border-purple-100 hover:bg-purple-100'
-                                        : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20'}`}
-                                    title="Generate drafts for visible candidates without a draft"
-                                >
-                                    {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
-                                    {t('antiGhosting.bulkDraft')} ({visibleNoDraft.length})
-                                </button>
-                                <button
-                                    onClick={() => handleBulkSend(visibleWithDraft)}
-                                    disabled={isSending || visibleWithDraft.length === 0}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
-                                        ? 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100'
-                                        : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'}`}
-                                    title="Send emails to visible candidates with a draft ready"
-                                >
-                                    {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                    {t('antiGhosting.sendDrafts')} ({visibleWithDraft.length})
-                                </button>
-                            </>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {selectedIds.size > 0 ? (
+                                <>
+                                    <button
+                                        onClick={() => handleBulkDraft(selectedNoDraft)}
+                                        disabled={isDrafting || selectedNoDraft.length === 0}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                            ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                                            : 'bg-white/5 border border-white/5 text-zinc-300 hover:bg-white/10'}`}
+                                    >
+                                        {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <PenTool size={14} />}
+                                        {t('antiGhosting.writeDrafts')} ({selectedNoDraft.length})
+                                    </button>
+                                    <button
+                                        onClick={() => handleBulkSend(selectedWithDraft)}
+                                        disabled={isSending || selectedWithDraft.length === 0}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-white transition-colors bg-${accentColor}-600 hover:bg-${accentColor}-500 shadow-lg shadow-${accentColor}-500/20`}
+                                    >
+                                        {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                        {t('antiGhosting.sendSelection')} ({selectedWithDraft.length})
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => handleBulkDraft(visibleNoDraft)}
+                                        disabled={isDrafting || visibleNoDraft.length === 0}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                            ? 'bg-purple-50 text-purple-600 border border-purple-100 hover:bg-purple-100'
+                                            : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20'}`}
+                                        title="Generate drafts for visible candidates without a draft"
+                                    >
+                                        {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
+                                        {t('antiGhosting.bulkDraft')} ({visibleNoDraft.length})
+                                    </button>
+                                    <button
+                                        onClick={() => handleBulkSend(visibleWithDraft)}
+                                        disabled={isSending || visibleWithDraft.length === 0}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                            ? 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100'
+                                            : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'}`}
+                                        title="Send emails to visible candidates with a draft ready"
+                                    >
+                                        {isSending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                                        {t('antiGhosting.sendDrafts')} ({visibleWithDraft.length})
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Full Screen Drawer */}
                 <CandidateDrawer
                     isOpen={!!selectedFile}
                     candidateId={selectedFile?.id || null}
                     onClose={() => setSelectedFile(null)}
+                    hideCommunicationTab={!canUseAntiGhosting}
                 />
             </div>
         </div>
