@@ -33,20 +33,18 @@ export const useFileProcessing = (
                 return false;
             }
 
-            const { error } = await supabase.from('analytics_events').insert({
-                project_id: projectId,
-                user_id: userId,
-                event_type: 'FAIL',
-                metadata: {
-                    reason,
-                    fileName: file.name,
-                    size: file.size,
-                    type: file.type
-                }
+            // Use robust RPC function instead of direct insert
+            const { data, error } = await supabase.rpc('log_failure_event', {
+                p_project_id: projectId,
+                p_user_id: userId,
+                p_reason: reason,
+                p_file_name: file.name,
+                p_file_size: file.size,
+                p_file_type: file.type
             });
 
             if (error) {
-                console.error('Supabase error logging failure:', error);
+                console.error('Supabase error logging failure via RPC:', error);
                 return false;
             }
 
