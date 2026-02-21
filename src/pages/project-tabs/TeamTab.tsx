@@ -35,11 +35,16 @@ const TeamListSection = React.memo(({
     toggleMemberSelection,
     currentUser,
     teamSearch,
-    userMap
+    userMap,
+    onEditQuota,
+    canEditQuota,
+    projectId
 }: any) => {
     const { t } = useTranslation();
     const [overflowVisible, setOverflowVisible] = useState(false);
     const [visibleCount, setVisibleCount] = useState(10);
+    const [editingQuotaId, setEditingQuotaId] = useState<string | null>(null);
+    const [quotaInput, setQuotaInput] = useState('');
     const { isLight, accentColor } = useTheme(currentUser);
 
     useEffect(() => {
@@ -68,6 +73,29 @@ const TeamListSection = React.memo(({
 
     const allSelected = allMemberIds.length > 0 && allMemberIds.every((id: string) => selectedMemberIds.has(id));
     const someSelected = allMemberIds.some((id: string) => selectedMemberIds.has(id));
+
+    // Edit Quota Logic
+    const startEditingQuota = (userId: string, currentQuota: number | 'UNLIMITED') => {
+        if (!canEditQuota) return;
+        setEditingQuotaId(userId);
+        setQuotaInput(currentQuota === 'UNLIMITED' || currentQuota === -1 || String(currentQuota) === '-1' ? '' : currentQuota.toString());
+    };
+
+    const saveQuota = (userId: string, val: number | 'UNLIMITED') => {
+        if (onEditQuota) {
+            onEditQuota(projectId, userId, val);
+            setEditingQuotaId(null);
+        }
+    };
+
+    const saveFromInput = (userId: string) => {
+        if (quotaInput.trim() === '' || quotaInput.toUpperCase() === 'UNLIMITED') {
+            saveQuota(userId, 'UNLIMITED');
+        } else {
+            const num = parseInt(quotaInput) || 0;
+            saveQuota(userId, num);
+        }
+    };
 
     // Lazy Loading Logic
     const visibleMembers = filteredMembers.slice(0, visibleCount);
@@ -124,6 +152,7 @@ const TeamListSection = React.memo(({
                                 if (!user) return null;
                                 const isSelf = user.id === currentUser.id;
                                 const isOwner = m.role === ProjectRole.OWNER;
+                                const isEditing = editingQuotaId === m.userId;
 
                                 let roleLabel = t('project.team.roles.employee');
                                 if (m.role === ProjectRole.OWNER) roleLabel = t('project.team.roles.owner');
@@ -172,12 +201,38 @@ const TeamListSection = React.memo(({
                                         <div className="flex items-center gap-4">
                                             {showScans && (
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`text-xs font-medium px-2 py-1 rounded flex items-center gap-1 border ${bgBadge} ${usageColor} ${borderColor}`}>
+                                                    <div onClick={(e) => e.stopPropagation()} className={`text-xs font-medium px-2 py-1 rounded flex items-center gap-1 border ${bgBadge} ${usageColor} ${borderColor}`}>
                                                         <span>{m.scansUsed}</span>
                                                         <span className="opacity-50">/</span>
-                                                        <span>
-                                                            {m.scanQuota === 'UNLIMITED' || m.scanQuota === -1 || String(m.scanQuota) === '-1' ? <Infinity size={14} className="inline" /> : m.scanQuota}
-                                                        </span>
+                                                        {isEditing ? (
+                                                            <div className="flex items-center gap-1 animate-fade-in">
+                                                                <input
+                                                                    autoFocus
+                                                                    type="number"
+                                                                    placeholder="∞"
+                                                                    value={quotaInput}
+                                                                    onChange={(e) => setQuotaInput(e.target.value)}
+                                                                    onBlur={() => saveFromInput(m.userId)}
+                                                                    onKeyDown={(e) => e.key === 'Enter' && saveFromInput(m.userId)}
+                                                                    className={`w-14 text-xs border rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-${accentColor}-500 ${isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-black border-white/20 text-white'}`}
+                                                                />
+                                                                <button
+                                                                    onMouseDown={(e) => { e.preventDefault(); saveQuota(m.userId, 'UNLIMITED'); }}
+                                                                    className={`p-0.5 rounded transition-colors ${isLight ? 'bg-slate-200 hover:bg-slate-300 text-slate-600' : 'bg-white/10 hover:bg-white/20 text-zinc-400'}`}
+                                                                    title="Set to Unlimited"
+                                                                >
+                                                                    <Infinity size={12} />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <span
+                                                                className={`cursor-pointer ${canEditQuota ? `hover:text-${accentColor}-500 font-bold` : ''}`}
+                                                                onClick={() => startEditingQuota(m.userId, m.scanQuota)}
+                                                                title={canEditQuota ? "Click to edit quota" : "Quota locked"}
+                                                            >
+                                                                {m.scanQuota === 'UNLIMITED' || m.scanQuota === -1 || String(m.scanQuota) === '-1' ? <Infinity size={14} className="inline" /> : m.scanQuota}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             )}
@@ -522,18 +577,19 @@ const TeamTab: React.FC<TeamTabProps> = ({
             newQuota = adminQuota;
         }
 
-        // Call parent handler
-        onUpdateMember(project.id, userId, { 
+        const updateData: any = { 
             permissions: newPermissions,
-            scanQuota: newQuota
-        });
+            scan_quota: newQuota
+        };
 
         // If promoting to ADMIN, we need to change the actual role field
         if (newRole === 'ADMIN') {
-            onUpdateMember(project.id, userId, { role: ProjectRole.ADMIN, scanQuota: adminQuota });
+            updateData.role = ProjectRole.ADMIN;
         } else if (newRole === 'MEMBER') {
-             onUpdateMember(project.id, userId, { role: ProjectRole.EMPLOYEE });
+            updateData.role = ProjectRole.EMPLOYEE;
         }
+
+        updateMember({ userId, data: updateData });
     };
 
     const handleBulkUpdateAccess = (target: DemoteTarget | string[]) => {
@@ -725,6 +781,9 @@ const TeamTab: React.FC<TeamTabProps> = ({
                     currentUser={currentUser}
                     teamSearch={teamSearch}
                     userMap={userMap}
+                    onEditQuota={handleQuotaUpdate}
+                    canEditQuota={canEditQuota}
+                    projectId={project.id}
                 />
 
                 <div className={`${containerBg} rounded-2xl border transition-all duration-300 relative z-20 ${employeesOverflowVisible ? 'overflow-visible' : 'overflow-hidden'}`}>
@@ -848,7 +907,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                         {selectionType === 'EMPLOYEE' && (
                             <>
                                 <button
-                                    onClick={() => updateRole(Array.from(selectedMemberIds)[0], 'ADMIN')}
+                                    onClick={() => updateRole(Array.from(selectedMemberIds)[0] as string, 'ADMIN')}
                                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-zinc-300'}`}
                                 >
                                     <Shield size={16} /> Promote to Admin
@@ -865,7 +924,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                         {selectionType === 'ADMIN' && (
                             <>
                                 <button
-                                    onClick={() => updateRole(Array.from(selectedMemberIds)[0], 'MEMBER')}
+                                    onClick={() => updateRole(Array.from(selectedMemberIds)[0] as string, 'MEMBER')}
                                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-zinc-300'}`}
                                 >
                                     <Zap size={16} className="text-orange-500" /> Quick Demote
