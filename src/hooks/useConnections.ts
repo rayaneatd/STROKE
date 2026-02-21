@@ -53,7 +53,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
         queryKey: ['network', currentUser.id],
         queryFn: async () => {
             const { data, error } = await supabase
-                .rpc('get_user_connections', { user_id: currentUser.id });
+                .rpc('get_user_connections', { p_user_id: currentUser.id });
 
             if (error) throw error;
 
