@@ -1044,6 +1044,17 @@
                 "distribution": "Score Distribution",
                 "team": "Team Performance",
                 "activity": "Activity & Performance"
+            },
+            "team": {
+                "accuracy": "Event-Based Accuracy",
+                "rank": "Rank",
+                "member": "Member",
+                "sourced": "Sourced",
+                "qualified": "Qualified",
+                "rejected": "Rejected",
+                "contacted": "Contacted",
+                "efficiency": "Efficiency",
+                "noActivity": "No team activity recorded yet. Start sourcing!"
             }
         },
         "team": {

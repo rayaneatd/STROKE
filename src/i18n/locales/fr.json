@@ -713,6 +713,17 @@
                 "distribution": "Distribution des Scores",
                 "team": "Performance de l'Équipe",
                 "activity": "Activité & Performance"
+            },
+            "team": {
+                "accuracy": "Précision basée sur les événements",
+                "rank": "Rang",
+                "member": "Membre",
+                "sourced": "Sourcé",
+                "qualified": "Qualifié",
+                "rejected": "Rejeté",
+                "contacted": "Contacté",
+                "efficiency": "Efficacité",
+                "noActivity": "Aucune activité d'équipe enregistrée. Commencez le sourcing !"
             }
         },
         "team": {

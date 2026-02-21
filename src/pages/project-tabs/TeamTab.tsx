@@ -184,12 +184,12 @@ const TeamListSection = React.memo(({
                                             )}
 
                                             <div className="relative">
-                                                <img src={user.avatarUrl || `https://ui-avatars.com/api/?name=${user.displayName}`} className={`w-10 h-10 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`} alt="" loading="lazy" />
+                                                <img src={user.avatarUrl || `https://ui-avatars.com/api/?name=${user.displayName || 'Unknown'}`} className={`w-10 h-10 rounded-full border object-cover ${isLight ? 'border-white shadow-sm' : 'border-white/10'}`} alt="" loading="lazy" />
                                                 {isOwner && <div className="absolute -top-1 -right-1 bg-yellow-500 text-black rounded-full p-0.5 border-2 border-[#0e0e10]"><Crown size={8} /></div>}
                                             </div>
                                             <div>
                                                 <div className={`font-bold text-sm flex items-center gap-2 ${textPrimary}`}>
-                                                {user.displayName}
+                                                {user.displayName || t('candidateList.unknownUser')}
                                                 {isSelf && <span className={`text-[10px] px-1.5 py-0.5 rounded border ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/10 text-zinc-400 border-white/5'}`}>{t('project.team.you')}</span>}
                                             </div>
                                                 <div className={`text-xs flex items-center gap-1.5 ${textSecondary}`}>

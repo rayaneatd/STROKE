@@ -359,19 +359,19 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                 <div className={`p-6 rounded-xl border ${cardClass} col-span-1 md:col-span-2`}>
                     <h3 className={`text-sm font-bold ${textPrimary} mb-4 flex items-center gap-2`}>
                         <Users size={16} className="text-blue-500" />
-                        {t('project.overview.charts.team')} <span className="text-[10px] font-normal text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full ml-2">Event-Based Accuracy</span>
+                        {t('project.overview.charts.team')} <span className="text-[10px] font-normal text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full ml-2">{t('project.overview.team.accuracy')}</span>
                     </h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className={`border-b ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
-                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary}`}>Rank</th>
-                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary}`}>Member</th>
-                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Sourced</th>
-                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Qualified</th>
-                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Rejected</th>
-                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Contacted</th>
-                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Efficiency</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary}`}>{t('project.overview.team.rank')}</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary}`}>{t('project.overview.team.member')}</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>{t('project.overview.team.sourced')}</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>{t('project.overview.team.qualified')}</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>{t('project.overview.team.rejected')}</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>{t('project.overview.team.contacted')}</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>{t('project.overview.team.efficiency')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -393,10 +393,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                                         <img src={user.avatarUrl} className="w-6 h-6 rounded-full object-cover" alt="" />
                                                     ) : (
                                                         <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold">
-                                                            {user?.firstName?.[0] || 'U'}
+                                                            {user?.displayName?.[0] || 'U'}
                                                         </div>
                                                     )}
-                                                    <span className={`text-xs font-bold ${textPrimary}`}>{user?.fullName || 'Unknown User'}</span>
+                                                    <span className={`text-xs font-bold ${textPrimary}`}>{user?.displayName || t('candidateList.unknownUser')}</span>
                                                 </div>
                                             </td>
                                             <td className={`py-3 px-2 text-right text-xs font-mono ${textPrimary}`}>{member.scans}</td>
@@ -419,7 +419,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                         
                         {analytics.contributionData.length === 0 && (
                             <div className={`text-center py-12 ${textSecondary} text-xs italic`}>
-                                No team activity recorded yet. Start sourcing!
+                                {t('project.overview.team.noActivity')}
                             </div>
                         )}
                     </div>
