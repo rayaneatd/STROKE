@@ -119,43 +119,38 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const contactRate = qualified > 0 ? Math.round((contacted / qualified) * 100) : 0;
             const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            // Timeline (Event-based for better accuracy)
+            // Timeline (Merged source for accuracy)
             const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number; failed: number }>();
             const failureMap = new Map<string, number>();
             
-            // Fill from events if available, else fallback to candidate dates
-            if (events.length > 0) {
-                events.forEach(e => {
+            // 1. Process Candidates (Success/Legacy flows)
+            data.forEach(c => {
+                const date = c.uploaded_at.split('T')[0];
+                const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
+                
+                current.added++;
+                if (c.score != null && c.score >= 70) current.qualified++;
+                if (c.email_sent_at) current.contacted++;
+                if (c.score != null && c.score < 50) current.rejected++;
+                
+                timelineMap.set(date, current);
+            });
+
+            // 2. Process Events (Failures ONLY)
+            events.forEach(e => {
+                if (e.event_type === 'FAIL') {
                     const date = e.created_at.split('T')[0];
                     const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
                     
-                    if (e.event_type === 'UPLOAD') current.added++;
-                    if (e.event_type === 'QUALIFY') current.qualified++;
-                    if (e.event_type === 'REJECT') current.rejected++;
-                    if (e.event_type === 'CONTACT') current.contacted++;
-                    if (e.event_type === 'FAIL') {
-                        current.failed++;
-                        const metadata = e.metadata as { reason?: string } | null;
-                        const reason = metadata?.reason || 'Unknown Error';
-                        failureMap.set(reason, (failureMap.get(reason) || 0) + 1);
-                    }
+                    current.failed++;
+                    
+                    const metadata = e.metadata as { reason?: string } | null;
+                    const reason = metadata?.reason || 'Unknown Error';
+                    failureMap.set(reason, (failureMap.get(reason) || 0) + 1);
                     
                     timelineMap.set(date, current);
-                });
-            } else {
-                // Fallback to legacy logic
-                data.forEach(c => {
-                    const date = c.uploaded_at.split('T')[0];
-                    const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
-                    
-                    current.added++;
-                    if (c.score != null && c.score >= 70) current.qualified++;
-                    if (c.email_sent_at) current.contacted++;
-                    if (c.score != null && c.score < 50) current.rejected++;
-                    
-                    timelineMap.set(date, current);
-                });
-            }
+                }
+            });
 
             const timelineData = Array.from(timelineMap.entries())
                 .map(([date, stats]) => ({
@@ -192,33 +187,19 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 { stage: 'Contactés', count: contacted, fill: '#f59e0b' }, // Amber
             ];
 
-            // Contribution (Event-based for TRUE accuracy)
+            // Contribution (Legacy source for consistency)
             const contributionMap = new Map<string, { scans: number; qualified: number; rejected: number; contacted: number }>();
             
-            if (events.length > 0) {
-                 events.forEach(e => {
-                    if (e.user_id) {
-                        const current = contributionMap.get(e.user_id) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
-                        if (e.event_type === 'UPLOAD') current.scans++;
-                        if (e.event_type === 'QUALIFY') current.qualified++;
-                        if (e.event_type === 'REJECT') current.rejected++;
-                        if (e.event_type === 'CONTACT') current.contacted++;
-                        contributionMap.set(e.user_id, current);
-                    }
-                });
-            } else {
-                // Fallback
-                 data.forEach(c => {
-                    if (c.uploaded_by) {
-                        const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
-                        current.scans++;
-                        if (c.score != null && c.score >= 70) current.qualified++;
-                        if (c.score != null && c.score < 50) current.rejected++;
-                        if (c.email_sent_at) current.contacted++;
-                        contributionMap.set(c.uploaded_by, current);
-                    }
-                });
-            }
+            data.forEach(c => {
+                if (c.uploaded_by) {
+                    const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
+                    current.scans++;
+                    if (c.score != null && c.score >= 70) current.qualified++;
+                    if (c.score != null && c.score < 50) current.rejected++;
+                    if (c.email_sent_at) current.contacted++;
+                    contributionMap.set(c.uploaded_by, current);
+                }
+            });
             
             const contributionData = Array.from(contributionMap.entries())
                 .map(([userId, stats]) => ({ userId, ...stats }))

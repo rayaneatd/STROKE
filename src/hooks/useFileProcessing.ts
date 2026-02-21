@@ -141,7 +141,7 @@ export const useFileProcessing = (
                         // but here we just want to catch duplicates. Race condition is rare and acceptable.
                         if (knownHashes.has(result.metadata.hash)) {
                             const reason = 'DUPLICATE_FILE: Ce fichier est déjà dans la liste d\'attente ou a été ajouté en double.';
-                            logFailure(item.file, reason);
+                            await logFailure(item.file, reason);
                             pendingUpdates.push({
                                 id: item.id,
                                 status: 'FAILED',
@@ -158,7 +158,7 @@ export const useFileProcessing = (
                         }
                     } else {
                         const reason = result.failure?.errorMessage || result.failure?.reason || 'Validation failed';
-                        logFailure(item.file, reason);
+                        await logFailure(item.file, reason);
                         pendingUpdates.push({
                             id: item.id,
                             status: 'FAILED',
@@ -167,7 +167,7 @@ export const useFileProcessing = (
                     }
                 } catch (error) {
                      const reason = 'Unexpected processing error';
-                     logFailure(item.file, reason);
+                     await logFailure(item.file, reason);
                      pendingUpdates.push({
                         id: item.id,
                         status: 'FAILED',
