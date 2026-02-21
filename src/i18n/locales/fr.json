@@ -720,7 +720,8 @@
             "you": "VOUS",
             "scansUsed": "Scans Utilisés",
             "showMore": "Afficher {{count}} de plus",
-            "addMember": "Ajouter Membre",
+            "cannotRemoveSameOrg": "Impossible de supprimer des membres de la même organisation",
+            "addMember": "Ajouter un Membre",
             "empty": {
                 "noMatch": "Aucun résultat pour \"{{search}}\"",
                 "noMembers": "Aucun membre dans ce groupe."

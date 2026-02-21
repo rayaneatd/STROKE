@@ -1051,6 +1051,7 @@
             "you": "YOU",
             "scansUsed": "Scans Used",
             "showMore": "Show {{count}} more",
+            "cannotRemoveSameOrg": "Cannot remove members from the same organization",
             "addMember": "Add Member",
             "empty": {
                 "noMatch": "No match found for \"{{search}}\"",

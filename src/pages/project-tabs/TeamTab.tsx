@@ -65,7 +65,8 @@ const TeamListSection = React.memo(({
         return members.filter((m: any) => {
             const user = userMap.get(m.userId);
             if (!user) return false;
-            return (user.displayName.toLowerCase().includes(teamSearch.toLowerCase()) || user.email.toLowerCase().includes(teamSearch.toLowerCase()));
+            const matchesOrg = user.orgNames?.some((org: string) => org.toLowerCase().includes(teamSearch.toLowerCase()));
+            return (user.displayName.toLowerCase().includes(teamSearch.toLowerCase()) || user.email.toLowerCase().includes(teamSearch.toLowerCase()) || matchesOrg);
         });
     }, [members, teamSearch, userMap]);
 
@@ -196,6 +197,15 @@ const TeamListSection = React.memo(({
                                                     <span className="w-1 h-1 rounded-full bg-zinc-400"></span>
                                                     <span className={`font-medium text-${accentColor}-500`}>{roleLabel}</span>
                                                 </div>
+                                                {user.orgNames && user.orgNames.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                        {user.orgNames.map((org: string, idx: number) => (
+                                                            <span key={idx} className={`text-[10px] px-1.5 py-0.5 rounded border ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/10 text-zinc-400 border-white/5'}`}>
+                                                                {org}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-4">
@@ -274,7 +284,8 @@ const EmployeeSubList = React.memo(({
     userMap,
     onEditQuota,
     canEditQuota,
-    projectId
+    projectId,
+    teamSearch
 }: any) => {
     const { t } = useTranslation();
     const [visibleCount, setVisibleCount] = useState(5);
@@ -282,14 +293,24 @@ const EmployeeSubList = React.memo(({
     const [quotaInput, setQuotaInput] = useState('');
     const { isLight, accentColor } = useTheme(currentUser);
 
-    if (members.length === 0) return null;
+    const filteredMembers = useMemo(() => {
+        if (!teamSearch) return members;
+        return members.filter((m: any) => {
+            const user = userMap.get(m.userId);
+            if (!user) return false;
+            const matchesOrg = user.orgNames?.some((org: string) => org.toLowerCase().includes(teamSearch.toLowerCase()));
+            return (user.displayName.toLowerCase().includes(teamSearch.toLowerCase()) || user.email.toLowerCase().includes(teamSearch.toLowerCase()) || matchesOrg);
+        });
+    }, [members, teamSearch, userMap]);
 
-    const allMemberIds = members.map((m: any) => m.userId);
+    if (filteredMembers.length === 0) return null;
+
+    const allMemberIds = filteredMembers.map((m: any) => m.userId);
     const allSelected = allMemberIds.length > 0 && allMemberIds.every((id: string) => selectedMemberIds.has(id));
     const someSelected = allMemberIds.some((id: string) => selectedMemberIds.has(id));
 
-    const visibleMembers = members.slice(0, visibleCount);
-    const hasMore = visibleCount < members.length;
+    const visibleMembers = filteredMembers.slice(0, visibleCount);
+    const hasMore = visibleCount < filteredMembers.length;
 
     const startEditingQuota = (userId: string, currentQuota: number | 'UNLIMITED') => {
         if (!canEditQuota) return;
@@ -366,6 +387,15 @@ const EmployeeSubList = React.memo(({
                                     </div>
                                     <div className={`text-[11px] truncate leading-tight ${textSecondary}`}>{user.email}</div>
                                     <div className={`text-xs font-medium mt-0.5 ${roleLabel.includes('Partner') ? 'text-purple-500' : roleLabel.includes('Scout') ? `text-${accentColor}-500` : 'text-blue-500'}`}>{roleLabel}</div>
+                                    {user.orgNames && user.orgNames.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {user.orgNames.map((org: string, idx: number) => (
+                                                <span key={idx} className={`text-[10px] px-1.5 py-0.5 rounded border ${isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-white/10 text-zinc-400 border-white/5'}`}>
+                                                    {org}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-7 sm:ml-0">
@@ -550,6 +580,24 @@ const TeamTab: React.FC<TeamTabProps> = ({
         const member = project.members.find(m => m.userId === firstId);
         return member?.role === ProjectRole.ADMIN ? 'ADMIN' : 'EMPLOYEE';
     }, [selectedMemberIds, project.members]);
+
+    const hasSameOrgSelection = useMemo(() => {
+        if (selectedMemberIds.size === 0) return false;
+        
+        const shareOrg = (u1: any, u2: any) => {
+            if (!u1?.orgNames || !u2?.orgNames) return false;
+            return u1.orgNames.some((org: string) => u2.orgNames.includes(org));
+        };
+
+        const selectedIds = Array.from(selectedMemberIds);
+        for (const id of selectedIds) {
+            const user = userMap.get(id);
+            if (user && shareOrg(currentUser, user)) {
+                return true;
+            }
+        }
+        return false;
+    }, [selectedMemberIds, userMap, currentUser]);
 
     // Actions
         const updateRole = (userId: string, newRole: string) => {
@@ -838,6 +886,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                                         onEditQuota={handleQuotaUpdate}
                                         canEditQuota={canEditQuota}
                                         projectId={project.id}
+                                        teamSearch={teamSearch}
                                     />
                                     <EmployeeSubList
                                         title="Talent Partners"
@@ -853,6 +902,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                                         onEditQuota={handleQuotaUpdate}
                                         canEditQuota={canEditQuota}
                                         projectId={project.id}
+                                        teamSearch={teamSearch}
                                     />
                                     <EmployeeSubList
                                         title="Talent Analysts"
@@ -868,6 +918,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                                         onEditQuota={handleQuotaUpdate}
                                         canEditQuota={canEditQuota}
                                         projectId={project.id}
+                                        teamSearch={teamSearch}
                                     />
                                 </div>
                             );
@@ -942,12 +993,22 @@ const TeamTab: React.FC<TeamTabProps> = ({
 
                         <div className={`w-px h-6 mx-2 ${isLight ? 'bg-slate-200' : 'bg-white/10'}`}></div>
 
-                        <button
-                            onClick={() => setIsBulkRemoveModalOpen(true)}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-red-500 hover:bg-red-500/10`}
-                        >
-                            <Trash2 size={16} /> Remove
-                        </button>
+                        {hasSameOrgSelection ? (
+                            <button
+                                disabled
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-not-allowed opacity-75 ${isLight ? 'bg-slate-100 text-slate-400' : 'bg-white/5 text-zinc-500'}`}
+                                title={t('project.team.cannotRemoveSameOrg') || "Cannot remove members from the same organization"}
+                            >
+                                <ShieldCheck size={16} /> {t('connections.actions.sameOrg')}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setIsBulkRemoveModalOpen(true)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-red-500 hover:bg-red-500/10`}
+                            >
+                                <Trash2 size={16} /> Remove
+                            </button>
+                        )}
                     </div>
 
                     <button
