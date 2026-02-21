@@ -30,7 +30,13 @@ interface ProjectAnalytics {
     
     funnelData: { stage: string; count: number; fill: string }[];
 
-    contributionData: { userId: string; scans: number; qualified: number }[];
+    contributionData: { 
+        userId: string; 
+        scans: number; 
+        qualified: number;
+        rejected: number;
+        contacted: number;
+    }[];
     
     topCandidates: { id: string; candidateName: string; score: number; uploadedAt: string }[];
     
@@ -52,13 +58,18 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             if (timeRange === '90d') startDate = subDays(now, 90);
             
             // Parallel requests:
-            // 1. All candidates (lightweight columns) for stats
-            // 2. Top 5 candidates (fuller details)
+            // 1. All candidates for legacy stats
+            // 2. Analytics Events for accurate historical & team data
+            // 3. Top 5 candidates
             
-            const [statsResult, topResult] = await Promise.all([
+            const [statsResult, eventsResult, topResult] = await Promise.all([
                 supabase
                     .from('candidates')
                     .select('score, uploaded_at, uploaded_by, email_sent_at, size')
+                    .eq('project_id', projectId),
+                supabase
+                    .from('analytics_events')
+                    .select('*')
                     .eq('project_id', projectId),
                 supabase
                     .from('candidates')
@@ -70,14 +81,22 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             ]);
 
             if (statsResult.error) throw statsResult.error;
+            if (eventsResult.error) console.warn('Analytics events error:', eventsResult.error); // Non-blocking
             if (topResult.error) throw topResult.error;
 
-            // Filter by Date Range locally (simpler than dynamic query for now)
+            // Filter by Date Range locally
             const allData = statsResult.data || [];
+            const allEvents = eventsResult.data || [];
+
             const data = startDate 
                 ? allData.filter(c => isAfter(parseISO(c.uploaded_at), startDate))
                 : allData;
             
+            const events = startDate
+                ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
+                : allEvents;
+            
+            // Basic Stats (Still based on current state for accuracy of "now")
             const total = data.length;
             const completed = data.filter(c => c.score != null).length;
             const pending = total - completed;
@@ -98,20 +117,36 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const contactRate = qualified > 0 ? Math.round((contacted / qualified) * 100) : 0;
             const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            // Timeline (Advanced)
-            const timelineMap = new Map<string, { added: number; qualified: number; contacted: number }>();
+            // Timeline (Event-based for better accuracy)
+            const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number }>();
             
-            // Initialize map with empty dates if needed, but let's just use data points for now
-            data.forEach(c => {
-                const date = c.uploaded_at.split('T')[0];
-                const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0 };
-                
-                current.added++;
-                if (c.score != null && c.score >= 70) current.qualified++;
-                if (c.email_sent_at) current.contacted++;
-                
-                timelineMap.set(date, current);
-            });
+            // Fill from events if available, else fallback to candidate dates
+            if (events.length > 0) {
+                events.forEach(e => {
+                    const date = e.created_at.split('T')[0];
+                    const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0 };
+                    
+                    if (e.event_type === 'UPLOAD') current.added++;
+                    if (e.event_type === 'QUALIFY') current.qualified++;
+                    if (e.event_type === 'REJECT') current.rejected++;
+                    if (e.event_type === 'CONTACT') current.contacted++;
+                    
+                    timelineMap.set(date, current);
+                });
+            } else {
+                // Fallback to legacy logic
+                data.forEach(c => {
+                    const date = c.uploaded_at.split('T')[0];
+                    const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0 };
+                    
+                    current.added++;
+                    if (c.score != null && c.score >= 70) current.qualified++;
+                    if (c.email_sent_at) current.contacted++;
+                    if (c.score != null && c.score < 50) current.rejected++;
+                    
+                    timelineMap.set(date, current);
+                });
+            }
 
             const timelineData = Array.from(timelineMap.entries())
                 .map(([date, stats]) => ({
@@ -120,7 +155,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 }))
                 .sort((a, b) => a.date.localeCompare(b.date));
 
-            // Score Distribution
+            // Score Distribution (unchanged)
             const distribution = [
                 { range: '0-20', min: 0, max: 20, count: 0 },
                 { range: '21-40', min: 21, max: 40, count: 0 },
@@ -136,7 +171,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
 
             const scoreDistribution = distribution.map(d => ({ range: d.range, count: d.count }));
 
-            // Funnel
+            // Funnel (unchanged)
             const funnelData = [
                 { stage: 'Importés', count: total, fill: '#6366f1' }, // Indigo
                 { stage: 'Analysés', count: completed, fill: '#8b5cf6' }, // Violet
@@ -144,16 +179,33 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 { stage: 'Contactés', count: contacted, fill: '#f59e0b' }, // Amber
             ];
 
-            // Contribution (Enhanced)
-            const contributionMap = new Map<string, { scans: number; qualified: number }>();
-            data.forEach(c => {
-                if (c.uploaded_by) {
-                    const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0 };
-                    current.scans++;
-                    if (c.score != null && c.score >= 70) current.qualified++;
-                    contributionMap.set(c.uploaded_by, current);
-                }
-            });
+            // Contribution (Event-based for TRUE accuracy)
+            const contributionMap = new Map<string, { scans: number; qualified: number; rejected: number; contacted: number }>();
+            
+            if (events.length > 0) {
+                 events.forEach(e => {
+                    if (e.user_id) {
+                        const current = contributionMap.get(e.user_id) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
+                        if (e.event_type === 'UPLOAD') current.scans++;
+                        if (e.event_type === 'QUALIFY') current.qualified++;
+                        if (e.event_type === 'REJECT') current.rejected++;
+                        if (e.event_type === 'CONTACT') current.contacted++;
+                        contributionMap.set(e.user_id, current);
+                    }
+                });
+            } else {
+                // Fallback
+                 data.forEach(c => {
+                    if (c.uploaded_by) {
+                        const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
+                        current.scans++;
+                        if (c.score != null && c.score >= 70) current.qualified++;
+                        if (c.score != null && c.score < 50) current.rejected++;
+                        if (c.email_sent_at) current.contacted++;
+                        contributionMap.set(c.uploaded_by, current);
+                    }
+                });
+            }
             
             const contributionData = Array.from(contributionMap.entries())
                 .map(([userId, stats]) => ({ userId, ...stats }))

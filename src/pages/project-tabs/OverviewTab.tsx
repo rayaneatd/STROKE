@@ -355,40 +355,71 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                     </div>
                 </div>
 
-                {/* Team Performance */}
-                <div className={`p-6 rounded-xl border ${cardClass}`}>
+                {/* Team Performance - Accurate Event-Based */}
+                <div className={`p-6 rounded-xl border ${cardClass} col-span-1 md:col-span-2`}>
                     <h3 className={`text-sm font-bold ${textPrimary} mb-4 flex items-center gap-2`}>
                         <Users size={16} className="text-blue-500" />
-                        {t('project.overview.charts.team')}
+                        {t('project.overview.charts.team')} <span className="text-[10px] font-normal text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full ml-2">Event-Based Accuracy</span>
                     </h3>
-                    <div className="overflow-y-auto max-h-[250px] space-y-3 pr-2">
-                        {analytics.contributionData.map((member: any, index: number) => (
-                            <div key={member.userId} className={`flex items-center justify-between p-3 rounded-lg ${isLight ? 'bg-slate-50' : 'bg-white/5'}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
-                                        {index + 1}
-                                    </div>
-                                    <div>
-                                        {/* We only have userId here, ideally we'd map to name from project members */}
-                                        <p className={`text-xs font-bold ${textPrimary}`}>
-                                            {project.members.find(m => m.userId === member.userId)?.user?.fullName || 'Utilisateur'}
-                                        </p>
-                                        <p className={`text-[10px] ${textSecondary}`}>
-                                            {member.scans} scans
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-bold text-emerald-500">{member.qualified} Qualifiés</p>
-                                    <p className={`text-[10px] ${textSecondary}`}>
-                                        {member.scans > 0 ? Math.round((member.qualified / member.scans) * 100) : 0}% taux
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className={`border-b ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary}`}>Rank</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary}`}>Member</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Sourced</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Qualified</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Rejected</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Contacted</th>
+                                    <th className={`py-3 px-2 text-[10px] uppercase tracking-wider ${textSecondary} text-right`}>Efficiency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {analytics.contributionData.map((member: any, index: number) => {
+                                    const user = project.members.find(m => m.userId === member.userId)?.user;
+                                    const decisions = member.qualified + member.rejected;
+                                    const efficiency = decisions > 0 ? Math.round((member.qualified / decisions) * 100) : 0;
+                                    
+                                    return (
+                                        <tr key={member.userId} className={`border-b ${isLight ? 'border-slate-50' : 'border-white/5'} hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors`}>
+                                            <td className="py-3 px-2">
+                                                 <div className={`w-6 h-6 rounded-full ${index < 3 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-[10px] font-bold`}>
+                                                    {index + 1}
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-2">
+                                                <div className="flex items-center gap-2">
+                                                    {user?.avatarUrl ? (
+                                                        <img src={user.avatarUrl} className="w-6 h-6 rounded-full object-cover" alt="" />
+                                                    ) : (
+                                                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold">
+                                                            {user?.firstName?.[0] || 'U'}
+                                                        </div>
+                                                    )}
+                                                    <span className={`text-xs font-bold ${textPrimary}`}>{user?.fullName || 'Unknown User'}</span>
+                                                </div>
+                                            </td>
+                                            <td className={`py-3 px-2 text-right text-xs font-mono ${textPrimary}`}>{member.scans}</td>
+                                            <td className="py-3 px-2 text-right text-xs font-mono text-emerald-500 font-bold">{member.qualified}</td>
+                                            <td className={`py-3 px-2 text-right text-xs font-mono ${textSecondary}`}>{member.rejected}</td>
+                                            <td className="py-3 px-2 text-right text-xs font-mono text-amber-500">{member.contacted}</td>
+                                            <td className="py-3 px-2 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <div className="w-16 h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${efficiency}%` }} />
+                                                    </div>
+                                                    <span className={`text-[10px] font-bold ${textSecondary}`}>{efficiency}%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        
                         {analytics.contributionData.length === 0 && (
-                            <div className={`text-center py-8 ${textSecondary} text-xs`}>
-                                Pas de données d'équipe disponibles
+                            <div className={`text-center py-12 ${textSecondary} text-xs italic`}>
+                                No team activity recorded yet. Start sourcing!
                             </div>
                         )}
                     </div>
