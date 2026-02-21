@@ -566,6 +566,13 @@ export type Database = {
                 }
                 Returns: void
             }
+            update_project_settings_and_sync_quotas: {
+                Args: {
+                    p_project_id: string
+                    p_settings: Json
+                }
+                Returns: void
+            }
             mark_candidate_exported: {
                 Args: { candidate_id: string; user_id: string }
                 Returns: undefined

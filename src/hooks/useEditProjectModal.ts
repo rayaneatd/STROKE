@@ -16,6 +16,8 @@ export interface UseEditProjectModalProps {
     withdrawProjectFunds: (params: { amount: number }) => Promise<any>;
 }
 
+import { supabase } from '../lib/supabase';
+
 export const useEditProjectModal = ({
     isOpen,
     project,
@@ -119,7 +121,7 @@ export const useEditProjectModal = ({
     const userHasPlan = currentUser.subscriptionPlan === SubscriptionPlan.TEAM || currentUser.subscriptionPlan === SubscriptionPlan.ELITE;
     const canAccessInvestment = currentUser.subscriptionPlan !== SubscriptionPlan.ESSENTIAL;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
@@ -133,10 +135,39 @@ export const useEditProjectModal = ({
         }
 
         setIsLoading(true);
-        setTimeout(() => {
-            onSave(e, formData);
+
+        try {
+            if (mode === 'EDIT' && project && project.id) {
+                // Use new RPC for updating settings and syncing quotas
+                const { error: rpcError } = await supabase.rpc('update_project_settings_and_sync_quotas', {
+                    p_project_id: project.id,
+                    p_settings: formData.settings
+                });
+
+                if (rpcError) throw rpcError;
+
+                // Also call onSave for other fields (title, description, etc.) which might use standard update
+                // But since onSave likely does a full update, we might be double updating.
+                // However, onSave in parent (useProjects) typically calls updateProject.
+                // To be safe and ensure UI updates, we proceed with onSave.
+                // The RPC only updates settings and quotas.
+                // We should ensure onSave doesn't overwrite the work done by RPC if it's concurrent, 
+                // but since we await RPC first, onSave (which uses supabase update) will just overwrite settings with same values.
+                // Ideally, onSave should be refactored to use this RPC or we just use this RPC for settings.
+                
+                // For now, to meet the requirement "make sure changes reflect on existing members", the RPC is critical.
+                // We will call onSave as normal to handle the rest of the flow (UI update, toast, etc.)
+                onSave(e, formData);
+            } else {
+                // CREATE Mode - standard flow
+                onSave(e, formData);
+            }
+        } catch (err: any) {
+            console.error('Error updating project settings:', err);
+            setError(err.message || 'Failed to update settings');
+        } finally {
             setIsLoading(false);
-        }, 600);
+        }
     };
 
     const handleFundAction = async (action: 'DEPOSIT' | 'WITHDRAW') => {

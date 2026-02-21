@@ -138,6 +138,12 @@ const TeamListSection = React.memo(({
 
                                 const isSelected = selectedMemberIds.has(m.userId);
 
+                                // Exhaustion Check
+                                const isExhausted = m.scanQuota !== 'UNLIMITED' && m.scanQuota !== -1 && String(m.scanQuota) !== '-1' && m.scansUsed >= m.scanQuota;
+                                const usageColor = isExhausted ? 'text-red-500 font-bold' : (isLight ? 'text-slate-500' : 'text-zinc-400');
+                                const borderColor = isExhausted ? 'border-red-500/50' : (isLight ? 'border-slate-100' : 'border-white/5');
+                                const bgBadge = isExhausted ? (isLight ? 'bg-red-50' : 'bg-red-500/10') : (isLight ? 'bg-slate-50' : 'bg-white/5');
+
                                 return (
                                     <div key={m.userId} onClick={() => canSelect && !isSelf && toggleMemberSelection(m.userId)} className={`p-4 flex items-center justify-between transition-colors group relative ${itemHoverClass} ${isSelected ? (isLight ? `bg-${accentColor}-50` : `bg-${accentColor}-500/10`) : ''}`}>
                                         <div className="flex items-center gap-3">
@@ -165,9 +171,14 @@ const TeamListSection = React.memo(({
                                         </div>
                                         <div className="flex items-center gap-4">
                                             {showScans && (
-                                                <div className="text-right hidden sm:block">
-                                                    <div className={`text-xs font-medium uppercase ${textSecondary}`}>{t('project.team.scansUsed')}</div>
-                                                    <div className={`font-bold ${isLight ? 'text-slate-700' : 'text-zinc-300'}`}>{m.scansUsed}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`text-xs font-medium px-2 py-1 rounded flex items-center gap-1 border ${bgBadge} ${usageColor} ${borderColor}`}>
+                                                        <span>{m.scansUsed}</span>
+                                                        <span className="opacity-50">/</span>
+                                                        <span>
+                                                            {m.scanQuota === 'UNLIMITED' || m.scanQuota === -1 || String(m.scanQuota) === '-1' ? <Infinity size={14} className="inline" /> : m.scanQuota}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -486,26 +497,78 @@ const TeamTab: React.FC<TeamTabProps> = ({
     }, [selectedMemberIds, project.members]);
 
     // Actions
-    const handleBulkRoleUpdate = (newRole: ProjectRole) => {
-        selectedMemberIds.forEach(userId => {
-            updateMember({ userId, data: { role: newRole } });
+        const updateRole = (userId: string, newRole: string) => {
+        // Logic to determine new permissions and quota based on role
+        let newPermissions: ProjectPermission[] = [];
+        let newQuota: number | 'UNLIMITED' = 'UNLIMITED';
+
+        // Get Quota Defaults from project settings
+        const adminQuota = (project.settings?.adminScanQuota === -1 || String(project.settings?.adminScanQuota) === '-1' ? 'UNLIMITED' : project.settings?.adminScanQuota) || 'UNLIMITED';
+        const partnerQuota = (project.settings?.partnerScanQuota === -1 || String(project.settings?.partnerScanQuota) === '-1' ? 'UNLIMITED' : project.settings?.partnerScanQuota) || 'UNLIMITED';
+        const scoutQuota = (project.settings?.scoutScanQuota === -1 || String(project.settings?.scoutScanQuota) === '-1' ? 'UNLIMITED' : project.settings?.scoutScanQuota) || 'UNLIMITED';
+        
+        // Default quotas based on role
+        if (newRole === 'PARTNER') {
+            newPermissions = ['SCAN', 'ANALYZE'];
+            newQuota = partnerQuota;
+        } else if (newRole === 'SCOUT') {
+            newPermissions = ['SCAN'];
+            newQuota = scoutQuota;
+        } else if (newRole === 'ANALYST') {
+            newPermissions = ['ANALYZE'];
+            newQuota = 0; // Analysts typically don't scan
+        } else if (newRole === 'ADMIN') {
+            // ADMIN logic is handled by backend usually, but for UI updates:
+            newQuota = adminQuota;
+        }
+
+        // Call parent handler
+        onUpdateMember(project.id, userId, { 
+            permissions: newPermissions,
+            scanQuota: newQuota
         });
-        setSelectedMemberIds(new Set());
+
+        // If promoting to ADMIN, we need to change the actual role field
+        if (newRole === 'ADMIN') {
+            onUpdateMember(project.id, userId, { role: ProjectRole.ADMIN, scanQuota: adminQuota });
+        } else if (newRole === 'MEMBER') {
+             onUpdateMember(project.id, userId, { role: ProjectRole.EMPLOYEE });
+        }
     };
 
     const handleBulkUpdateAccess = (target: DemoteTarget | string[]) => {
         let permissions: string[] = [];
+        let newQuota: number | 'UNLIMITED' = 'UNLIMITED';
+
+        // Get Quota Defaults from project settings
+        const partnerQuota = (project.settings?.partnerScanQuota === -1 || String(project.settings?.partnerScanQuota) === '-1' ? 'UNLIMITED' : project.settings?.partnerScanQuota) || 'UNLIMITED';
+        const scoutQuota = (project.settings?.scoutScanQuota === -1 || String(project.settings?.scoutScanQuota) === '-1' ? 'UNLIMITED' : project.settings?.scoutScanQuota) || 'UNLIMITED';
+
         if (Array.isArray(target)) {
             permissions = target;
         } else {
-            permissions = target === 'PARTNER' ? ['SCAN', 'ANALYZE'] :
-                target === 'SCOUT' ? ['SCAN'] :
-                    target === 'ANALYST' ? ['ANALYZE'] :
-                        [];
+            if (target === 'PARTNER') {
+                permissions = ['SCAN', 'ANALYZE'];
+                newQuota = partnerQuota;
+            } else if (target === 'SCOUT') {
+                permissions = ['SCAN'];
+                newQuota = scoutQuota;
+            } else if (target === 'ANALYST') {
+                permissions = ['ANALYZE'];
+                newQuota = 0;
+            } else {
+                permissions = [];
+                newQuota = 0;
+            }
         }
 
         selectedMemberIds.forEach(userId => {
-            updateMember({ userId, data: { role: ProjectRole.EMPLOYEE, permissions } });
+            const updateData: any = { role: ProjectRole.EMPLOYEE, permissions };
+            // Only update quota if we are setting a standard role, not custom permissions
+            if (!Array.isArray(target)) {
+                updateData.scanQuota = newQuota;
+            }
+            updateMember({ userId, data: updateData });
         });
         setIsBulkAccessModalOpen(false);
         setIsBulkDemoteModalOpen(false);
@@ -785,7 +848,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                         {selectionType === 'EMPLOYEE' && (
                             <>
                                 <button
-                                    onClick={() => handleBulkRoleUpdate(ProjectRole.ADMIN)}
+                                    onClick={() => updateRole(Array.from(selectedMemberIds)[0], 'ADMIN')}
                                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-zinc-300'}`}
                                 >
                                     <Shield size={16} /> Promote to Admin
@@ -802,7 +865,7 @@ const TeamTab: React.FC<TeamTabProps> = ({
                         {selectionType === 'ADMIN' && (
                             <>
                                 <button
-                                    onClick={handleQuickDemote}
+                                    onClick={() => updateRole(Array.from(selectedMemberIds)[0], 'MEMBER')}
                                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-zinc-300'}`}
                                 >
                                     <Zap size={16} className="text-orange-500" /> Quick Demote

@@ -145,12 +145,12 @@ export const useAddMemberModal = ({
             let quota: number | 'UNLIMITED' = (project.settings.defaultScanQuota === -1 || String(project.settings.defaultScanQuota) === '-1') ? 'UNLIMITED' : (project.settings.defaultScanQuota || 'UNLIMITED');
 
             // Apply Role-Based Quotas if defined
-            if (role === ProjectRole.ADMIN && project.settings.adminScanQuota) {
+            if (role === ProjectRole.ADMIN && project.settings.adminScanQuota !== undefined && project.settings.adminScanQuota !== null) {
                 quota = (project.settings.adminScanQuota === -1 || String(project.settings.adminScanQuota) === '-1') ? 'UNLIMITED' : project.settings.adminScanQuota;
             } else if (role === ProjectRole.EMPLOYEE) {
-                if (selectedEmployeeSubRole === 'PARTNER' && project.settings.partnerScanQuota) {
+                if (selectedEmployeeSubRole === 'PARTNER' && project.settings.partnerScanQuota !== undefined && project.settings.partnerScanQuota !== null) {
                     quota = (project.settings.partnerScanQuota === -1 || String(project.settings.partnerScanQuota) === '-1') ? 'UNLIMITED' : project.settings.partnerScanQuota;
-                } else if (selectedEmployeeSubRole === 'SCOUT' && project.settings.scoutScanQuota) {
+                } else if (selectedEmployeeSubRole === 'SCOUT' && project.settings.scoutScanQuota !== undefined && project.settings.scoutScanQuota !== null) {
                     quota = (project.settings.scoutScanQuota === -1 || String(project.settings.scoutScanQuota) === '-1') ? 'UNLIMITED' : project.settings.scoutScanQuota;
                 } else if (selectedEmployeeSubRole === 'ANALYST') {
                     quota = 0;
