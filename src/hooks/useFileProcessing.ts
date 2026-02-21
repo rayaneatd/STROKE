@@ -1,5 +1,6 @@
 
 import React, { useState, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ProjectFile, Project, User, FileId, FailedFile } from '../types';
 import { processValidatedUploads } from '../services/uploadService';
 import { checkConstraints, processFilePipeline, FileMetadata } from '../services/fileValidationService';
@@ -11,6 +12,8 @@ export const useFileProcessing = (
     project: Project | undefined,
     setProject: React.Dispatch<React.SetStateAction<Project | undefined>>
 ) => {
+    const queryClient = useQueryClient();
+
     // Current Files State (Initially empty, populated by useProjectDetail via setFiles)
     const [files, setFiles] = useState<ProjectFile[]>([]);
     
@@ -20,34 +23,43 @@ export const useFileProcessing = (
     // UI Loading State
     const [isUploading, setIsUploading] = useState(false);
 
+    const logFailure = useCallback(async (file: File, reason: string) => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const userId = user?.id || currentUser.id;
+            if (!userId) return false;
+
+            const { error } = await supabase.from('analytics_events').insert({
+                project_id: projectId,
+                user_id: userId,
+                event_type: 'FAIL',
+                metadata: {
+                    reason,
+                    fileName: file.name,
+                    size: file.size,
+                    type: file.type
+                }
+            });
+
+            return !error;
+        } catch (err) {
+            console.error('Failed to log failure event:', err);
+            return false;
+        }
+    }, [projectId, currentUser.id]);
+
     const addFiles = useCallback(async (rawFiles: File[]) => {
         // 1. Instant Validation (Sync)
         const validForScan: File[] = [];
         const immediateFailures: ProjectFile[] = [];
-
-        const logFailure = async (file: File, reason: string) => {
-            try {
-                await supabase.from('analytics_events').insert({
-                    project_id: projectId,
-                    user_id: currentUser.id,
-                    event_type: 'FAIL',
-                    metadata: {
-                        reason,
-                        fileName: file.name,
-                        size: file.size,
-                        type: file.type
-                    }
-                });
-            } catch (err) {
-                console.error('Failed to log failure event:', err);
-            }
-        };
+        const failureLogPromises: Promise<boolean>[] = [];
+        let shouldInvalidate = false;
 
         rawFiles.forEach(file => {
             const constraintError = checkConstraints(file);
             if (constraintError) {
                 const reason = constraintError.errorMessage || constraintError.reason;
-                logFailure(file, reason);
+                failureLogPromises.push(logFailure(file, reason));
                 immediateFailures.push({
                     id: `fail-${Date.now()}-${Math.random()}` as FileId,
                     projectId: projectId as any,
@@ -63,12 +75,24 @@ export const useFileProcessing = (
             }
         });
 
+        if (failureLogPromises.length > 0) {
+            const results = await Promise.allSettled(failureLogPromises);
+            if (results.some(result => result.status === 'fulfilled' && result.value)) {
+                shouldInvalidate = true;
+            }
+        }
+
         // Add immediate failures to state
         if (immediateFailures.length > 0) {
             setFiles(prev => [...immediateFailures, ...prev]);
         }
 
-        if (validForScan.length === 0) return;
+        if (validForScan.length === 0) {
+            if (shouldInvalidate) {
+                queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
+            }
+            return;
+        }
 
         // 2. Prepare "Scanning" placeholders
         const scanningFiles = validForScan.map((file, index) => ({
@@ -141,7 +165,8 @@ export const useFileProcessing = (
                         // but here we just want to catch duplicates. Race condition is rare and acceptable.
                         if (knownHashes.has(result.metadata.hash)) {
                             const reason = 'DUPLICATE_FILE: Ce fichier est déjà dans la liste d\'attente ou a été ajouté en double.';
-                            await logFailure(item.file, reason);
+                            const logged = await logFailure(item.file, reason);
+                            if (logged) shouldInvalidate = true;
                             pendingUpdates.push({
                                 id: item.id,
                                 status: 'FAILED',
@@ -158,7 +183,8 @@ export const useFileProcessing = (
                         }
                     } else {
                         const reason = result.failure?.errorMessage || result.failure?.reason || 'Validation failed';
-                        await logFailure(item.file, reason);
+                        const logged = await logFailure(item.file, reason);
+                        if (logged) shouldInvalidate = true;
                         pendingUpdates.push({
                             id: item.id,
                             status: 'FAILED',
@@ -167,7 +193,8 @@ export const useFileProcessing = (
                     }
                 } catch (error) {
                      const reason = 'Unexpected processing error';
-                     await logFailure(item.file, reason);
+                     const logged = await logFailure(item.file, reason);
+                     if (logged) shouldInvalidate = true;
                      pendingUpdates.push({
                         id: item.id,
                         status: 'FAILED',
@@ -191,7 +218,11 @@ export const useFileProcessing = (
         // Add all valid files to the pending upload queue
         pendingUploadsRef.current = [...pendingUploadsRef.current, ...newPending];
 
-    }, [projectId, currentUser.id]);
+        if (shouldInvalidate) {
+            queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
+        }
+
+    }, [projectId, currentUser.id, logFailure, queryClient]);
 
     const uploadPendingFiles = useCallback(async () => {
         const pendingFiles = [...pendingUploadsRef.current];
@@ -213,29 +244,18 @@ export const useFileProcessing = (
         if (processingFailures.length > 0) {
             const idByFile = new Map<File, FileId>(pendingFiles.map(entry => [entry.file, entry.id]));
             const failureReasonById = new Map<FileId, string>();
+            let shouldInvalidate = false;
 
-            processingFailures.forEach(pf => {
+            for (const pf of processingFailures) {
                 const pendingId = idByFile.get(pf.file);
                 if (pendingId) {
                     const reason = pf.errorMessage || pf.reason;
                     failureReasonById.set(pendingId, reason);
 
-                    // Log failure event
-                    supabase.from('analytics_events').insert({
-                        project_id: projectId,
-                        user_id: currentUser.id,
-                        event_type: 'FAIL',
-                        metadata: {
-                            reason,
-                            fileName: pf.file.name,
-                            size: pf.file.size,
-                            type: pf.file.type
-                        }
-                    }).then(({ error }) => {
-                        if (error) console.error('Failed to log upload failure:', error);
-                    });
+                    const logged = await logFailure(pf.file, reason);
+                    if (logged) shouldInvalidate = true;
                 }
-            });
+            }
 
             if (failureReasonById.size > 0) {
                 setFiles(prev => prev.map(f => {
@@ -248,6 +268,10 @@ export const useFileProcessing = (
                     };
                 }));
             }
+
+            if (shouldInvalidate) {
+                queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
+            }
         }
         
         // Remove processed files from pending ref (preserving any newly added ones)
@@ -255,7 +279,7 @@ export const useFileProcessing = (
         pendingUploadsRef.current = pendingUploadsRef.current.filter(p => !processedIds.has(p.id));
         
         setIsUploading(false);
-    }, [projectId, currentUser.id]);
+    }, [projectId, currentUser.id, logFailure, queryClient]);
 
     const removeFile = useCallback(async (fileId: string) => {
         // Optimistic removal
