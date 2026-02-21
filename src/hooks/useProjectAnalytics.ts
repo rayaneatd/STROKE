@@ -135,7 +135,8 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     if (e.event_type === 'CONTACT') current.contacted++;
                     if (e.event_type === 'FAIL') {
                         current.failed++;
-                        const reason = e.metadata?.reason || 'Unknown Error';
+                        const metadata = e.metadata as { reason?: string } | null;
+                        const reason = metadata?.reason || 'Unknown Error';
                         failureMap.set(reason, (failureMap.get(reason) || 0) + 1);
                     }
                     
@@ -251,8 +252,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 contributionData,
                 topCandidates,
                 recentFailures,
-                riskCount: 0,
-                pendingScanCount: 0 // Legacy
+                riskCount: 0
             };
         }
     });
