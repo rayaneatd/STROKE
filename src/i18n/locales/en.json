@@ -1028,7 +1028,9 @@
                 "analyzedPending": "{{completed}} analyzed, {{pending}} pending",
                 "basedOnCandidates": "Based on {{count}} candidates",
                 "contributedScans": "Contributed {{count}} scans",
-                "analysisComplete": "Analysis {{percent}}% complete"
+                "analysisComplete": "Analysis {{percent}}% complete",
+                "pending": "Pending",
+                "processed": "Processed"
             },
             "insights": {
                 "excellentCandidates": "{{count}} excellent candidates found with scores > 80%!",

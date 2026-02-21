@@ -697,7 +697,9 @@
                 "analyzedPending": "{{completed}} analysés, {{pending}} en attente",
                 "basedOnCandidates": "Basé sur {{count}} candidats",
                 "contributedScans": "A contribué à {{count}} scans",
-                "analysisComplete": "Analyse terminée à {{percent}}%"
+                "analysisComplete": "Analyse terminée à {{percent}}%",
+                "pending": "En attente",
+                "processed": "Traités"
             },
             "insights": {
                 "excellentCandidates": "{{count}} excellents candidats trouvés avec un score > 80% !",
