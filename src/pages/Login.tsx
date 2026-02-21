@@ -15,8 +15,6 @@ const Login: React.FC = () => {
         handleSocialLogin,
         socialLoading,
         magicLinkLoading,
-        staySignedIn,
-        setStaySignedIn,
         marketingConsent,
         setMarketingConsent,
         captchaToken,
@@ -26,7 +24,7 @@ const Login: React.FC = () => {
         setMagicLinkSuccess
     } = useLogin();
 
-    const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    const turnstileSiteKey = (import.meta as any).env.VITE_TURNSTILE_SITE_KEY;
 
     return (
         <div className="h-[125vh] w-[125vw] origin-top-left transform scale-[0.8] bg-[#050505] flex items-center justify-center p-4 relative overflow-hidden">
@@ -125,20 +123,6 @@ const Login: React.FC = () => {
 
                     {/* Checkboxes */}
                     <div className="space-y-3">
-                        <label className="flex items-start gap-2 cursor-pointer group">
-                            <div className="relative flex items-center mt-0.5">
-                                <input
-                                    type="checkbox"
-                                    checked={staySignedIn}
-                                    onChange={(e) => setStaySignedIn(e.target.checked)}
-                                    className="peer sr-only"
-                                />
-                                <div className="w-4 h-4 border border-zinc-600 rounded bg-transparent peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all"></div>
-                                <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 left-[2px] top-[2px] pointer-events-none" />
-                            </div>
-                            <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">{t('auth.staySignedIn')}</span>
-                        </label>
-
                         <label className="flex items-start gap-2 cursor-pointer group">
                             <div className="relative flex items-center mt-0.5">
                                 <input

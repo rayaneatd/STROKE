@@ -146,7 +146,7 @@ export const useLogin = () => {
         try {
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             let redirectTo = isLocalhost 
-                ? (import.meta.env.VITE_LOCALHOST_URL || window.location.origin)
+                ? ((import.meta as any).env.VITE_LOCALHOST_URL || window.location.origin)
                 : window.location.origin;
             
             // Ensure no double slashes if env var has trailing slash
@@ -218,8 +218,6 @@ export const useLogin = () => {
         handleSocialLogin,
         handleForgotPassword,
         toggleMode,
-        staySignedIn,
-        setStaySignedIn,
         marketingConsent,
         setMarketingConsent,
         captchaToken,

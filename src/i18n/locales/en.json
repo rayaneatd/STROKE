@@ -448,8 +448,7 @@
         "continueWithGoogle": "Continue with Google",
         "orEmail": "or continue with email",
         "emailPlaceholder": "name@company.com",
-        "staySignedIn": "Stay signed in",
-        "marketingConsent": "I agree to receive updates and network opportunities from STROKE",
+        "marketingConsent": "I agree to receive marketing emails.",
         "termsAgree": "By signing in, you agree to our",
         "terms": "Terms of Service",
         "and": "and",
@@ -1004,6 +1003,21 @@
         },
         "overview": {
             "exportReport": "Export Report",
+            "timeRange": {
+                "7d": "7 Days",
+                "30d": "30 Days",
+                "90d": "3 Months",
+                "all": "All Time"
+            },
+            "kpi": {
+                "volume": "Total Volume",
+                "qualified": "Qualified",
+                "contacted": "Contacted",
+                "conversion": "Conversion",
+                "velocity": "Velocity",
+                "rate": "Rate",
+                "rejected": "Rejected"
+            },
             "cards": {
                 "totalResumes": "Total Resumes",
                 "avgScore": "Avg. Score",
@@ -1023,7 +1037,11 @@
             "charts": {
                 "uploadActivity": "Upload Activity",
                 "topCandidates": "Top Candidates",
-                "noCandidates": "No analyzed candidates yet."
+                "noCandidates": "No analyzed candidates yet.",
+                "funnel": "Recruitment Funnel",
+                "distribution": "Score Distribution",
+                "team": "Team Performance",
+                "activity": "Activity & Performance"
             }
         },
         "team": {

@@ -52,8 +52,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
     const { data: network = { connections: [], received: [], sent: [] }, isLoading } = useQuery({
         queryKey: ['network', currentUser.id],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .rpc('get_user_connections', { p_user_id: currentUser.id });
+            const { data, error } = await (supabase.rpc as any)('get_user_connections', { p_user_id: currentUser.id });
 
             if (error) throw error;
 
@@ -61,7 +60,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
             const received: ConnectionItem[] = [];
             const sent: ConnectionItem[] = [];
 
-            data.forEach((item: any) => {
+            (data as any[]).forEach((item: any) => {
                 // Map the profile data to a User type
                 const otherUser: User = {
                     id: item.other_user_id,
@@ -110,19 +109,18 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
     const sendInviteMutation = useMutation({
         mutationFn: async (email: string) => {
             // 1. Find the profile by email using secure function
-            const { data: profile, error: profileError } = await supabase
-                .rpc('find_profile_by_email', { search_email: email })
+            const { data: profile, error: profileError } = await (supabase.rpc as any)('find_profile_by_email', { search_email: email })
                 .maybeSingle();
 
             if (profileError) throw profileError;
             if (!profile) throw new Error(t('connections.errors.userNotFound'));
-            if (profile.id === currentUser.id) throw new Error(t('connections.errors.selfInvite'));
+            if ((profile as any).id === currentUser.id) throw new Error(t('connections.errors.selfInvite'));
 
             // 2. Check if connection already exists
             const { data: existing } = await supabase
                 .from('connections')
                 .select('id')
-                .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${profile.id}),and(sender_id.eq.${profile.id},receiver_id.eq.${currentUser.id})`)
+                .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${(profile as any).id}),and(sender_id.eq.${(profile as any).id},receiver_id.eq.${currentUser.id})`)
                 .maybeSingle();
 
             if (existing) throw new Error(t('connections.errors.alreadyExists'));
@@ -132,7 +130,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
                 .from('connections')
                 .insert({
                     sender_id: currentUser.id,
-                    receiver_id: profile.id,
+                    receiver_id: (profile as any).id,
                     status: 'PENDING'
                 });
 

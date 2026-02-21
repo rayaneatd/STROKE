@@ -36,6 +36,7 @@ interface ProjectAnalytics {
     
     // Health
     recentFailures: number;
+    riskCount: number;
 }
 
 export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'ALL') => {
@@ -189,6 +190,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 contributionData,
                 topCandidates,
                 recentFailures,
+                riskCount: 0,
                 pendingScanCount: 0 // Legacy
             };
         }

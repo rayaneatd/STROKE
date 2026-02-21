@@ -39,6 +39,11 @@ export const useEditProjectModal = ({
     const [isProcessingFunds, setIsProcessingFunds] = useState(false);
     const [fundMessage, setFundMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+    // AI Diagnostics State
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisStep, setAnalysisStep] = useState<string>('');
+    const [analysisResult, setAnalysisResult] = useState<any>(null);
+
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -209,6 +214,10 @@ export const useEditProjectModal = ({
         setFundAmount,
         isProcessingFunds,
         fundMessage,
+        isAnalyzing,
+        analysisStep,
+        analysisResult,
+        setAnalysisResult,
         isOwner,
         canChangeStatus,
         userHasPlan,

@@ -447,8 +447,7 @@
         "continueWithGoogle": "Continuer avec Google",
         "orEmail": "ou continuer avec email",
         "emailPlaceholder": "nom@entreprise.com",
-        "staySignedIn": "Rester connecté",
-        "marketingConsent": "J'accepte de recevoir des mises à jour et opportunités de STROKE",
+        "marketingConsent": "J'accepte de recevoir des e-mails marketing.",
         "termsAgree": "En vous connectant, vous acceptez nos",
         "terms": "Conditions d'Utilisation",
         "and": "et",
@@ -685,7 +684,8 @@
                 "contacted": "Contactés",
                 "conversion": "Conversion",
                 "velocity": "Vélocité",
-                "rate": "Taux"
+                "rate": "Taux",
+                "rejected": "Rejetés"
             },
             "cards": {
                 "totalResumes": "Total CVs",
