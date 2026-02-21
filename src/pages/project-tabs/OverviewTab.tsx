@@ -268,18 +268,33 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                     strokeWidth={2}
                                 />
                                 <Area 
-                                    type="monotone" 
-                                    dataKey="qualified" 
-                                    name={t('project.overview.kpi.qualified')}
-                                    stroke="#10b981" 
-                                    fillOpacity={1} 
-                                    fill="url(#colorQualified)" 
-                                    strokeWidth={2}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
+                                type="monotone" 
+                                dataKey="qualified" 
+                                name={t('project.overview.kpi.qualified')}
+                                stroke="#10b981" 
+                                fillOpacity={1} 
+                                fill="url(#colorQualified)" 
+                                strokeWidth={2}
+                            />
+                            <Area 
+                                type="monotone" 
+                                dataKey="failed" 
+                                name={t('project.overview.kpi.failed')}
+                                stroke="#ef4444" 
+                                fillOpacity={1} 
+                                fill="url(#colorFailed)" 
+                                strokeWidth={2}
+                            />
+                            <defs>
+                                <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
+            </div>
 
                 {/* Funnel Chart (1 col) */}
                 <div className={`p-6 rounded-xl border ${cardClass}`}>
@@ -352,6 +367,57 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                 <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Failure Analysis */}
+                <div className={`p-6 rounded-xl border ${cardClass}`}>
+                    <h3 className={`text-sm font-bold ${textPrimary} mb-6 flex items-center gap-2`}>
+                        <AlertTriangle size={16} className="text-red-500" />
+                        {t('project.overview.charts.failures')}
+                    </h3>
+                    <div className="h-[250px] w-full relative">
+                        {analytics.failureDistribution && analytics.failureDistribution.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={analytics.failureDistribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="count"
+                                    >
+                                        {analytics.failureDistribution.map((entry: any, index: number) => (
+                                            <Cell key={`cell-${index}`} fill={['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#06b6d4', '#8b5cf6'][index % 6]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend 
+                                        verticalAlign="bottom" 
+                                        height={36}
+                                        iconType="circle"
+                                        formatter={(value, entry: any) => (
+                                            <span className={`${textSecondary} text-[10px]`}>{entry.payload.reason} ({entry.payload.count})</span>
+                                        )}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                             <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                                <CheckCircle size={32} className="mb-2 text-emerald-500 opacity-50" />
+                                <span className="text-xs">{t('project.overview.noFailures')}</span>
+                            </div>
+                        )}
+                        
+                        {/* Center Total */}
+                        {analytics.failureDistribution && analytics.failureDistribution.length > 0 && (
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[60%] text-center">
+                                <span className={`text-2xl font-bold ${textPrimary}`}>{analytics.recentFailures}</span>
+                                <p className={`text-[10px] ${textSecondary} uppercase`}>Total</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

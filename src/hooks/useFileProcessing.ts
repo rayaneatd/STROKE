@@ -25,9 +25,29 @@ export const useFileProcessing = (
         const validForScan: File[] = [];
         const immediateFailures: ProjectFile[] = [];
 
+        const logFailure = async (file: File, reason: string) => {
+            try {
+                await supabase.from('analytics_events').insert({
+                    project_id: projectId,
+                    user_id: currentUser.id,
+                    event_type: 'FAIL',
+                    metadata: {
+                        reason,
+                        fileName: file.name,
+                        size: file.size,
+                        type: file.type
+                    }
+                });
+            } catch (err) {
+                console.error('Failed to log failure event:', err);
+            }
+        };
+
         rawFiles.forEach(file => {
             const constraintError = checkConstraints(file);
             if (constraintError) {
+                const reason = constraintError.errorMessage || constraintError.reason;
+                logFailure(file, reason);
                 immediateFailures.push({
                     id: `fail-${Date.now()}-${Math.random()}` as FileId,
                     projectId: projectId as any,
@@ -36,7 +56,7 @@ export const useFileProcessing = (
                     status: 'FAILED',
                     uploadedAt: new Date().toISOString(),
                     uploadedByUserId: currentUser.id,
-                    failureReasons: [constraintError.errorMessage || constraintError.reason]
+                    failureReasons: [reason]
                 });
             } else {
                 validForScan.push(file);
@@ -120,10 +140,12 @@ export const useFileProcessing = (
                         // Note: Sets are not perfectly thread-safe in JS async loop if strict order matters,
                         // but here we just want to catch duplicates. Race condition is rare and acceptable.
                         if (knownHashes.has(result.metadata.hash)) {
+                            const reason = 'DUPLICATE_FILE: Ce fichier est déjà dans la liste d\'attente ou a été ajouté en double.';
+                            logFailure(item.file, reason);
                             pendingUpdates.push({
                                 id: item.id,
                                 status: 'FAILED',
-                                failureReasons: ['DUPLICATE_FILE: Ce fichier est déjà dans la liste d\'attente ou a été ajouté en double.']
+                                failureReasons: [reason]
                             });
                         } else {
                             knownHashes.add(result.metadata.hash);
@@ -135,17 +157,21 @@ export const useFileProcessing = (
                             pendingUpdates.push({ id: item.id, status: 'PENDING' });
                         }
                     } else {
+                        const reason = result.failure?.errorMessage || result.failure?.reason || 'Validation failed';
+                        logFailure(item.file, reason);
                         pendingUpdates.push({
                             id: item.id,
                             status: 'FAILED',
-                            failureReasons: result.failure?.reason ? [result.failure.errorMessage || result.failure.reason] : ['Validation failed']
+                            failureReasons: [reason]
                         });
                     }
                 } catch (error) {
+                     const reason = 'Unexpected processing error';
+                     logFailure(item.file, reason);
                      pendingUpdates.push({
                         id: item.id,
                         status: 'FAILED',
-                        failureReasons: ['Unexpected processing error']
+                        failureReasons: [reason]
                     });
                 }
             }
@@ -191,7 +217,23 @@ export const useFileProcessing = (
             processingFailures.forEach(pf => {
                 const pendingId = idByFile.get(pf.file);
                 if (pendingId) {
-                    failureReasonById.set(pendingId, pf.errorMessage || pf.reason);
+                    const reason = pf.errorMessage || pf.reason;
+                    failureReasonById.set(pendingId, reason);
+
+                    // Log failure event
+                    supabase.from('analytics_events').insert({
+                        project_id: projectId,
+                        user_id: currentUser.id,
+                        event_type: 'FAIL',
+                        metadata: {
+                            reason,
+                            fileName: pf.file.name,
+                            size: pf.file.size,
+                            type: pf.file.type
+                        }
+                    }).then(({ error }) => {
+                        if (error) console.error('Failed to log upload failure:', error);
+                    });
                 }
             });
 

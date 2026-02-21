@@ -24,9 +24,11 @@ interface ProjectAnalytics {
         added: number; 
         qualified: number;
         contacted: number;
+        failed: number;
     }[];
     
     scoreDistribution: { range: string; count: number }[];
+    failureDistribution: { reason: string; count: number }[];
     
     funnelData: { stage: string; count: number; fill: string }[];
 
@@ -118,18 +120,24 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
             // Timeline (Event-based for better accuracy)
-            const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number }>();
+            const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number; failed: number }>();
+            const failureMap = new Map<string, number>();
             
             // Fill from events if available, else fallback to candidate dates
             if (events.length > 0) {
                 events.forEach(e => {
                     const date = e.created_at.split('T')[0];
-                    const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0 };
+                    const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
                     
                     if (e.event_type === 'UPLOAD') current.added++;
                     if (e.event_type === 'QUALIFY') current.qualified++;
                     if (e.event_type === 'REJECT') current.rejected++;
                     if (e.event_type === 'CONTACT') current.contacted++;
+                    if (e.event_type === 'FAIL') {
+                        current.failed++;
+                        const reason = e.metadata?.reason || 'Unknown Error';
+                        failureMap.set(reason, (failureMap.get(reason) || 0) + 1);
+                    }
                     
                     timelineMap.set(date, current);
                 });
@@ -137,7 +145,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 // Fallback to legacy logic
                 data.forEach(c => {
                     const date = c.uploaded_at.split('T')[0];
-                    const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0 };
+                    const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
                     
                     current.added++;
                     if (c.score != null && c.score >= 70) current.qualified++;
@@ -154,6 +162,10 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     ...stats
                 }))
                 .sort((a, b) => a.date.localeCompare(b.date));
+
+            const failureDistribution = Array.from(failureMap.entries())
+                .map(([reason, count]) => ({ reason, count }))
+                .sort((a, b) => b.count - a.count);
 
             // Score Distribution (unchanged)
             const distribution = [
@@ -218,12 +230,8 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 uploadedAt: c.uploaded_at
             }));
 
-            // Failures (Approximation based on size field or missing score after long time? 
-            // For now, let's assume if size is present but score is null and old, it's a failure or pending)
-            // But better logic: check if status is 'FAILED' if we had that column. 
-            // We don't have explicit status column in the select above, but we can infer or add it if needed.
-            // Let's just use a placeholder for now or checking if score is null for > 1 hour
-            const recentFailures = 0; // Placeholder
+            // Failures
+            const recentFailures = events.filter(e => e.event_type === 'FAIL').length;
 
             return {
                 total,
@@ -238,6 +246,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 completionRate,
                 timelineData,
                 scoreDistribution,
+                failureDistribution,
                 funnelData,
                 contributionData,
                 topCandidates,

@@ -685,7 +685,8 @@
                 "conversion": "Conversion",
                 "velocity": "Vélocité",
                 "rate": "Taux",
-                "rejected": "Rejetés"
+                "rejected": "Rejetés",
+                "failed": "Échecs"
             },
             "cards": {
                 "totalResumes": "Total CVs",
@@ -706,14 +707,13 @@
                 "keepUploading": "Continuez à télécharger des CVs pour trouver de meilleures correspondances."
             },
             "charts": {
-                "uploadActivity": "Activité de Téléchargement",
-                "topCandidates": "Meilleurs Candidats",
-                "noCandidates": "Aucun candidat analysé pour le moment.",
+                "activity": "Activité & Performance",
                 "funnel": "Entonnoir de Recrutement",
                 "distribution": "Distribution des Scores",
                 "team": "Performance de l'Équipe",
-                "activity": "Activité & Performance"
+                "failures": "Analyse des Échecs"
             },
+            "noFailures": "Aucun échec détecté.",
             "team": {
                 "accuracy": "Précision basée sur les événements",
                 "rank": "Rang",

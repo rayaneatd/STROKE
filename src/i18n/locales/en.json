@@ -1016,7 +1016,8 @@
                 "conversion": "Conversion",
                 "velocity": "Velocity",
                 "rate": "Rate",
-                "rejected": "Rejected"
+                "rejected": "Rejected",
+                "failed": "Failed"
             },
             "cards": {
                 "totalResumes": "Total Resumes",
@@ -1037,14 +1038,13 @@
                 "keepUploading": "Keep uploading resumes to find better matches."
             },
             "charts": {
-                "uploadActivity": "Upload Activity",
-                "topCandidates": "Top Candidates",
-                "noCandidates": "No analyzed candidates yet.",
+                "activity": "Activity & Performance",
                 "funnel": "Recruitment Funnel",
                 "distribution": "Score Distribution",
                 "team": "Team Performance",
-                "activity": "Activity & Performance"
+                "failures": "Failure Analysis"
             },
+            "noFailures": "No failures detected.",
             "team": {
                 "accuracy": "Event-Based Accuracy",
                 "rank": "Rank",
