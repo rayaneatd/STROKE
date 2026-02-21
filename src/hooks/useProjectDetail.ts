@@ -101,6 +101,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
             .on('postgres_changes', { event: '*', schema: 'public', table: 'candidates', filter: `project_id=eq.${projectId}` }, () => {
                 queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
             })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'analytics_events', filter: `project_id=eq.${projectId}` }, () => {
+                queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
+            })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'project_members', filter: `project_id=eq.${projectId}` }, () => {
                 queryClient.invalidateQueries({ queryKey: ['project', projectId] });
             })
