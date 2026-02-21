@@ -27,7 +27,11 @@ export const useFileProcessing = (
         try {
             const { data: { user } } = await supabase.auth.getUser();
             const userId = user?.id || currentUser.id;
-            if (!userId) return false;
+            
+            if (!userId) {
+                console.error('No user ID found for logging failure');
+                return false;
+            }
 
             const { error } = await supabase.from('analytics_events').insert({
                 project_id: projectId,
@@ -41,7 +45,12 @@ export const useFileProcessing = (
                 }
             });
 
-            return !error;
+            if (error) {
+                console.error('Supabase error logging failure:', error);
+                return false;
+            }
+
+            return true;
         } catch (err) {
             console.error('Failed to log failure event:', err);
             return false;
@@ -49,52 +58,82 @@ export const useFileProcessing = (
     }, [projectId, currentUser.id]);
 
     const addFiles = useCallback(async (rawFiles: File[]) => {
-        // 1. Instant Validation (Sync)
-        const validForScan: File[] = [];
-        const immediateFailures: ProjectFile[] = [];
-        const failureLogPromises: Promise<boolean>[] = [];
+        setIsUploading(true);
         let shouldInvalidate = false;
+        
+        // Helper for concurrency
+        const CONCURRENCY_LIMIT = 30;
+        const validForScan: File[] = [];
+        const newFailures: ProjectFile[] = [];
 
-        rawFiles.forEach(file => {
-            const constraintError = checkConstraints(file);
-            if (constraintError) {
-                const reason = constraintError.errorMessage || constraintError.reason;
-                failureLogPromises.push(logFailure(file, reason));
-                immediateFailures.push({
-                    id: `fail-${Date.now()}-${Math.random()}` as FileId,
-                    projectId: projectId as any,
-                    name: file.name,
-                    size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-                    status: 'FAILED',
-                    uploadedAt: new Date().toISOString(),
-                    uploadedByUserId: currentUser.id,
-                    failureReasons: [reason]
-                });
-            } else {
-                validForScan.push(file);
-            }
-        });
+        // We process in chunks to allow UI updates and avoid overwhelming the DB/Browser
+        const processChunk = async (filesChunk: File[]) => {
+            const promises = filesChunk.map(async (file) => {
+                // 1. Check constraints
+                const constraintError = checkConstraints(file);
+                
+                if (constraintError) {
+                    const reason = constraintError.errorMessage || constraintError.reason;
+                    
+                    // 2. Log to DB (Awaited!)
+                    await logFailure(file, reason);
+                    shouldInvalidate = true;
 
-        if (failureLogPromises.length > 0) {
-            const results = await Promise.allSettled(failureLogPromises);
-            if (results.some(result => result.status === 'fulfilled' && result.value)) {
-                shouldInvalidate = true;
+                    // 3. Prepare for UI
+                    return {
+                        type: 'FAILURE',
+                        data: {
+                            id: `fail-${Date.now()}-${Math.random()}` as FileId,
+                            projectId: projectId as any,
+                            name: file.name,
+                            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+                            status: 'FAILED',
+                            uploadedAt: new Date().toISOString(),
+                            uploadedByUserId: currentUser.id,
+                            failureReasons: [reason]
+                        } as ProjectFile
+                    };
+                } else {
+                    return { type: 'VALID', file };
+                }
+            });
+
+            return Promise.all(promises);
+        };
+
+        // Split into chunks of 50
+        for (let i = 0; i < rawFiles.length; i += CONCURRENCY_LIMIT) {
+            const chunk = rawFiles.slice(i, i + CONCURRENCY_LIMIT);
+            const results = await processChunk(chunk);
+
+            const chunkFailures: ProjectFile[] = [];
+            
+            results.forEach(res => {
+                if (res.type === 'FAILURE' && res.data) {
+                    chunkFailures.push(res.data);
+                } else if (res.type === 'VALID' && res.file) {
+                    validForScan.push(res.file);
+                }
+            });
+
+            // Progressive Update: Add failures to state immediately
+            if (chunkFailures.length > 0) {
+                setFiles(prev => [...chunkFailures, ...prev]);
+                // Force a query invalidation periodically so the graph updates live?
+                // Maybe too aggressive to do it every chunk. Let's do it at the end.
             }
         }
 
-        // Add immediate failures to state
-        if (immediateFailures.length > 0) {
-            setFiles(prev => [...immediateFailures, ...prev]);
+        if (shouldInvalidate) {
+            queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
         }
 
         if (validForScan.length === 0) {
-            if (shouldInvalidate) {
-                queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
-            }
+            setIsUploading(false);
             return;
         }
 
-        // 2. Prepare "Scanning" placeholders
+        // 2. Prepare "Scanning" placeholders for valid files
         const scanningFiles = validForScan.map((file, index) => ({
             file,
             id: `local-${Date.now()}-${index}-${Math.random()}` as FileId,
@@ -111,7 +150,7 @@ export const useFileProcessing = (
 
         // 3. Async Pipeline (Hash, Sanitize, PDF Analysis) - Aggressive Concurrency
         // Use a concurrency pool of 30 workers to maximize throughput
-        const CONCURRENCY_LIMIT = 30;
+        const CONCURRENCY_LIMIT_WORKERS = 30;
         const newPending: { file: File; id: FileId; metadata: FileMetadata }[] = [];
         
         // Initialize known hashes with currently pending files to prevent duplicates
@@ -221,6 +260,8 @@ export const useFileProcessing = (
         if (shouldInvalidate) {
             queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
         }
+        
+        setIsUploading(false);
 
     }, [projectId, currentUser.id, logFailure, queryClient]);
 
