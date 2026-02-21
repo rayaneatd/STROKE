@@ -64,7 +64,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             // 2. Analytics Events for accurate historical & team data
             // 3. Top 5 candidates
             
-            const [statsResult, eventsResult, topResult] = await Promise.all([
+            const [statsResult, eventsResult, topResult, timelineResult, failureDistResult] = await Promise.all([
                 supabase
                     .from('candidates')
                     .select('score, uploaded_at, uploaded_by, email_sent_at, size')
@@ -79,24 +79,31 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     .eq('project_id', projectId)
                     .not('score', 'is', null)
                     .order('score', { ascending: false })
-                    .limit(5)
+                    .limit(5),
+                // New optimized RPC calls
+                supabase.rpc('get_project_activity_timeline', {
+                    p_project_id: projectId,
+                    p_start_date: startDate ? startDate.toISOString() : null
+                }),
+                supabase.rpc('get_project_failure_distribution', {
+                    p_project_id: projectId,
+                    p_start_date: startDate ? startDate.toISOString() : null
+                })
             ]);
 
             if (statsResult.error) throw statsResult.error;
-            if (eventsResult.error) console.warn('Analytics events error:', eventsResult.error); // Non-blocking
+            if (eventsResult.error) console.warn('Analytics events error:', eventsResult.error);
             if (topResult.error) throw topResult.error;
+            if (timelineResult.error) console.warn('Timeline RPC error:', timelineResult.error);
+            if (failureDistResult.error) console.warn('Failure Dist RPC error:', failureDistResult.error);
 
-            // Filter by Date Range locally
+            // Filter by Date Range locally (Legacy stats)
             const allData = statsResult.data || [];
             const allEvents = eventsResult.data || [];
 
             const data = startDate 
                 ? allData.filter(c => isAfter(parseISO(c.uploaded_at), startDate))
                 : allData;
-            
-            const events = startDate
-                ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
-                : allEvents;
             
             // Basic Stats (Still based on current state for accuracy of "now")
             const total = data.length;
@@ -119,49 +126,73 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const contactRate = qualified > 0 ? Math.round((contacted / qualified) * 100) : 0;
             const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            // Timeline (Merged source for accuracy)
-            const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number; failed: number }>();
-            const failureMap = new Map<string, number>();
+            // Timeline (Use RPC result if available, otherwise fallback to legacy calculation)
+            let timelineData: any[] = [];
             
-            // 1. Process Candidates (Success/Legacy flows)
-            data.forEach(c => {
-                const date = c.uploaded_at.split('T')[0];
-                const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
+            if (timelineResult.data) {
+                timelineData = timelineResult.data;
+            } else {
+                // Fallback Logic (Legacy)
+                const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number; failed: number }>();
                 
-                current.added++;
-                if (c.score != null && c.score >= 70) current.qualified++;
-                if (c.email_sent_at) current.contacted++;
-                if (c.score != null && c.score < 50) current.rejected++;
-                
-                timelineMap.set(date, current);
-            });
-
-            // 2. Process Events (Failures ONLY)
-            events.forEach(e => {
-                if (e.event_type === 'FAIL') {
-                    const date = e.created_at.split('T')[0];
+                data.forEach(c => {
+                    const date = c.uploaded_at.split('T')[0];
                     const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
                     
-                    current.failed++;
-                    
-                    const metadata = e.metadata as { reason?: string } | null;
-                    const reason = metadata?.reason || 'Unknown Error';
-                    failureMap.set(reason, (failureMap.get(reason) || 0) + 1);
+                    current.added++;
+                    if (c.score != null && c.score >= 70) current.qualified++;
+                    if (c.email_sent_at) current.contacted++;
+                    if (c.score != null && c.score < 50) current.rejected++;
                     
                     timelineMap.set(date, current);
-                }
-            });
+                });
 
-            const timelineData = Array.from(timelineMap.entries())
-                .map(([date, stats]) => ({
-                    date,
-                    ...stats
-                }))
-                .sort((a, b) => a.date.localeCompare(b.date));
+                // Failures from events (Legacy fallback)
+                const events = startDate
+                    ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
+                    : allEvents;
 
-            const failureDistribution = Array.from(failureMap.entries())
-                .map(([reason, count]) => ({ reason, count }))
-                .sort((a, b) => b.count - a.count);
+                events.forEach(e => {
+                    if (e.event_type === 'FAIL') {
+                        const date = e.created_at.split('T')[0];
+                        const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
+                        current.failed++;
+                        timelineMap.set(date, current);
+                    }
+                });
+
+                timelineData = Array.from(timelineMap.entries())
+                    .map(([date, stats]) => ({
+                        date,
+                        ...stats
+                    }))
+                    .sort((a, b) => a.date.localeCompare(b.date));
+            }
+
+            // Failure Distribution (Use RPC result if available)
+            let failureDistribution: any[] = [];
+            
+            if (failureDistResult.data) {
+                failureDistribution = failureDistResult.data;
+            } else {
+                // Fallback Logic
+                const failureMap = new Map<string, number>();
+                const events = startDate
+                    ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
+                    : allEvents;
+
+                events.forEach(e => {
+                    if (e.event_type === 'FAIL') {
+                        const metadata = e.metadata as { reason?: string } | null;
+                        const reason = metadata?.reason || 'Unknown Error';
+                        failureMap.set(reason, (failureMap.get(reason) || 0) + 1);
+                    }
+                });
+
+                failureDistribution = Array.from(failureMap.entries())
+                    .map(([reason, count]) => ({ reason, count }))
+                    .sort((a, b) => b.count - a.count);
+            }
 
             // Score Distribution (unchanged)
             const distribution = [
