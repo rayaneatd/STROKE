@@ -906,12 +906,14 @@ const TeamTab: React.FC<TeamTabProps> = ({
                     <div className="flex items-center gap-1">
                         {selectionType === 'EMPLOYEE' && (
                             <>
-                                <button
-                                    onClick={() => updateRole(Array.from(selectedMemberIds)[0] as string, 'ADMIN')}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-zinc-300'}`}
-                                >
-                                    <Shield size={16} /> Promote to Admin
-                                </button>
+                                {currentUserRole === ProjectRole.OWNER && (
+                                    <button
+                                        onClick={() => updateRole(Array.from(selectedMemberIds)[0] as string, 'ADMIN')}
+                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-zinc-300'}`}
+                                    >
+                                        <Shield size={16} /> Promote to Admin
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setIsBulkAccessModalOpen(true)}
                                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isLight ? `bg-${accentColor}-50 text-${accentColor}-700 hover:bg-${accentColor}-100` : `bg-${accentColor}-500/10 text-${accentColor}-400 hover:bg-${accentColor}-500/20`}`}
