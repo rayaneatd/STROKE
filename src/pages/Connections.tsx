@@ -36,19 +36,27 @@ const Connections: React.FC<ConnectionsProps> = ({ currentUser }) => {
   const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-100';
   const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
   const inputBg = isLight ? 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-brand-500' : 'bg-black/20 border-white/5 text-zinc-300 placeholder:text-zinc-600 focus:bg-black/40 focus:border-brand-500/50';
-  const currentUserOrgs = getOrgNamesFromEmails(currentUser.workMails);
+  const currentUserOrgs = React.useMemo(() => {
+    const emailOrgs = getOrgNamesFromEmails(currentUser.workMails);
+    const dbOrgs = currentUser.orgNames || [];
+    return Array.from(new Set([...emailOrgs, ...dbOrgs]));
+  }, [currentUser.workMails, currentUser.orgNames]);
   const activeList = getActiveList().filter((item) => {
     if (orgFilter === 'ALL') return true;
     if (orgFilter === 'EXTERNAL') {
       const userOrgs = item.otherUser.orgNames || [];
-      return !userOrgs.some((org) => currentUserOrgs.includes(org));
+      const lowerUserOrgs = userOrgs.map(o => o.toLowerCase());
+      const lowerCurrentUserOrgs = currentUserOrgs.map(o => o.toLowerCase());
+      return !lowerUserOrgs.some((org) => lowerCurrentUserOrgs.includes(org));
     }
     return (item.otherUser.orgNames || []).includes(orgFilter);
   });
 
   const renderCard = (item: ConnectionItem) => {
     const { otherUser, status, date, id } = item;
-    const sameOrg = (otherUser.orgNames || []).some((org) => currentUserOrgs.includes(org));
+    const sameOrg = (otherUser.orgNames || []).some((org) => 
+      currentUserOrgs.some(myOrg => myOrg.toLowerCase() === org.toLowerCase())
+    );
 
     return (
       <div key={id} className={`${cardBg} p-5 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in transition-all group`}>

@@ -1083,7 +1083,7 @@
             "sentDesc": "Les demandes que vous envoyez seront listées ici."
         },
         "actions": {
-            "sameOrg": "Même organisation",
+            "sameOrg": "Membre de votre organisation",
             "remove": "Supprimer",
             "cancel": "Annuler la demande",
             "decline": "Refuser",

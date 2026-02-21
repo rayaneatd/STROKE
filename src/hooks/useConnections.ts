@@ -76,7 +76,7 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
                     overageCap: 0,
                     emailIntegrations: [],
                     workMails: [],
-                    orgNames: []
+                    orgNames: item.other_user_org_names || []
                 };
 
                 let mappedStatus = item.status;
@@ -189,8 +189,10 @@ export const useConnections = ({ currentUser }: UseConnectionsProps) => {
     // Memoize org options to ensure stable references and reactivity
     const orgOptions = React.useMemo(() => {
         // Only show orgs that the current user belongs to
-        return getOrgNamesFromEmails(currentUser.workMails);
-    }, [currentUser.workMails]);
+        const emailOrgs = getOrgNamesFromEmails(currentUser.workMails);
+        const dbOrgs = currentUser.orgNames || [];
+        return Array.from(new Set([...emailOrgs, ...dbOrgs]));
+    }, [currentUser.workMails, currentUser.orgNames]);
 
     // Effect to reset filter if the selected option is no longer available
     React.useEffect(() => {
