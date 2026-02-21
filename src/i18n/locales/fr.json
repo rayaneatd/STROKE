@@ -673,6 +673,20 @@
         },
         "overview": {
             "exportReport": "Exporter le Rapport",
+            "timeRange": {
+                "7d": "7 jours",
+                "30d": "30 jours",
+                "90d": "3 mois",
+                "all": "Tout"
+            },
+            "kpi": {
+                "volume": "Volume Total",
+                "qualified": "Qualifiés",
+                "contacted": "Contactés",
+                "conversion": "Conversion",
+                "velocity": "Vélocité",
+                "rate": "Taux"
+            },
             "cards": {
                 "totalResumes": "Total CVs",
                 "avgScore": "Score Moyen",
@@ -692,7 +706,11 @@
             "charts": {
                 "uploadActivity": "Activité de Téléchargement",
                 "topCandidates": "Meilleurs Candidats",
-                "noCandidates": "Aucun candidat analysé pour le moment."
+                "noCandidates": "Aucun candidat analysé pour le moment.",
+                "funnel": "Entonnoir de Recrutement",
+                "distribution": "Distribution des Scores",
+                "team": "Performance de l'Équipe",
+                "activity": "Activité & Performance"
             }
         },
         "team": {
