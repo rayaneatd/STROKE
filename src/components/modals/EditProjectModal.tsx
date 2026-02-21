@@ -1,7 +1,7 @@
 
 import React from 'react';
 import {
-    Layout, Users, Save, Loader2, Wallet, BrainCircuit, Rocket, AlertTriangle
+    Layout, Users, Save, Loader2, Wallet, Rocket, AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Project, User } from '../../types';
@@ -58,9 +58,6 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
         canAccessInvestment,
         handleSubmit,
         handleFundAction,
-        handleRunDiagnostics,
-        applyOptimization,
-        applySimulationResult,
         isLight,
         accent,
         error
@@ -107,12 +104,6 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                                 <button onClick={() => setActiveTab('BILLING')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'BILLING' ? sidebarActive : sidebarInactive}`}>
                                     <Wallet size={18} /> {t('modal.tabs.billing')}
                                 </button>
-
-                                <div className={`pt-4 mt-2 border-t ${borderClass}`}>
-                                    <button onClick={() => setActiveTab('AI_DIAGNOSTICS')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'AI_DIAGNOSTICS' ? 'bg-indigo-500/10 text-indigo-400 shadow-sm border border-indigo-500/20' : 'text-zinc-500 hover:bg-indigo-500/5 hover:text-indigo-400'}`}>
-                                        <BrainCircuit size={18} /> {t('modal.tabs.ai')}
-                                    </button>
-                                </div>
                             </>
                         )}
                     </div>
@@ -158,20 +149,6 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                                     canAccessInvestment={canAccessInvestment}
                                     userHasPlan={userHasPlan}
                                     mode={mode}
-                                />
-                            )}
-
-                            {activeTab === 'AI_DIAGNOSTICS' && isOwner && (
-                                <AIDiagnosticsTab
-                                    mode={mode}
-                                    isAnalyzing={isAnalyzing}
-                                    analysisStep={analysisStep}
-                                    analysisResult={analysisResult}
-                                    handleRunDiagnostics={handleRunDiagnostics}
-                                    applyOptimization={applyOptimization}
-                                    projectConfig={formData}
-                                    setAnalysisResult={setAnalysisResult}
-                                    onApplySimulation={applySimulationResult}
                                 />
                             )}
 

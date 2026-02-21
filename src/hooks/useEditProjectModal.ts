@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Project, User, ProjectRole, SubscriptionPlan, EmployeeAddPermission, OutreachStrategy } from '../types';
-import { runProjectDiagnostics, CalibrationResult } from '../services/aiCalibrationEngine';
 import { useTheme } from '../context/ThemeContext';
 
-export type TabType = 'GENERAL' | 'TEAM' | 'BILLING' | 'AI_DIAGNOSTICS';
+export type TabType = 'GENERAL' | 'TEAM' | 'BILLING';
 
 export interface UseEditProjectModalProps {
     isOpen: boolean;
@@ -39,11 +38,6 @@ export const useEditProjectModal = ({
     const [fundAmount, setFundAmount] = useState<number | ''>('');
     const [isProcessingFunds, setIsProcessingFunds] = useState(false);
     const [fundMessage, setFundMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-
-    // AI Diagnostics States
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [analysisStep, setAnalysisStep] = useState<string>('');
-    const [analysisResult, setAnalysisResult] = useState<CalibrationResult | null>(null);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -101,7 +95,6 @@ export const useEditProjectModal = ({
             // Reset temporary states
             setFundAmount('');
             setFundMessage(null);
-            setAnalysisResult(null);
             setActiveTab('GENERAL');
         }
     }, [isOpen, project, currentUser.preferences, currentUser.id]);
@@ -205,58 +198,6 @@ export const useEditProjectModal = ({
         }
     };
 
-    const handleRunDiagnostics = () => {
-        const targetProject = (project || formData) as Project;
-
-        if (!targetProject.members) {
-            targetProject.members = [];
-        }
-
-        setIsAnalyzing(true);
-        setAnalysisStep(t('modal.ai.step1'));
-
-        setTimeout(() => setAnalysisStep(t('modal.ai.step2')), 600);
-        setTimeout(() => setAnalysisStep(t('modal.ai.step3')), 1200);
-        setTimeout(() => setAnalysisStep(t('modal.ai.step4')), 1800);
-
-        setTimeout(() => {
-            const result = runProjectDiagnostics(targetProject, currentUser);
-            setAnalysisResult(result);
-            setIsAnalyzing(false);
-        }, 2400);
-    };
-
-    const applyOptimization = () => {
-        if (!analysisResult) return;
-        const recs = analysisResult.recommendations;
-        setFormData(prev => ({
-            ...prev,
-            investmentBalance: recs.billingMode === 'PROJECT_INVESTMENT'
-                ? Math.max(prev.investmentBalance || 0, recs.budget)
-                : prev.investmentBalance,
-            settings: {
-                ...prev.settings!,
-                billingMode: recs.billingMode,
-                defaultScanQuota: recs.quota
-            }
-        }));
-        setAnalysisResult(null);
-        setActiveTab('BILLING');
-    };
-
-    const applySimulationResult = (budget: number, quota: number | 'UNLIMITED', billingMode: any) => {
-        setFormData(prev => ({
-            ...prev,
-            investmentBalance: budget,
-            settings: {
-                ...prev.settings!,
-                billingMode: billingMode,
-                defaultScanQuota: quota
-            }
-        }));
-        setActiveTab('BILLING');
-    };
-
     return {
         activeTab,
         setActiveTab,
@@ -268,19 +209,12 @@ export const useEditProjectModal = ({
         setFundAmount,
         isProcessingFunds,
         fundMessage,
-        isAnalyzing,
-        analysisStep,
-        analysisResult,
-        setAnalysisResult,
         isOwner,
         canChangeStatus,
         userHasPlan,
         canAccessInvestment,
         handleSubmit,
         handleFundAction,
-        handleRunDiagnostics,
-        applyOptimization,
-        applySimulationResult,
         isLight,
         accent,
         error
