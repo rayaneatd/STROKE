@@ -488,6 +488,14 @@
     },
     "dashboard": {
         "loadingIntelligence": "Loading Intelligence...",
+        "failReasons": {
+            "uploadFailed": "Upload Failed",
+            "invalidFormat": "Invalid Format (PDF only)",
+            "tooManyPages": "Too Many Pages (> 50)",
+            "corruption": "File Corrupted",
+            "validationFailed": "Validation Failed",
+            "unknown": "Unknown Error"
+        },
         "header": {
             "title": "Performance Overview",
             "subtitle": "Real-time business intelligence across your organization"
