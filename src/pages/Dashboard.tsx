@@ -239,21 +239,21 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                     isLight={isLight}
                 />
                 <KpiCard
-                    title="Hired"
-                    value={data.kpi.hiredCount}
-                    trendValue="-"
-                    icon={<Crown />}
-                    color="bg-emerald-500"
-                    subtext="Successful recruits"
-                    isLight={isLight}
-                />
-                <KpiCard
                     title="Underqualified"
                     value={data.kpi.rejectedCount}
                     trendValue=""
                     icon={<Activity />}
                     color="bg-rose-500"
                     subtext="Filtered out"
+                    isLight={isLight}
+                />
+                <KpiCard
+                    title={t('dashboard.kpi.activeProjects')}
+                    value={data.kpi.activeProjects}
+                    trendValue="-"
+                    icon={<Star />}
+                    color="bg-amber-500"
+                    subtext={t('dashboard.kpi.recruitingNow')}
                     isLight={isLight}
                 />
             </div>
@@ -322,14 +322,14 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                 <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: isLight ? '#94a3b8' : '#71717a', fontSize: 10, fontWeight: 600 }} />
                                 <YAxis yAxisId="right" orientation="right" domain={[0, 100]} hide />
                                 <Tooltip content={<CustomChartTooltip isLight={isLight} />} cursor={{ fill: isLight ? '#f8fafc' : '#27272a', opacity: 0.4 }} />
-                                <Bar yAxisId="left" dataKey="applications" name="Applications" barSize={20} radius={[4, 4, 0, 0]} fill={isLight ? '#e2e8f0' : '#27272a'} />
+                                <Bar yAxisId="left" dataKey="applications" name="Applications" barSize={20} radius={[4, 4, 0, 0]} fill={isLight ? '#94a3b8' : '#52525b'} />
                                 <Line yAxisId="right" type="monotone" dataKey="avgQuality" name="Avg Quality" stroke={`var(--color-${accentColor}-500)`} strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: isLight ? '#fff' : '#09090b' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                             </ComposedChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Status Distribution Chart (Replaces Error Chart) */}
+                {/* Status Distribution Chart */}
                 <div className={`p-6 rounded-2xl border flex flex-col ${cardContainerClass}`}>
                     <div className="mb-6">
                         <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>Status Distribution</h3>
@@ -366,6 +366,47 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none mb-6">
                             <div className={`text-2xl font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{data.kpi.totalCandidates}</div>
                             <div className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Total</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quality Analysis Chart (Restored/New) */}
+                <div className={`p-6 rounded-2xl border flex flex-col ${cardContainerClass}`}>
+                    <div className="mb-6">
+                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>Quality Analysis</h3>
+                        <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Data health overview</p>
+                    </div>
+                    <div className="flex-1 min-h-[200px] relative">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={data.errorData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    stroke="none"
+                                >
+                                    {data.errorData?.map((entry: any, index: number) => (
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                    ))}
+                                </Pie>
+                                <Tooltip content={<CustomChartTooltip isLight={isLight} />} />
+                                <Legend 
+                                    verticalAlign="bottom" 
+                                    height={36} 
+                                    iconType="circle"
+                                    iconSize={8}
+                                    formatter={(value) => <span className={`text-[10px] font-bold uppercase tracking-wide ml-1 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{value}</span>}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                        {/* Center Text */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none mb-6">
+                            <div className={`text-2xl font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{totalErrors}</div>
+                            <div className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Issues</div>
                         </div>
                     </div>
                 </div>

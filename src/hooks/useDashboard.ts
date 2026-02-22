@@ -64,7 +64,6 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             const qualifiedCandidates = completedCandidates.filter(c => (c.score || 0) >= 80);
             
             // New Status Logic
-            const hiredCount = candidates.filter(c => c.status === 'hired').length;
             const interviewCount = candidates.filter(c => c.status === 'interview').length;
             const rejectedCount = candidates.filter(c => c.status === 'rejected').length;
             const screenedCount = candidates.filter(c => c.status === 'screened').length;
@@ -110,10 +109,14 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 p.members?.forEach((m: any) => {
                     if (!uniqueUsers.has(m.user_id)) {
                         uniqueUsers.add(m.user_id);
-                        if (m.role === 'ADMIN') roleCounts.admins++;
-                        else if (m.role === 'PARTNER') roleCounts.partners++;
-                        else if (m.role === 'SCOUT') roleCounts.scouts++;
-                        else if (m.role === 'ANALYST') roleCounts.analysts++;
+                        // Correct Role Logic based on permissions
+                        if (m.role === 'ADMIN' || m.role === 'OWNER') {
+                            roleCounts.admins++;
+                        } else if (m.role === 'EMPLOYEE') {
+                            if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) roleCounts.partners++;
+                            else if (m.permissions.includes('SCAN')) roleCounts.scouts++;
+                            else if (m.permissions.includes('ANALYZE')) roleCounts.analysts++;
+                        }
                     }
                 });
             });
@@ -129,14 +132,12 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     avgTimeProcessing: '0m 45s',
                     failedUploadsCount: 0,
                     // NEW KPIs
-                    hiredCount,
                     interviewCount,
                     rejectedCount
                 },
                 teamStats: roleCounts,
                 timelineData,
                 statusDistribution: [
-                    { name: 'Hired', value: hiredCount, fill: '#10b981' }, // emerald-500
                     { name: 'Interview', value: interviewCount, fill: '#8b5cf6' }, // violet-500
                     { name: 'Screened', value: screenedCount, fill: '#3b82f6' }, // blue-500
                     { name: 'New', value: newCount, fill: '#f59e0b' }, // amber-500
