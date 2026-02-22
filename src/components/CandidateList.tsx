@@ -4,7 +4,7 @@ import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
     Loader2, FileText, Clock, Calendar,
-    Medal, Eye, MailCheck, FileCheck, FileEdit, Check, Star, XCircle, ThumbsDown
+    Medal, Eye, MailCheck, FileCheck, FileEdit, Check, Star, XCircle, ThumbsDown, RotateCcw
 } from 'lucide-react';
 
 interface CandidateListProps {
@@ -177,7 +177,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center transition-all duration-300 cursor-pointer group ${isSelected
                                 ? `bg-${accentColor}-500/10 border-l-4 border-l-${accentColor}-500 ${isLight ? 'border-b-slate-100' : 'border-b-white/5'}`
                                 : `border-l-4 border-l-transparent hover:bg-${accentColor}-500/5 ${isLight ? 'border-b-slate-50 hover:border-l-slate-300' : 'border-b-white/5 hover:border-l-zinc-700'}`
-                                }`}
+                                } ${file.status === 'rejected' ? 'opacity-40 grayscale-[0.8]' : ''}`}
                         >
                             {/* Checkbox for Bulk Actions */}
                             {showCheckboxes && (
@@ -301,18 +301,31 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                         </button>
                                     )}
 
-                                    {/* Reject Button */}
-                                    {onUpdateStatus && file.status !== 'rejected' && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onUpdateStatus(file.id, 'rejected');
-                                            }}
-                                            className={`p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors`}
-                                            title="Reject candidate"
-                                        >
-                                            <ThumbsDown size={16} />
-                                        </button>
+                                    {/* Reject / Undo Button */}
+                                    {onUpdateStatus && (
+                                        file.status === 'rejected' ? (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onUpdateStatus(file.id, 'new');
+                                                }}
+                                                className={`p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors`}
+                                                title="Undo rejection"
+                                            >
+                                                <RotateCcw size={16} />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onUpdateStatus(file.id, 'rejected');
+                                                }}
+                                                className={`p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors`}
+                                                title="Reject candidate"
+                                            >
+                                                <ThumbsDown size={16} />
+                                            </button>
+                                        )
                                     )}
 
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${hasScore ? (score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :

@@ -328,7 +328,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
     const handleBulkReject = async () => {
         if (selectedIds.size === 0) return;
-        const updates = Array.from(selectedIds).map(id => updateCandidateStatus(id, 'rejected'));
+        const updates = Array.from(selectedIds).map((id: string) => updateCandidateStatus(id, 'rejected'));
         await Promise.all(updates);
         setSelectedIds(new Set());
     };
@@ -436,7 +436,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                             {isFilterOpen && (
                                 <div
                                     onClick={(e) => e.stopPropagation()}
-                                    className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-xl border z-30 animate-fade-in-up p-4 max-h-[500px] overflow-y-auto custom-scrollbar ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}
+                                    className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-xl border z-30 animate-fade-in-up p-4 max-h-[80vh] overflow-y-auto custom-scrollbar ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}
                                 >
                                     <div className="space-y-4">
                                         {/* Scanner Filter */}

@@ -138,7 +138,7 @@ export const useCandidates = ({
     const totalCount = data?.pages[0]?.count || 0;
 
     // --- Actions ---
-    const updateCandidateStatus = async (candidateId: string, status: string) => {
+    const updateCandidateStatus = async (candidateId: string, status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired') => {
         const { error } = await supabase
             .from('candidates')
             .update({ status })

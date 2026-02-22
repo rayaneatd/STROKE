@@ -587,6 +587,8 @@ export type Database = {
                     uploaded_by: string | null
                     viewed_by: string[] | null
                     years_of_experience: number | null
+                    status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    is_favorite: boolean
                 }[]
             }
             get_project_owner_ai_tone: {
@@ -678,6 +680,21 @@ export type Database = {
                     p_industry?: string
                 }
                 Returns: undefined
+            }
+            save_candidate_email_draft: {
+                Args: {
+                    p_candidate_id: string
+                    p_draft: string
+                    p_sent_at?: string
+                }
+                Returns: void
+            }
+            update_candidate_interview_questions: {
+                Args: {
+                    p_candidate_id: string
+                    p_questions: Json[]
+                }
+                Returns: void
             }
         }
         Enums: {

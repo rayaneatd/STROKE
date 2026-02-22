@@ -242,12 +242,13 @@ export interface ProjectFile {
   projectId: ProjectId;
   name: string;
   size: string;
-  status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'SCANNING';
+  status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'SCANNING' | 'new' | 'screened' | 'interview' | 'rejected' | 'hired';
   uploadedAt: string;
   score?: number;
   candidateName?: string;
   uploadedByUserId?: UserId;
   failureReasons?: string[];
+  isFavorite?: boolean;
 
   // --- MARKERS ---
   lastContactedAt?: string; // Legacy/Compat
