@@ -159,6 +159,8 @@ export type Database = {
                     uploaded_at: string | null
                     uploaded_by: string | null
                     viewed_by: string[] | null
+                    status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    is_favorite: boolean
                 }
                 Insert: {
                     candidate_name?: string | null
@@ -173,6 +175,8 @@ export type Database = {
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
+                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    is_favorite?: boolean
                 }
                 Update: {
                     candidate_name?: string | null
@@ -187,6 +191,8 @@ export type Database = {
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
+                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    is_favorite?: boolean
                 }
                 Relationships: [
                     {

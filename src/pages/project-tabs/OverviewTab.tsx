@@ -135,7 +135,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                     </h3>
                     <p className={`text-3xl font-bold ${textPrimary} mt-1 relative z-10`}>{analytics.total}</p>
                     <p className={`text-[10px] ${textSecondary} mt-1 relative z-10`}>
-                        {analytics.pending} {t('project.overview.stats.pending')}
+                        {analytics.pending} imported today
                     </p>
                 </div>
 
@@ -175,7 +175,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                     </h3>
                     <p className={`text-3xl font-bold ${textPrimary} mt-1 relative z-10`}>{analytics.contacted}</p>
                     <p className={`text-[10px] ${textSecondary} mt-1 relative z-10`}>
-                        {analytics.rejected} {t('project.overview.kpi.rejected', 'Rejetés')}
+                        {analytics.rejected} rejected
                     </p>
                 </div>
 

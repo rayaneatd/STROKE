@@ -67,7 +67,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const [statsResult, eventsResult, topResult, timelineResult, failureDistResult] = await Promise.all([
                 supabase
                     .from('candidates')
-                    .select('score, uploaded_at, uploaded_by, email_sent_at, size')
+                    .select('score, uploaded_at, uploaded_by, email_sent_at, size, status')
                     .eq('project_id', projectId),
                 supabase
                     .from('analytics_events')
