@@ -9,7 +9,7 @@ interface ProjectAnalytics {
     total: number;
     completed: number;
     pending: number;
-    qualified: number; // Score >= 70
+    qualified: number; // Score >= 50
     contacted: number; // Email sent
     rejected: number; // Score < 50
     avgScore: number;
@@ -116,7 +116,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const todayStart = startOfDay(new Date());
             const pending = data.filter(c => isAfter(parseISO(c.uploaded_at), todayStart)).length;
 
-            const qualified = data.filter(c => c.score != null && c.score >= 70).length;
+            const qualified = data.filter(c => c.score != null && c.score >= 50).length;
             
             // Rejected -> Explicit status 'rejected'
             const rejected = data.filter(c => c.status === 'rejected').length;
@@ -156,7 +156,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
                     
                     current.added++;
-                    if (c.score != null && c.score >= 70) current.qualified++;
+                    if (c.score != null && c.score >= 50) current.qualified++;
                     if (c.email_sent_at) current.contacted++;
                     if (c.score != null && c.score < 50) current.rejected++;
                     
@@ -253,8 +253,8 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 if (c.uploaded_by) {
                     const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
                     current.scans++;
-                    if (c.score != null && c.score >= 70) current.qualified++;
-                    if (c.status === 'rejected') current.rejected++;
+                    if (c.score != null && c.score >= 50) current.qualified++;
+                    if (c.score != null && c.score < 50) current.rejected++;
                     if (c.email_sent_at) current.contacted++;
                     contributionMap.set(c.uploaded_by, current);
                 }

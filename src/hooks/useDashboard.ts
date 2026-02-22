@@ -235,7 +235,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             projectsData.forEach(p => {
                 p.members?.forEach((m: any) => {
                     // Check role in this specific project context
-                    if (m.role === 'ADMIN' || m.role === 'OWNER') {
+                    if (m.role === 'ADMIN') {
                         adminIds.add(m.user_id);
                     } else if (m.role === 'EMPLOYEE') {
                         if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) {
