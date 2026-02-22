@@ -108,9 +108,16 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             // Basic Stats (Still based on current state for accuracy of "now")
             const total = data.length;
             const completed = data.filter(c => c.score != null).length;
-            const pending = total - completed;
+            
+            // Pending -> Imported Today
+            const todayStart = startOfDay(new Date());
+            const pending = data.filter(c => isAfter(parseISO(c.uploaded_at), todayStart)).length;
+
             const qualified = data.filter(c => c.score != null && c.score >= 70).length;
-            const rejected = data.filter(c => c.score != null && c.score < 50).length;
+            
+            // Rejected -> Explicit status 'rejected'
+            const rejected = data.filter(c => c.status === 'rejected').length;
+
             const contacted = data.filter(c => c.email_sent_at != null).length;
 
             const scores = data

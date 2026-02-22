@@ -17,7 +17,9 @@ import {
   Loader2,
   Copy,
   LayoutDashboard,
-  MessageSquare
+  MessageSquare,
+  Star,
+  ThumbsDown
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { debounce } from '../utils/performance';
@@ -55,11 +57,24 @@ interface CandidateDrawerProps {
   candidateId: string | null;
   onClose: () => void;
   hideCommunicationTab?: boolean;
+  status?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: string, current: boolean) => Promise<void>;
+  onUpdateStatus?: (id: string, status: string) => Promise<void>;
 }
 
 type DrawerTab = 'analysis' | 'communication' | 'interview';
 
-const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, onClose, hideCommunicationTab = false }) => {
+const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ 
+  isOpen, 
+  candidateId, 
+  onClose, 
+  hideCommunicationTab = false,
+  status,
+  isFavorite,
+  onToggleFavorite,
+  onUpdateStatus
+}) => {
   const { t } = useTranslation();
   const [data, setData] = useState<CandidateDrawerData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -589,6 +604,36 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ isOpen, candidateId, 
                 <span>{data.location || t('common.unknown')}</span>
               </div>
               <div className="flex items-center gap-2 mt-4">
+                {onToggleFavorite && (
+                  <button
+                    onClick={() => onToggleFavorite(candidateId!, isFavorite || false)}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${
+                      isFavorite 
+                      ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20' 
+                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                    }`}
+                  >
+                    <Star className={`w-4 h-4 ${isFavorite ? 'fill-amber-500' : ''}`} />
+                    {isFavorite ? t('candidateList.actions.favorited') : t('candidateList.actions.favorite')}
+                  </button>
+                )}
+
+                {onUpdateStatus && (
+                  <button
+                    onClick={() => onUpdateStatus(candidateId!, status === 'rejected' ? 'new' : 'rejected')}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${
+                      status === 'rejected'
+                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20'
+                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                    }`}
+                  >
+                    <ThumbsDown className={`w-4 h-4 ${status === 'rejected' ? 'fill-rose-500' : ''}`} />
+                    {status === 'rejected' ? t('candidateList.actions.rejected') : t('candidateList.actions.reject')}
+                  </button>
+                )}
+
+                <div className="h-8 w-px bg-white/10 mx-1" />
+                
                 <button
                   onClick={() => data.email && window.open(`mailto:${data.email}`)}
                   className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"

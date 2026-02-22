@@ -96,6 +96,8 @@ export const useCandidates = ({
                 emailSentAt: row.email_sent_at,
                 emailDraft: row.email_draft,
                 rank: row.rank ? Number(row.rank) : undefined,
+                status: row.status || 'new',
+                isFavorite: row.is_favorite || false,
                 // AI Enhanced fields
                 email: row.email,
                 phone: row.phone,
@@ -135,5 +137,47 @@ export const useCandidates = ({
     const candidates = data?.pages.flatMap(page => page.candidates) || [];
     const totalCount = data?.pages[0]?.count || 0;
 
-    return { candidates, totalCount, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error };
+    // --- Actions ---
+    const updateCandidateStatus = async (candidateId: string, status: string) => {
+        const { error } = await supabase
+            .from('candidates')
+            .update({ status })
+            .eq('id', candidateId);
+
+        if (error) {
+            console.error('Error updating status:', error);
+            throw error;
+        }
+        
+        // Optimistic update via invalidation
+        queryClient.invalidateQueries({ queryKey });
+    };
+
+    const toggleFavorite = async (candidateId: string, currentFavorite: boolean) => {
+        const { error } = await supabase
+            .from('candidates')
+            .update({ is_favorite: !currentFavorite })
+            .eq('id', candidateId);
+
+        if (error) {
+            console.error('Error toggling favorite:', error);
+            throw error;
+        }
+
+        // Optimistic update via invalidation
+        queryClient.invalidateQueries({ queryKey });
+    };
+
+    return {
+        candidates,
+        totalCount,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        isError,
+        error,
+        updateCandidateStatus,
+        toggleFavorite
+    };
 };

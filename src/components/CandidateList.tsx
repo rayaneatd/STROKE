@@ -4,7 +4,7 @@ import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
     Loader2, FileText, Clock, Calendar,
-    Medal, Eye, MailCheck, FileCheck, FileEdit, Check
+    Medal, Eye, MailCheck, FileCheck, FileEdit, Check, Star, XCircle, ThumbsDown
 } from 'lucide-react';
 
 interface CandidateListProps {
@@ -23,6 +23,8 @@ interface CandidateListProps {
     showCheckboxes?: boolean;
     selectedIds?: Set<string>;
     onToggleSelect?: (id: string) => void;
+    onToggleFavorite?: (id: string, current: boolean) => void;
+    onUpdateStatus?: (id: string, status: string) => void;
 }
 
 const CandidateList: React.FC<CandidateListProps> = ({
@@ -40,7 +42,9 @@ const CandidateList: React.FC<CandidateListProps> = ({
     userMap,
     showCheckboxes = false,
     selectedIds,
-    onToggleSelect
+    onToggleSelect,
+    onToggleFavorite,
+    onUpdateStatus
 }) => {
     const { t } = useTranslation();
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
@@ -278,7 +282,39 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             </div>
 
                             {showScannedBy && (
-                                <div className="col-span-2 text-right">
+                                <div className="col-span-2 flex items-center justify-end gap-2">
+                                    {/* Favorite Button */}
+                                    {onToggleFavorite && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onToggleFavorite(file.id, file.isFavorite || false);
+                                            }}
+                                            className={`p-1.5 rounded-lg transition-colors ${
+                                                file.isFavorite 
+                                                    ? 'text-yellow-500 bg-yellow-500/10' 
+                                                    : `text-slate-400 hover:text-yellow-500 hover:bg-yellow-500/10`
+                                            }`}
+                                            title={file.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                                        >
+                                            <Star size={16} fill={file.isFavorite ? "currentColor" : "none"} />
+                                        </button>
+                                    )}
+
+                                    {/* Reject Button */}
+                                    {onUpdateStatus && file.status !== 'rejected' && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onUpdateStatus(file.id, 'rejected');
+                                            }}
+                                            className={`p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors`}
+                                            title="Reject candidate"
+                                        >
+                                            <ThumbsDown size={16} />
+                                        </button>
+                                    )}
+
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${hasScore ? (score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                         score >= 50 ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
                                             isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700') : (isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700')}`}>

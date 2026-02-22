@@ -6,7 +6,8 @@ import {
     Activity, Ghost,
     User as UserIcon, Search, Filter, SortAsc, SortDesc, Download, Loader2, Check, X,
     MailCheck, Mail, FileCheck, Eye, EyeOff,
-    CheckSquare, Square, Send, PenTool, Zap, MessageSquare, Code, FileText
+    CheckSquare, Square, Send, PenTool, Zap, MessageSquare, Code, FileText,
+    Star, ThumbsDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import CandidateList from '../../components/CandidateList';
@@ -102,7 +103,9 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         fetchNextPage, 
         hasNextPage, 
         isFetchingNextPage, 
-        isLoading 
+        isLoading,
+        updateCandidateStatus,
+        toggleFavorite
     } = useCandidates({
         projectId: project.id,
         userId: currentUser.id,
@@ -321,6 +324,24 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         
         await onBatchUpdate(updates);
         setIsClearing(false);
+    };
+
+    const handleBulkReject = async () => {
+        if (selectedIds.size === 0) return;
+        const updates = Array.from(selectedIds).map(id => updateCandidateStatus(id, 'rejected'));
+        await Promise.all(updates);
+        setSelectedIds(new Set());
+    };
+
+    const handleBulkFavorite = async () => {
+        if (selectedIds.size === 0) return;
+        // Set all to favorite
+        const candidatesToUpdate = candidates.filter(c => selectedIds.has(c.id));
+        const updates = candidatesToUpdate
+            .filter(c => !c.isFavorite)
+            .map(c => toggleFavorite(c.id, false));
+        await Promise.all(updates);
+        setSelectedIds(new Set());
     };
 
     return (
@@ -589,6 +610,8 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     showCheckboxes={true}
                     selectedIds={selectedIds}
                     onToggleSelect={handleToggleSelect}
+                    onToggleFavorite={toggleFavorite}
+                    onUpdateStatus={updateCandidateStatus}
                 />
                 
                 {/* Anti Ghosting Bar */}
@@ -628,6 +651,29 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <PenTool size={14} />}
                                         {t('antiGhosting.writeDrafts')} ({selectedNoDraft.length})
                                     </button>
+                                    
+                                    <button
+                                        onClick={handleBulkFavorite}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                            ? 'bg-amber-50 border border-amber-200 text-amber-600 hover:bg-amber-100'
+                                            : 'bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20'}`}
+                                        title={t('candidateList.actions.favorite')}
+                                    >
+                                        <Star size={14} />
+                                        {t('candidateList.actions.favorite')}
+                                    </button>
+
+                                    <button
+                                        onClick={handleBulkReject}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight
+                                            ? 'bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100'
+                                            : 'bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20'}`}
+                                        title={t('candidateList.actions.reject')}
+                                    >
+                                        <ThumbsDown size={14} />
+                                        {t('candidateList.actions.reject')}
+                                    </button>
+
                                     <button
                                         onClick={() => handleBulkSend(selectedWithDraft)}
                                         disabled={isSending || selectedWithDraft.length === 0}
@@ -686,6 +732,10 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     candidateId={selectedFile?.id || null}
                     onClose={() => setSelectedFile(null)}
                     hideCommunicationTab={!canUseAntiGhosting}
+                    status={candidates.find(c => c.id === selectedFile?.id)?.status || 'new'}
+                    isFavorite={candidates.find(c => c.id === selectedFile?.id)?.isFavorite || false}
+                    onToggleFavorite={toggleFavorite}
+                    onUpdateStatus={updateCandidateStatus}
                 />
             </div>
         </div>

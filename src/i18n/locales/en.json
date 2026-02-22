@@ -10,7 +10,13 @@
         "exportJSON": "Export as JSON",
         "exportPDF": "Export as PDF",
         "viewedByYou": "Viewed by you",
-        "unknownUser": "Unknown User"
+        "unknownUser": "Unknown User",
+        "actions": {
+            "favorite": "Add to Favorites",
+            "favorited": "In Favorites",
+            "reject": "Reject",
+            "rejected": "Rejected"
+        }
     },
     "candidateDrawer": {
         "tabs": {
