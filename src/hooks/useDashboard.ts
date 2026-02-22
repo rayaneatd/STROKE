@@ -54,21 +54,28 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
 
             // 2. Fetch Candidates for these projects
             const projectIds = projectsData.map(p => p.id);
-            const { data: candidatesData, error: candidatesError } = await supabase
-                .from('candidates')
-                .select('*')
-                .in('project_id', projectIds);
+            let candidatesData: any[] | null = [];
+            let failEvents: any[] | null = [];
 
-            if (candidatesError) throw candidatesError;
+            if (projectIds.length > 0) {
+                const { data: cData, error: candidatesError } = await supabase
+                    .from('candidates')
+                    .select('*')
+                    .in('project_id', projectIds);
 
-            // 3. Fetch Fail Events
-            const { data: failEvents, error: failEventsError } = await supabase
-                .from('analytics_events')
-                .select('*')
-                .eq('event_type', 'FAIL')
-                .in('project_id', projectIds);
-            
-            if (failEventsError) throw failEventsError;
+                if (candidatesError) throw candidatesError;
+                candidatesData = cData;
+
+                // 3. Fetch Fail Events
+                const { data: fData, error: failEventsError } = await supabase
+                    .from('analytics_events')
+                    .select('*')
+                    .eq('event_type', 'FAIL')
+                    .in('project_id', projectIds);
+                
+                if (failEventsError) throw failEventsError;
+                failEvents = fData;
+            }
 
             // 4. Aggregate Data
             let candidates = (candidatesData || []) as any[];
