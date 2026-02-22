@@ -499,6 +499,39 @@ export type Database = {
                 Args: { p_id: string; u_id: string }
                 Returns: boolean
             }
+            get_project_activity_timeline: {
+                Args: {
+                    p_project_id: string
+                    p_start_date: string | null
+                }
+                Returns: {
+                    date: string
+                    added: number
+                    qualified: number
+                    failed: number
+                }[]
+            }
+            get_project_failure_distribution: {
+                Args: {
+                    p_project_id: string
+                    p_start_date: string | null
+                }
+                Returns: {
+                    reason: string
+                    count: number
+                }[]
+            }
+            log_failure_event: {
+                Args: {
+                    p_project_id: string
+                    p_user_id: string
+                    p_reason: string
+                    p_file_name: string
+                    p_file_size: number
+                    p_file_type: string
+                }
+                Returns: boolean
+            }
             check_is_project_owner: {
                 Args: { p_id: string; u_id: string }
                 Returns: boolean

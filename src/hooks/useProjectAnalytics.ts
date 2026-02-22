@@ -129,8 +129,14 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             // Timeline (Use RPC result if available, otherwise fallback to legacy calculation)
             let timelineData: any[] = [];
             
-            if (timelineResult.data) {
-                timelineData = timelineResult.data;
+            if (timelineResult.data && Array.isArray(timelineResult.data) && timelineResult.data.length > 0) {
+                // Ensure data types are correct for Recharts
+                timelineData = timelineResult.data.map((item: any) => ({
+                    date: item.date, // 'YYYY-MM-DD'
+                    added: Number(item.added || 0),
+                    qualified: Number(item.qualified || 0),
+                    failed: Number(item.failed || 0)
+                }));
             } else {
                 // Fallback Logic (Legacy)
                 const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number; failed: number }>();
@@ -172,8 +178,11 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             // Failure Distribution (Use RPC result if available)
             let failureDistribution: any[] = [];
             
-            if (failureDistResult.data) {
-                failureDistribution = failureDistResult.data;
+            if (failureDistResult.data && Array.isArray(failureDistResult.data) && failureDistResult.data.length > 0) {
+                 failureDistribution = failureDistResult.data.map((item: any) => ({
+                    reason: item.reason || 'Unknown Error',
+                    count: Number(item.count || 0)
+                }));
             } else {
                 // Fallback Logic
                 const failureMap = new Map<string, number>();
@@ -244,6 +253,9 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             }));
 
             // Failures
+            const events = startDate
+                ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
+                : allEvents;
             const recentFailures = events.filter(e => e.event_type === 'FAIL').length;
 
             return {
