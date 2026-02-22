@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { startOfDay, subDays, isAfter, parseISO, format } from 'date-fns';
 
@@ -48,8 +49,10 @@ interface ProjectAnalytics {
 }
 
 export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'ALL') => {
+    const { t, i18n } = useTranslation();
+    
     return useQuery({
-        queryKey: ['project-analytics', projectId, timeRange],
+        queryKey: ['project-analytics', projectId, timeRange, i18n.language],
         queryFn: async (): Promise<ProjectAnalytics> => {
             // Calculate start date based on range
             let startDate: Date | null = null;
@@ -182,33 +185,42 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     .sort((a, b) => a.date.localeCompare(b.date));
             }
 
-            // Failure Distribution (Use RPC result if available)
-            let failureDistribution: any[] = [];
-            
+            // Failure Distribution (Unified Logic)
+            const failureMap = new Map<string, number>();
+
+            const getFailLabel = (reason: string) => {
+                const r = (reason || '').toLowerCase();
+                if (r.includes('upload') || r.includes('storage')) return t('dashboard.failReasons.uploadFailed');
+                if (r.includes('pdf') || r.includes('format') || r.includes('type')) return t('dashboard.failReasons.invalidFormat');
+                if (r.includes('too_many_pages') || r.includes('pages')) return t('dashboard.failReasons.tooManyPages');
+                if (r.includes('corruption') || r.includes('corrupt')) return t('dashboard.failReasons.corruption');
+                if (r.includes('validation')) return t('dashboard.failReasons.validationFailed');
+                return t('dashboard.failReasons.unknown');
+            };
+
             if (failureDistResult.data && Array.isArray(failureDistResult.data) && failureDistResult.data.length > 0) {
-                 failureDistribution = failureDistResult.data.map((item: any) => ({
-                    reason: item.reason || 'Unknown Error',
-                    count: Number(item.count || 0)
-                }));
+                 failureDistResult.data.forEach((item: any) => {
+                    const label = getFailLabel(item.reason);
+                    failureMap.set(label, (failureMap.get(label) || 0) + Number(item.count || 0));
+                 });
             } else {
                 // Fallback Logic
-                const failureMap = new Map<string, number>();
                 const events = startDate
                     ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
                     : allEvents;
 
                 events.forEach(e => {
                     if (e.event_type === 'FAIL') {
-                        const metadata = e.metadata as { reason?: string } | null;
-                        const reason = metadata?.reason || 'Unknown Error';
-                        failureMap.set(reason, (failureMap.get(reason) || 0) + 1);
+                        const reason = e.metadata?.reason;
+                        const label = getFailLabel(reason);
+                        failureMap.set(label, (failureMap.get(label) || 0) + 1);
                     }
                 });
-
-                failureDistribution = Array.from(failureMap.entries())
-                    .map(([reason, count]) => ({ reason, count }))
-                    .sort((a, b) => b.count - a.count);
             }
+
+            const failureDistribution = Array.from(failureMap.entries())
+                .map(([reason, count]) => ({ reason, count }))
+                .sort((a, b) => b.count - a.count);
 
             // Score Distribution (unchanged)
             const distribution = [

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User, Role, DashboardAnalytics, Project, ProjectFile, ProjectPerformanceRow, TimelineDataPoint } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -7,6 +8,7 @@ interface UseDashboardProps {
 }
 
 export const useDashboard = ({ currentUser }: UseDashboardProps) => {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<DashboardAnalytics | null>(null);
@@ -150,15 +152,29 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             // Process Fail Reasons
             const failReasonsMap = new Map<string, number>();
             events.forEach(e => {
-                const reason = e.metadata?.reason || 'Unknown Error';
-                failReasonsMap.set(reason, (failReasonsMap.get(reason) || 0) + 1);
+                const rawReason = (e.metadata?.reason || '').toLowerCase();
+                let label = t('dashboard.failReasons.unknown');
+
+                if (rawReason.includes('upload') || rawReason.includes('storage')) {
+                    label = t('dashboard.failReasons.uploadFailed');
+                } else if (rawReason.includes('pdf') || rawReason.includes('format') || rawReason.includes('type')) {
+                    label = t('dashboard.failReasons.invalidFormat');
+                } else if (rawReason.includes('too_many_pages') || rawReason.includes('pages')) {
+                    label = t('dashboard.failReasons.tooManyPages');
+                } else if (rawReason.includes('corruption') || rawReason.includes('corrupt')) {
+                    label = t('dashboard.failReasons.corruption');
+                } else if (rawReason.includes('validation')) {
+                    label = t('dashboard.failReasons.validationFailed');
+                }
+                
+                failReasonsMap.set(label, (failReasonsMap.get(label) || 0) + 1);
             });
 
             // Color palette for error types
             const errorColors = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#6366f1'];
             
             const errorData = Array.from(failReasonsMap.entries()).map(([name, value], index) => ({
-                name: name.length > 20 ? name.substring(0, 20) + '...' : name,
+                name,
                 value,
                 fill: errorColors[index % errorColors.length]
             }));

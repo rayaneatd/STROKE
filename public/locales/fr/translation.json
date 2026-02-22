@@ -346,6 +346,14 @@
     },
     "dashboard": {
         "loadingIntelligence": "Chargement de l'intelligence...",
+        "failReasons": {
+            "uploadFailed": "Échec du téléchargement",
+            "invalidFormat": "Format invalide (PDF uniquement)",
+            "tooManyPages": "Trop de pages (> 50)",
+            "corruption": "Fichier corrompu",
+            "validationFailed": "Échec de la validation",
+            "unknown": "Erreur inconnue"
+        },
         "header": {
             "title": "Aperçu des performances",
             "subtitle": "Intelligence d'affaires en temps réel dans votre organisation"
