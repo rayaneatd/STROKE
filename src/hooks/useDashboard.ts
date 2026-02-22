@@ -165,6 +165,10 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     label = t('dashboard.failReasons.corruption');
                 } else if (rawReason.includes('validation')) {
                     label = t('dashboard.failReasons.validationFailed');
+                } else {
+                    // If no match found, check if rawReason itself is a translation key or use it directly if meaningful
+                    // For now, default to unknown to ensure clean UI
+                    label = t('dashboard.failReasons.unknown');
                 }
                 
                 failReasonsMap.set(label, (failReasonsMap.get(label) || 0) + 1);
