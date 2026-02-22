@@ -48,6 +48,8 @@ export const useCandidates = ({
                     console.log('Real-time update:', payload);
                     // Invalidate query to refetch fresh data and update rankings
                     queryClient.invalidateQueries({ queryKey });
+                    // Also invalidate analytics to update counts
+                    queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
                 }
             )
             .subscribe();
@@ -151,6 +153,8 @@ export const useCandidates = ({
         
         // Optimistic update via invalidation
         queryClient.invalidateQueries({ queryKey });
+        // Also invalidate analytics to update counts
+        queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
     };
 
     const toggleFavorite = async (candidateId: string, currentFavorite: boolean) => {

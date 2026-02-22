@@ -242,7 +242,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
                     current.scans++;
                     if (c.score != null && c.score >= 70) current.qualified++;
-                    if (c.score != null && c.score < 50) current.rejected++;
+                    if (c.status === 'rejected') current.rejected++;
                     if (c.email_sent_at) current.contacted++;
                     contributionMap.set(c.uploaded_by, current);
                 }
