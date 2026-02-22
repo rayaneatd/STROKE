@@ -8,6 +8,7 @@ interface UseDashboardProps {
 
 export const useDashboard = ({ currentUser }: UseDashboardProps) => {
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<DashboardAnalytics | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const [exportMenuOpen, setExportMenuOpen] = useState(false);
@@ -31,6 +32,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
         }
 
         try {
+            setError(null);
             // 1. Fetch Projects for the user
             console.log("Fetching projects for user:", currentUser.id);
             let projectQuery = supabase
@@ -253,14 +255,18 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 setData(analytics);
                 setLoading(false);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Dashboard fetch error:", err);
-            if (isMounted.current) setLoading(false);
+            if (isMounted.current) {
+                setLoading(false);
+                setError(err.message || 'Unknown error');
+            }
         }
     }, [timeRange, statusFilter, ownerFilter, currentUser.id]);
 
     useEffect(() => {
         setLoading(true);
+        setError(null);
         fetchData();
     }, [fetchData, refreshKey]);
 
@@ -281,6 +287,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
 
     return {
         loading,
+        error,
         data,
         exportMenuOpen,
         setExportMenuOpen,
