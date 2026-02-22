@@ -361,6 +361,16 @@ export interface DashboardKPI {
   activeProjects: number;
   avgTimeProcessing: string;
   failedUploadsCount: number;
+  // NEW STATUS METRICS
+  hiredCount: number;
+  interviewCount: number;
+  rejectedCount: number;
+}
+
+export interface StatusDistribution {
+  name: string;
+  value: number;
+  fill: string;
 }
 
 export interface TeamStats {
@@ -396,5 +406,6 @@ export interface DashboardAnalytics {
   teamStats: TeamStats;
   timelineData: TimelineDataPoint[];
   errorData: ErrorDataPoint[];
+  statusDistribution: StatusDistribution[]; // NEW
   projectPerformance: ProjectPerformanceRow[];
 }

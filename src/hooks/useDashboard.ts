@@ -62,6 +62,14 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             const candidates = (candidatesData || []) as any[];
             const completedCandidates = candidates.filter(c => c.score != null);
             const qualifiedCandidates = completedCandidates.filter(c => (c.score || 0) >= 80);
+            
+            // New Status Logic
+            const hiredCount = candidates.filter(c => c.status === 'hired').length;
+            const interviewCount = candidates.filter(c => c.status === 'interview').length;
+            const rejectedCount = candidates.filter(c => c.status === 'rejected').length;
+            const screenedCount = candidates.filter(c => c.status === 'screened').length;
+            const newCount = candidates.filter(c => c.status === 'new' || !c.status).length;
+
             const pendingCandidates = candidates.filter(c => c.score == null);
             const missingDataCount = candidates.filter(c => !c.candidate_name).length;
 
@@ -119,10 +127,21 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     qualifiedTrend: 'Stable',
                     activeProjects: projectsData.filter(p => p.status === 'ACTIVE').length,
                     avgTimeProcessing: '0m 45s',
-                    failedUploadsCount: 0
+                    failedUploadsCount: 0,
+                    // NEW KPIs
+                    hiredCount,
+                    interviewCount,
+                    rejectedCount
                 },
                 teamStats: roleCounts,
                 timelineData,
+                statusDistribution: [
+                    { name: 'Hired', value: hiredCount, fill: '#10b981' }, // emerald-500
+                    { name: 'Interview', value: interviewCount, fill: '#8b5cf6' }, // violet-500
+                    { name: 'Screened', value: screenedCount, fill: '#3b82f6' }, // blue-500
+                    { name: 'New', value: newCount, fill: '#f59e0b' }, // amber-500
+                    { name: 'Rejected', value: rejectedCount, fill: '#ef4444' } // rose-500
+                ],
                 errorData: [
                     { name: 'Missing Data', value: missingDataCount, fill: '#6366f1' },
                     { name: 'Low Score', value: completedCandidates.filter(c => (c.score || 0) < 40).length, fill: '#ef4444' },

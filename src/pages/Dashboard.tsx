@@ -226,34 +226,34 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                     trendValue={data.kpi.candidateTrend}
                     icon={<FileStack />}
                     color="bg-blue-500"
-                    subtext={`${data.kpi.analyzedCount} ${t('dashboard.kpi.processed')}`}
+                    subtext={`${data.kpi.analyzedCount} analyzed`}
                     isLight={isLight}
                 />
                 <KpiCard
-                    title={t('dashboard.kpi.qualifiedCandidates')}
-                    value={`${data.kpi.qualifiedRate}%`}
-                    trendValue={data.kpi.qualifiedTrend}
+                    title="Active Interviews"
+                    value={data.kpi.interviewCount}
+                    trendValue=""
                     icon={<Target />}
-                    color="bg-emerald-500"
-                    subtext={t('dashboard.kpi.scoreAbove80')}
+                    color="bg-violet-500"
+                    subtext="Candidates in process"
                     isLight={isLight}
                 />
                 <KpiCard
-                    title={t('dashboard.kpi.activeProjects')}
-                    value={data.kpi.activeProjects}
+                    title="Hired"
+                    value={data.kpi.hiredCount}
                     trendValue="-"
-                    icon={<Star />}
-                    color="bg-amber-500"
-                    subtext={t('dashboard.kpi.recruitingNow')}
+                    icon={<Crown />}
+                    color="bg-emerald-500"
+                    subtext="Successful recruits"
                     isLight={isLight}
                 />
                 <KpiCard
-                    title={t('dashboard.kpi.systemThroughput')}
-                    value={data.kpi.avgTimeProcessing}
+                    title="Underqualified"
+                    value={data.kpi.rejectedCount}
                     trendValue=""
                     icon={<Activity />}
-                    color="bg-violet-500"
-                    subtext={t('dashboard.kpi.avgParseTime')}
+                    color="bg-rose-500"
+                    subtext="Filtered out"
                     isLight={isLight}
                 />
             </div>
@@ -321,92 +321,52 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: isLight ? '#94a3b8' : '#71717a', fontSize: 10, fontWeight: 600 }} dy={10} />
                                 <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: isLight ? '#94a3b8' : '#71717a', fontSize: 10, fontWeight: 600 }} />
                                 <YAxis yAxisId="right" orientation="right" domain={[0, 100]} hide />
-                                <Tooltip content={<CustomChartTooltip isLight={isLight} />} cursor={{ fill: isLight ? '#f8fafc' : '#ffffff', opacity: isLight ? 1 : 0.05 }} />
-                                <Bar yAxisId="left" dataKey="applications" barSize={32} radius={[4, 4, 0, 0]} fill={isLight ? "#e2e8f0" : "#27272a"} />
-                                <Line yAxisId="right" type="monotone" dataKey="avgQuality" stroke={`#${accentColor === 'amber' ? 'f59e0b' : accentColor === 'emerald' ? '10b981' : accentColor === 'rose' ? 'f43f5e' : accentColor === 'violet' ? '8b5cf6' : accentColor === 'cyan' ? '06b6d4' : '0ea5e9'}`} strokeWidth={3} dot={false} activeDot={{ r: 5, fill: `#${accentColor === 'amber' ? 'f59e0b' : accentColor === 'emerald' ? '10b981' : accentColor === 'rose' ? 'f43f5e' : accentColor === 'violet' ? '8b5cf6' : accentColor === 'cyan' ? '06b6d4' : '0ea5e9'}`, stroke: isLight ? '#fff' : '#000', strokeWidth: 3 }} />
+                                <Tooltip content={<CustomChartTooltip isLight={isLight} />} cursor={{ fill: isLight ? '#f8fafc' : '#27272a', opacity: 0.4 }} />
+                                <Bar yAxisId="left" dataKey="applications" name="Applications" barSize={20} radius={[4, 4, 0, 0]} fill={isLight ? '#e2e8f0' : '#27272a'} />
+                                <Line yAxisId="right" type="monotone" dataKey="avgQuality" name="Avg Quality" stroke={`var(--color-${accentColor}-500)`} strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: isLight ? '#fff' : '#09090b' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                             </ComposedChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Detailed Failure Analysis */}
+                {/* Status Distribution Chart (Replaces Error Chart) */}
                 <div className={`p-6 rounded-2xl border flex flex-col ${cardContainerClass}`}>
-                    <div className="mb-4 flex justify-between items-start">
-                        <div>
-                            <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{t('dashboard.charts.failureAnalysis.title')}</h3>
-                            <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.charts.failureAnalysis.subtitle')}</p>
-                        </div>
-                        {failedFileCount > 0 && (
-                            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[10px] font-bold">
-                                <AlertOctagon size={12} />
-                                {errorRate}%
-                            </div>
-                        )}
+                    <div className="mb-6">
+                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>Status Distribution</h3>
+                        <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Current candidate pipeline</p>
                     </div>
-
-                    <div className="flex-1 min-h-[180px] flex flex-col justify-center">
-                        {totalErrors === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-center py-4">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isLight ? 'bg-emerald-50 text-emerald-500 shadow-sm border border-emerald-100' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
-                                    <CheckCircle size={28} />
-                                </div>
-                                <h4 className={`font-bold text-sm ${isLight ? 'text-slate-800' : 'text-white'}`}>{t('dashboard.charts.failureAnalysis.successRate')}</h4>
-                                <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.charts.failureAnalysis.allProcessed')}</p>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="flex items-center justify-center py-4 relative">
-                                    <div className="w-[140px] h-[140px]">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <PieChart>
-                                                <Pie
-                                                    data={data.errorData}
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    innerRadius={45}
-                                                    outerRadius={65}
-                                                    paddingAngle={4}
-                                                    dataKey="value"
-                                                    stroke="none"
-                                                >
-                                                    {data.errorData?.map((entry: any, index: number) => (
-                                                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip content={<CustomChartTooltip isLight={isLight} />} />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                        <span className={`text-2xl font-bold leading-none ${isLight ? 'text-slate-800' : 'text-white'}`}>{totalErrors}</span>
-                                        <span className={`text-[10px] font-bold uppercase mt-1 ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>{t('dashboard.charts.failureAnalysis.errors')}</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex-1 w-full space-y-3 overflow-y-auto max-h-[150px] custom-scrollbar pr-1 pl-1 mt-2">
-                                    {data.errorData.map((item: any, index: number) => {
-                                        const percentage = ((item.value / totalErrors) * 100);
-                                        return (
-                                            <div key={index} className="flex flex-col gap-1.5">
-                                                <div className="flex items-center justify-between text-[10px]">
-                                                    <div className="flex items-center gap-2 min-w-0">
-                                                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.fill }}></span>
-                                                        <span className={`font-bold truncate ${isLight ? 'text-slate-600' : 'text-zinc-400'}`} title={item.name}>{item.name}</span>
-                                                    </div>
-                                                    <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-zinc-200'}`}>{item.value}</span>
-                                                </div>
-                                                <div className={`w-full h-1.5 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}>
-                                                    <div
-                                                        className="h-full rounded-full transition-all duration-1000"
-                                                        style={{ width: `${percentage}%`, backgroundColor: item.fill }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </>
-                        )}
+                    <div className="flex-1 min-h-[200px] relative">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={data.statusDistribution}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    stroke="none"
+                                >
+                                    {data.statusDistribution?.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                    ))}
+                                </Pie>
+                                <Tooltip content={<CustomChartTooltip isLight={isLight} />} />
+                                <Legend 
+                                    verticalAlign="bottom" 
+                                    height={36} 
+                                    iconType="circle"
+                                    iconSize={8}
+                                    formatter={(value) => <span className={`text-[10px] font-bold uppercase tracking-wide ml-1 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{value}</span>}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                        {/* Center Text */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none mb-6">
+                            <div className={`text-2xl font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{data.kpi.totalCandidates}</div>
+                            <div className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Total</div>
+                        </div>
                     </div>
                 </div>
             </div>
