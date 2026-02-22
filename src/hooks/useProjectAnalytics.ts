@@ -219,12 +219,12 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
 
             const scoreDistribution = distribution.map(d => ({ range: d.range, count: d.count }));
 
-            // Funnel (unchanged)
+            // Funnel (using keys for translation)
             const funnelData = [
-                { stage: 'Importés', count: total, fill: '#6366f1' }, // Indigo
-                { stage: 'Analysés', count: completed, fill: '#8b5cf6' }, // Violet
-                { stage: 'Qualifiés', count: qualified, fill: '#10b981' }, // Emerald
-                { stage: 'Contactés', count: contacted, fill: '#f59e0b' }, // Amber
+                { stage: 'imported', count: total, fill: '#6366f1' }, // Indigo
+                { stage: 'analyzed', count: completed, fill: '#8b5cf6' }, // Violet
+                { stage: 'qualified', count: qualified, fill: '#10b981' }, // Emerald
+                { stage: 'contacted', count: contacted, fill: '#f59e0b' }, // Amber
             ];
 
             // Contribution (Legacy source for consistency)

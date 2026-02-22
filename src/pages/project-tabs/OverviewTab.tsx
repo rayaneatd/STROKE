@@ -319,6 +319,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                     tickLine={false}
                                     axisLine={false}
                                     width={60}
+                                    tickFormatter={(value) => t(`project.overview.funnel.${value}` as any, value)}
                                 />
                                 <Tooltip 
                                     cursor={{fill: isLight ? '#f1f5f9' : '#18181b'}}
