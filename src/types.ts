@@ -382,6 +382,8 @@ export interface TimelineDataPoint {
   date: string;
   applications: number;
   avgQuality: number;
+  qualified: number;
+  failed: number;
 }
 
 export interface ErrorDataPoint {

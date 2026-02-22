@@ -2,7 +2,7 @@
 import React from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    ComposedChart, Line, Area, Cell, PieChart, Pie, Legend
+    ComposedChart, Line, Area, AreaChart, Cell, PieChart, Pie, Legend
 } from 'recharts';
 import {
     Users, TrendingUp, TrendingDown, Target, Activity,
@@ -418,6 +418,78 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                             <div className={`text-2xl font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{totalErrors}</div>
                             <div className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Issues</div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Activity & Performance Chart (Combined) */}
+                <div className={`lg:col-span-2 p-6 rounded-2xl border flex flex-col ${cardContainerClass}`}>
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className={`text-base font-bold ${isLight ? 'text-slate-800' : 'text-white'} flex items-center gap-2`}>
+                            <TrendingUp size={16} className="text-emerald-500" />
+                            {t('project.overview.charts.activity')}
+                        </h3>
+                    </div>
+                    <div className="flex-1 min-h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={data.timelineData}>
+                                <defs>
+                                    <linearGradient id="colorApplications" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorQualified" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#e2e8f0' : '#27272a'} vertical={false} />
+                                <XAxis 
+                                    dataKey="date" 
+                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis 
+                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip content={<CustomChartTooltip isLight={isLight} />} />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="applications" 
+                                    name={t('project.overview.kpi.volume')}
+                                    stroke="#3b82f6" 
+                                    fillOpacity={1} 
+                                    fill="url(#colorApplications)" 
+                                    strokeWidth={2}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="qualified" 
+                                    name={t('project.overview.kpi.qualified')}
+                                    stroke="#10b981" 
+                                    fillOpacity={1} 
+                                    fill="url(#colorQualified)" 
+                                    strokeWidth={2}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="failed" 
+                                    name={t('project.overview.kpi.failed')}
+                                    stroke="#ef4444" 
+                                    fillOpacity={1} 
+                                    fill="url(#colorFailed)" 
+                                    strokeWidth={2}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
             </div>

@@ -180,13 +180,13 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             }));
 
             // Timeline Calculation
-            const timelineMap = new Map<string, { total: number, scoreSum: number, count: number, dateObj: Date }>();
+            const timelineMap = new Map<string, { total: number, scoreSum: number, count: number, dateObj: Date, qualified: number, failed: number }>();
             
             for (let i = 0; i < daysToLookBack; i++) {
                 const d = new Date(now);
                 d.setDate(d.getDate() - i);
                 const isoDate = d.toISOString().split('T')[0];
-                timelineMap.set(isoDate, { total: 0, scoreSum: 0, count: 0, dateObj: d });
+                timelineMap.set(isoDate, { total: 0, scoreSum: 0, count: 0, dateObj: d, qualified: 0, failed: 0 });
             }
 
             candidates.forEach(c => {
@@ -198,7 +198,17 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     if (c.score) {
                         stats.scoreSum += c.score;
                         stats.count++;
+                        if (c.score >= 80) stats.qualified++;
                     }
+                }
+            });
+
+            events.forEach(e => {
+                const eDate = new Date(e.created_at);
+                const isoDate = eDate.toISOString().split('T')[0];
+                if (timelineMap.has(isoDate)) {
+                    const stats = timelineMap.get(isoDate)!;
+                    stats.failed++;
                 }
             });
 
@@ -211,7 +221,9 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                         year: daysToLookBack > 365 ? '2-digit' : undefined
                     }),
                     applications: stats.total,
-                    avgQuality: stats.count > 0 ? Math.round(stats.scoreSum / stats.count) : 0
+                    avgQuality: stats.count > 0 ? Math.round(stats.scoreSum / stats.count) : 0,
+                    qualified: stats.qualified,
+                    failed: stats.failed
                 }));
 
             // Team Stats

@@ -211,7 +211,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
 
                 events.forEach(e => {
                     if (e.event_type === 'FAIL') {
-                        const reason = e.metadata?.reason;
+                        const reason = (e.metadata as any)?.reason;
                         const label = getFailLabel(reason);
                         failureMap.set(label, (failureMap.get(label) || 0) + 1);
                     }

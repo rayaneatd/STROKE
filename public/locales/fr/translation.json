@@ -558,7 +558,8 @@
                 "conversion": "Conversion",
                 "velocity": "Vélocité",
                 "rate": "Taux",
-                "rejected": "Rejetés"
+                "rejected": "Rejetés",
+                "failed": "Échoués"
             },
             "cards": {
                 "totalResumes": "Total CVs",

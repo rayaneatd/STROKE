@@ -889,7 +889,8 @@
                 "conversion": "Conversion",
                 "velocity": "Velocity",
                 "rate": "Rate",
-                "rejected": "Rejected"
+                "rejected": "Rejected",
+                "failed": "Failed"
             },
             "cards": {
                 "totalResumes": "Total Resumes",
