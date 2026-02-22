@@ -58,8 +58,18 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
 
             if (candidatesError) throw candidatesError;
 
-            // 3. Aggregate Data
+            // 3. Fetch Fail Events
+            const { data: failEvents, error: failEventsError } = await supabase
+                .from('analytics_events')
+                .select('*')
+                .eq('event_type', 'FAIL')
+                .in('project_id', projectIds);
+            
+            if (failEventsError) throw failEventsError;
+
+            // 4. Aggregate Data
             let candidates = (candidatesData || []) as any[];
+            let events = (failEvents || []) as any[];
 
             // Apply Time Range Filter
             const now = new Date();
@@ -67,10 +77,12 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             let daysToLookBack: number;
 
             if (timeRange === 'all') {
-                // Find the earliest date in candidates
-                if (candidates.length > 0) {
-                    const dates = candidates.map(c => new Date(c.uploaded_at || c.created_at).getTime());
-                    const minDate = Math.min(...dates);
+                // Find the earliest date in candidates and events
+                if (candidates.length > 0 || events.length > 0) {
+                    const candidateDates = candidates.map(c => new Date(c.uploaded_at || c.created_at).getTime());
+                    const eventDates = events.map(e => new Date(e.created_at).getTime());
+                    const allDates = [...candidateDates, ...eventDates];
+                    const minDate = Math.min(...allDates);
                     startDate = new Date(minDate);
                     // Calculate days difference
                     const diffTime = Math.abs(now.getTime() - startDate.getTime());
@@ -93,17 +105,34 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 return cDate >= startDate;
             });
 
+            // Filter events by date
+            events = events.filter(e => {
+                const eDate = new Date(e.created_at);
+                return eDate >= startDate;
+            });
+
             const completedCandidates = candidates.filter(c => c.score != null);
             const qualifiedCandidates = completedCandidates.filter(c => (c.score || 0) >= 80);
             
             // New Status Logic
-            const interviewCount = candidates.filter(c => c.status === 'interview').length;
-            const rejectedCount = candidates.filter(c => c.status === 'rejected').length;
-            const screenedCount = candidates.filter(c => c.status === 'screened').length;
             const newCount = candidates.filter(c => c.status === 'new' || !c.status).length;
+            const rejectedCount = candidates.filter(c => c.status === 'rejected').length;
 
-            const pendingCandidates = candidates.filter(c => c.score == null);
-            const missingDataCount = candidates.filter(c => !c.candidate_name).length;
+            // Process Fail Reasons
+            const failReasonsMap = new Map<string, number>();
+            events.forEach(e => {
+                const reason = e.metadata?.reason || 'Unknown Error';
+                failReasonsMap.set(reason, (failReasonsMap.get(reason) || 0) + 1);
+            });
+
+            // Color palette for error types
+            const errorColors = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#6366f1'];
+            
+            const errorData = Array.from(failReasonsMap.entries()).map(([name, value], index) => ({
+                name: name.length > 20 ? name.substring(0, 20) + '...' : name,
+                value,
+                fill: errorColors[index % errorColors.length]
+            }));
 
             // Timeline Calculation
             const timelineMap = new Map<string, { total: number, scoreSum: number, count: number, dateObj: Date }>();
