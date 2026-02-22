@@ -234,11 +234,15 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     if (!uniqueUsers.has(m.user_id)) {
                         uniqueUsers.add(m.user_id);
                         // Correct Role Logic based on permissions
-                        if (m.role === 'ADMIN' || m.role === 'OWNER') {
+                            // admin count
+                        if (m.role === 'ADMIN') {
                             roleCounts.admins++;
                         } else if (m.role === 'EMPLOYEE') {
+                                // partner count	
                             if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) roleCounts.partners++;
+                                // scout count
                             else if (m.permissions.includes('SCAN')) roleCounts.scouts++;
+                                // analyst count
                             else if (m.permissions.includes('ANALYZE')) roleCounts.analysts++;
                         }
                     }
