@@ -170,7 +170,6 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     avgTimeProcessing: '0m 45s',
                     failedUploadsCount: 0,
                     // NEW KPIs
-                    interviewCount,
                     rejectedCount
                 },
                 teamStats: roleCounts,

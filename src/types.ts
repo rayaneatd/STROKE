@@ -362,7 +362,6 @@ export interface DashboardKPI {
   avgTimeProcessing: string;
   failedUploadsCount: number;
   // NEW STATUS METRICS
-  interviewCount: number;
   rejectedCount: number;
 }
 

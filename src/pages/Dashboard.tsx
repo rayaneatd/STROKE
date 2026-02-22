@@ -220,7 +220,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
             </div>
 
             {/* --- BUSINESS KPI ROW --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <KpiCard
                     title={t('dashboard.kpi.totalUploads')}
                     value={data.kpi.totalCandidates}
@@ -228,15 +228,6 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                     icon={<FileStack />}
                     color="bg-blue-500"
                     subtext={`${data.kpi.analyzedCount} analyzed`}
-                    isLight={isLight}
-                />
-                <KpiCard
-                    title="Active Interviews"
-                    value={data.kpi.interviewCount}
-                    trendValue=""
-                    icon={<Target />}
-                    color="bg-violet-500"
-                    subtext="Candidates in process"
                     isLight={isLight}
                 />
                 <KpiCard
