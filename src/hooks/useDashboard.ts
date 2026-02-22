@@ -32,6 +32,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
 
         try {
             // 1. Fetch Projects for the user
+            console.log("Fetching projects for user:", currentUser.id);
             let projectQuery = supabase
                 .from('projects')
                 .select(`
@@ -50,31 +51,47 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             }
 
             const { data: projectsData, error: projectsError } = await projectQuery;
-            if (projectsError) throw projectsError;
+            if (projectsError) {
+                console.error("Projects fetch error:", projectsError);
+                throw projectsError;
+            }
+            console.log("Projects fetched:", projectsData?.length);
 
             // 2. Fetch Candidates for these projects
-            const projectIds = projectsData.map(p => p.id);
+            const projectIds = (projectsData || []).map(p => p.id);
             let candidatesData: any[] | null = [];
             let failEvents: any[] | null = [];
 
             if (projectIds.length > 0) {
+                console.log("Fetching candidates for projects:", projectIds.length);
                 const { data: cData, error: candidatesError } = await supabase
                     .from('candidates')
                     .select('*')
                     .in('project_id', projectIds);
 
-                if (candidatesError) throw candidatesError;
+                if (candidatesError) {
+                    console.error("Candidates fetch error:", candidatesError);
+                    throw candidatesError;
+                }
                 candidatesData = cData;
+                console.log("Candidates fetched:", candidatesData?.length);
 
                 // 3. Fetch Fail Events
+                console.log("Fetching fail events...");
                 const { data: fData, error: failEventsError } = await supabase
                     .from('analytics_events')
                     .select('*')
                     .eq('event_type', 'FAIL')
                     .in('project_id', projectIds);
                 
-                if (failEventsError) throw failEventsError;
+                if (failEventsError) {
+                    console.error("Fail events fetch error:", failEventsError);
+                    throw failEventsError;
+                }
                 failEvents = fData;
+                console.log("Fail events fetched:", failEvents?.length);
+            } else {
+                console.log("No projects found, skipping candidate/event fetch");
             }
 
             // 4. Aggregate Data
