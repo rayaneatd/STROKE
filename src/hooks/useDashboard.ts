@@ -13,7 +13,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
     const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
     // Filter State
-    const [timeRange, setTimeRange] = useState<number>(14);
+    const [timeRange, setTimeRange] = useState<number | 'all'>(14);
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'ARCHIVED' | 'COMPLETED'>('ALL');
     const [ownerFilter, setOwnerFilter] = useState<'ALL' | 'ME'>(currentUser.role === Role.ADMIN ? 'ALL' : 'ME');
 
@@ -59,7 +59,40 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             if (candidatesError) throw candidatesError;
 
             // 3. Aggregate Data
-            const candidates = (candidatesData || []) as any[];
+            let candidates = (candidatesData || []) as any[];
+
+            // Apply Time Range Filter
+            const now = new Date();
+            let startDate: Date;
+            let daysToLookBack: number;
+
+            if (timeRange === 'all') {
+                // Find the earliest date in candidates
+                if (candidates.length > 0) {
+                    const dates = candidates.map(c => new Date(c.uploaded_at || c.created_at).getTime());
+                    const minDate = Math.min(...dates);
+                    startDate = new Date(minDate);
+                    // Calculate days difference
+                    const diffTime = Math.abs(now.getTime() - startDate.getTime());
+                    daysToLookBack = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    // Add a buffer day to ensure we cover everything
+                    daysToLookBack += 1;
+                } else {
+                    startDate = new Date();
+                    daysToLookBack = 1;
+                }
+            } else {
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - timeRange);
+                daysToLookBack = timeRange;
+            }
+
+            // Filter candidates by date
+            candidates = candidates.filter(c => {
+                const cDate = new Date(c.uploaded_at || c.created_at);
+                return cDate >= startDate;
+            });
+
             const completedCandidates = candidates.filter(c => c.score != null);
             const qualifiedCandidates = completedCandidates.filter(c => (c.score || 0) >= 80);
             
@@ -73,19 +106,20 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             const missingDataCount = candidates.filter(c => !c.candidate_name).length;
 
             // Timeline Calculation
-            const timelineMap = new Map<string, { total: number, scoreSum: number, count: number }>();
-            const now = new Date();
-            for (let i = 0; i < timeRange; i++) {
+            const timelineMap = new Map<string, { total: number, scoreSum: number, count: number, dateObj: Date }>();
+            
+            for (let i = 0; i < daysToLookBack; i++) {
                 const d = new Date(now);
                 d.setDate(d.getDate() - i);
-                const dateKey = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                timelineMap.set(dateKey, { total: 0, scoreSum: 0, count: 0 });
+                const isoDate = d.toISOString().split('T')[0];
+                timelineMap.set(isoDate, { total: 0, scoreSum: 0, count: 0, dateObj: d });
             }
 
             candidates.forEach(c => {
-                const dateKey = new Date(c.uploaded_at || c.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                if (timelineMap.has(dateKey)) {
-                    const stats = timelineMap.get(dateKey)!;
+                const cDate = new Date(c.uploaded_at || c.created_at);
+                const isoDate = cDate.toISOString().split('T')[0];
+                if (timelineMap.has(isoDate)) {
+                    const stats = timelineMap.get(isoDate)!;
                     stats.total++;
                     if (c.score) {
                         stats.scoreSum += c.score;
@@ -95,12 +129,16 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             });
 
             const timelineData: TimelineDataPoint[] = Array.from(timelineMap.entries())
-                .map(([date, stats]) => ({
-                    date,
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([_, stats]) => ({
+                    date: stats.dateObj.toLocaleDateString(undefined, { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: daysToLookBack > 365 ? '2-digit' : undefined
+                    }),
                     applications: stats.total,
                     avgQuality: stats.count > 0 ? Math.round(stats.scoreSum / stats.count) : 0
-                }))
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                }));
 
             // Team Stats
             const roleCounts = { admins: 0, partners: 0, scouts: 0, analysts: 0 };

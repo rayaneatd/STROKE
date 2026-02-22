@@ -145,7 +145,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                     <div className="relative group w-full md:w-auto">
                         <select
                             value={timeRange}
-                            onChange={(e) => setTimeRange(parseInt(e.target.value))}
+                            onChange={(e) => setTimeRange(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
                             className={`w-full md:w-auto pl-3 pr-8 py-1.5 bg-transparent text-xs font-bold outline-none appearance-none cursor-pointer rounded-lg transition-colors ${isLight ? 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' : 'text-zinc-300 focus:text-white hover:bg-white/5'}`}
                         >
                             <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={7}>{t('dashboard.filters.timeRange.last7Days')}</option>
@@ -153,6 +153,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                             <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={30}>{t('dashboard.filters.timeRange.last30Days')}</option>
                             <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={90}>{t('dashboard.filters.timeRange.last3Months')}</option>
                             <option className={isLight ? "bg-white" : "bg-[#18181b]"} value={365}>{t('dashboard.filters.timeRange.lastYear')}</option>
+                            <option className={isLight ? "bg-white" : "bg-[#18181b]"} value="all">All Time</option>
                         </select>
                         <ChevronDown size={12} className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isLight ? 'text-slate-400' : 'text-zinc-500'}`} />
                     </div>
@@ -323,7 +324,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                 <YAxis yAxisId="right" orientation="right" domain={[0, 100]} hide />
                                 <Tooltip content={<CustomChartTooltip isLight={isLight} />} cursor={{ fill: isLight ? '#f8fafc' : '#27272a', opacity: 0.4 }} />
                                 <Bar yAxisId="left" dataKey="applications" name="Applications" barSize={20} radius={[4, 4, 0, 0]} fill={isLight ? '#94a3b8' : '#52525b'} />
-                                <Line yAxisId="right" type="monotone" dataKey="avgQuality" name="Avg Quality" stroke={`var(--color-${accentColor}-500)`} strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: isLight ? '#fff' : '#09090b' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                                <Line yAxisId="right" type="monotone" dataKey="avgQuality" name="Avg Quality" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: isLight ? '#fff' : '#09090b' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                             </ComposedChart>
                         </ResponsiveContainer>
                     </div>
