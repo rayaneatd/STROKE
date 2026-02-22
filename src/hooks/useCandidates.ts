@@ -9,7 +9,7 @@ interface UseCandidatesProps {
     searchQuery: string;
     sortOption: 'SCORE_DESC' | 'SCORE_ASC' | 'DATE_DESC' | 'DATE_ASC' | 'NAME_ASC';
     filterScores: ('HIGH' | 'MID' | 'LOW')[];
-    filterActivities: ('EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED')[];
+    filterActivities: ('EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED' | 'REJECTED')[];
     filterUploaders?: string[];
     enabled?: boolean;
 }

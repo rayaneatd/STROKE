@@ -5,7 +5,7 @@ import { useCandidates } from '../../hooks/useCandidates';
 import {
     Activity, Ghost,
     User as UserIcon, Search, Filter, SortAsc, SortDesc, Download, Loader2, Check, X,
-    MailCheck, Mail, FileCheck, Eye, EyeOff,
+    MailCheck, Mail, FileCheck, Eye, EyeOff, UserX,
     CheckSquare, Square, Send, PenTool, Zap, MessageSquare, Code, FileText,
     Star, ThumbsDown
 } from 'lucide-react';
@@ -28,7 +28,7 @@ interface ActivityTabProps {
 
 type SortOption = 'DATE_DESC' | 'DATE_ASC' | 'SCORE_DESC' | 'SCORE_ASC';
 type ScoreFilter = 'HIGH' | 'MID' | 'LOW';
-type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED';
+type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED' | 'REJECTED';
 
 const ITEM_HEIGHT = 72;
 
@@ -504,13 +504,14 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         {/* Activity Filter */}
                                         <div>
                                             <label className={`text-xs font-bold uppercase tracking-wider block mb-2 ${textSecondary}`}>Status</label>
-                                            <div className="space-y-1">
+                                            <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar pr-1">
                                                 {[
                                                     { id: 'EMAILED', label: 'Emailed', icon: <MailCheck size={12} /> },
                                                     { id: 'NOT_EMAILED', label: 'Not Emailed', icon: <Mail size={12} /> },
                                                     { id: 'EXPORTED', label: 'Exported', icon: <FileCheck size={12} /> },
                                                     { id: 'VIEWED', label: 'Viewed by Me', icon: <Eye size={12} /> },
                                                     { id: 'NOT_VIEWED', label: 'New (Unread)', icon: <EyeOff size={12} /> },
+                                                    { id: 'REJECTED', label: 'Rejected', icon: <UserX size={12} /> },
                                                 ].map((opt) => (
                                                     <button
                                                         key={opt.id}
