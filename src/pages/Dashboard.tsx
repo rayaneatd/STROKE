@@ -111,11 +111,26 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
     const isLight = theme === 'LIGHT';
     const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'blue';
 
-    if (!data) return (
+    if (loading) return (
         <div className="flex h-96 items-center justify-center">
             <div className="flex flex-col items-center gap-3">
                 <RefreshCw className={`animate-spin text-${accentColor}-500`} size={24} />
                 <p className={`text-sm font-medium ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.loadingIntelligence')}</p>
+            </div>
+        </div>
+    );
+
+    if (!data) return (
+        <div className="flex h-96 items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+                <AlertOctagon className="text-rose-500" size={24} />
+                <p className={`text-sm font-medium ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>Unable to load dashboard data</p>
+                <button 
+                    onClick={handleManualRefresh}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold ${isLight ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}
+                >
+                    Retry
+                </button>
             </div>
         </div>
     );

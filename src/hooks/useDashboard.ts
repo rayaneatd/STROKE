@@ -25,7 +25,10 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
     }, []);
 
     const fetchData = useCallback(async () => {
-        if (!currentUser.id) return;
+        if (!currentUser.id) {
+            setLoading(false);
+            return;
+        }
 
         try {
             // 1. Fetch Projects for the user
@@ -204,16 +207,10 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 teamStats: roleCounts,
                 timelineData,
                 statusDistribution: [
-                    { name: 'Interview', value: interviewCount, fill: '#8b5cf6' }, // violet-500
-                    { name: 'Screened', value: screenedCount, fill: '#3b82f6' }, // blue-500
                     { name: 'New', value: newCount, fill: '#f59e0b' }, // amber-500
                     { name: 'Rejected', value: rejectedCount, fill: '#ef4444' } // rose-500
                 ],
-                errorData: [
-                    { name: 'Missing Data', value: missingDataCount, fill: '#6366f1' },
-                    { name: 'Low Score', value: completedCandidates.filter(c => (c.score || 0) < 40).length, fill: '#ef4444' },
-                    { name: 'Pending', value: pendingCandidates.length, fill: '#f59e0b' }
-                ],
+                errorData,
                 projectPerformance: projectsData.map(p => {
                     const pCandidates = candidates.filter(c => c.project_id === p.id);
                     const pCompleted = pCandidates.filter(c => c.score != null);
