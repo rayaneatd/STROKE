@@ -226,28 +226,35 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     failed: stats.failed
                 }));
 
-            // Team Stats
-            const roleCounts = { admins: 0, partners: 0, scouts: 0, analysts: 0 };
-            const uniqueUsers = new Set<string>();
+            // Team Stats - Deduplication per Role Category
+            const adminIds = new Set<string>();
+            const partnerIds = new Set<string>();
+            const scoutIds = new Set<string>();
+            const analystIds = new Set<string>();
+
             projectsData.forEach(p => {
                 p.members?.forEach((m: any) => {
-                    if (!uniqueUsers.has(m.user_id)) {
-                        uniqueUsers.add(m.user_id);
-                        // Correct Role Logic based on permissions
-                            // admin count
-                        if (m.role === 'ADMIN') {
-                            roleCounts.admins++;
-                        } else if (m.role === 'EMPLOYEE') {
-                                // partner count	
-                            if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) roleCounts.partners++;
-                                // scout count
-                            else if (m.permissions.includes('SCAN')) roleCounts.scouts++;
-                                // analyst count
-                            else if (m.permissions.includes('ANALYZE')) roleCounts.analysts++;
+                    // Check role in this specific project context
+                    if (m.role === 'ADMIN' || m.role === 'OWNER') {
+                        adminIds.add(m.user_id);
+                    } else if (m.role === 'EMPLOYEE') {
+                        if (m.permissions.includes('SCAN') && m.permissions.includes('ANALYZE')) {
+                            partnerIds.add(m.user_id);
+                        } else if (m.permissions.includes('SCAN')) {
+                            scoutIds.add(m.user_id);
+                        } else if (m.permissions.includes('ANALYZE')) {
+                            analystIds.add(m.user_id);
                         }
                     }
                 });
             });
+
+            const roleCounts = { 
+                admins: adminIds.size, 
+                partners: partnerIds.size, 
+                scouts: scoutIds.size, 
+                analysts: analystIds.size 
+            };
 
             const analytics: DashboardAnalytics = {
                 kpi: {
