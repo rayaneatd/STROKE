@@ -175,7 +175,7 @@ export type Database = {
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
-                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired' // useful for future implementations
                     is_favorite?: boolean
                 }
                 Update: {

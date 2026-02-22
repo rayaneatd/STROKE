@@ -1,5 +1,6 @@
--- Drop existing function with full signature to avoid ambiguity
 DROP FUNCTION IF EXISTS get_project_candidates(UUID, UUID, TEXT, TEXT, TEXT[], TEXT[], TEXT[], INT, INT);
+DROP FUNCTION IF EXISTS get_project_candidates(UUID, UUID, TEXT, TEXT, TEXT[], TEXT[], UUID[], INT, INT);
+DROP FUNCTION IF EXISTS get_project_candidates(UUID, UUID, TEXT, TEXT, TEXT[], TEXT[], UUID[], TEXT[], INT, INT);
 
 CREATE OR REPLACE FUNCTION get_project_candidates(
   p_project_id UUID,
@@ -21,7 +22,7 @@ RETURNS TABLE (
   location TEXT,
   summary TEXT,
   skills TEXT[],
-  score NUMERIC,
+  score INTEGER,
   status TEXT,
   uploaded_at TIMESTAMPTZ,
   uploaded_by UUID,
@@ -34,7 +35,7 @@ RETURNS TABLE (
   full_count BIGINT,
   current_position TEXT,
   years_of_experience NUMERIC,
-  match_score NUMERIC,
+  match_score INTEGER,
   score_justification TEXT,
   executive_summary TEXT,
   key_skills JSONB,
@@ -50,21 +51,6 @@ DECLARE
   v_sort_field TEXT;
   v_sort_order TEXT;
 BEGIN
-  -- Determine sort field and order
-  IF p_sort_option = 'SCORE_DESC' THEN
-    v_sort_field := 'score'; v_sort_order := 'DESC';
-  ELSIF p_sort_option = 'SCORE_ASC' THEN
-    v_sort_field := 'score'; v_sort_order := 'ASC';
-  ELSIF p_sort_option = 'DATE_DESC' THEN
-    v_sort_field := 'uploaded_at'; v_sort_order := 'DESC';
-  ELSIF p_sort_option = 'DATE_ASC' THEN
-    v_sort_field := 'uploaded_at'; v_sort_order := 'ASC';
-  ELSIF p_sort_option = 'NAME_ASC' THEN
-    v_sort_field := 'candidate_name'; v_sort_order := 'ASC';
-  ELSE
-    v_sort_field := 'uploaded_at'; v_sort_order := 'DESC';
-  END IF;
-
   RETURN QUERY
   WITH filtered_candidates AS (
     SELECT 
@@ -88,7 +74,7 @@ BEGIN
        )
       )
       AND
-      -- Activity Filter (simplified for brevity, adjust as needed)
+      -- Activity Filter
       (p_filter_activities IS NULL OR array_length(p_filter_activities, 1) IS NULL OR
        (
          ('EMAILED' = ANY(p_filter_activities) AND c.email_sent_at IS NOT NULL) OR
@@ -125,7 +111,7 @@ BEGIN
     fc.email_sent_at,
     fc.email_draft,
     fc.is_favorite,
-    RANK() OVER (
+    ROW_NUMBER() OVER (
       ORDER BY 
         fc.is_favorite DESC NULLS LAST, -- Favorites always first
         CASE WHEN p_sort_option = 'SCORE_DESC' THEN fc.score END DESC NULLS LAST,
@@ -133,10 +119,10 @@ BEGIN
         CASE WHEN p_sort_option = 'DATE_DESC' THEN fc.uploaded_at END DESC NULLS LAST,
         CASE WHEN p_sort_option = 'DATE_ASC' THEN fc.uploaded_at END ASC NULLS LAST,
         CASE WHEN p_sort_option = 'NAME_ASC' THEN fc.candidate_name END ASC NULLS LAST,
-        fc.uploaded_at DESC
+        fc.uploaded_at DESC,
+        fc.id ASC
     )::BIGINT as rank,
     tc.count as full_count,
-    -- Elite fields
     fc.current_position,
     fc.years_of_experience,
     fc.match_score,
@@ -159,7 +145,8 @@ BEGIN
     CASE WHEN p_sort_option = 'DATE_DESC' THEN fc.uploaded_at END DESC NULLS LAST,
     CASE WHEN p_sort_option = 'DATE_ASC' THEN fc.uploaded_at END ASC NULLS LAST,
     CASE WHEN p_sort_option = 'NAME_ASC' THEN fc.candidate_name END ASC NULLS LAST,
-    fc.uploaded_at DESC
+    fc.uploaded_at DESC,
+    fc.id ASC
   LIMIT p_page_size
   OFFSET p_page_param * p_page_size;
 END;

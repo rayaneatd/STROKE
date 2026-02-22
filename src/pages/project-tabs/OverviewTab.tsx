@@ -175,7 +175,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                     </h3>
                     <p className={`text-3xl font-bold ${textPrimary} mt-1 relative z-10`}>{analytics.contacted}</p>
                     <p className={`text-[10px] ${textSecondary} mt-1 relative z-10`}>
-                        {analytics.rejected} rejected
+                        {analytics.rejected} {t('project.overview.kpi.rejected').toLowerCase()}
                     </p>
                 </div>
 

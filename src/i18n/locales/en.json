@@ -1057,7 +1057,7 @@
                 "member": "Member",
                 "sourced": "Sourced",
                 "qualified": "Qualified",
-                "rejected": "Rejected",
+                "rejected": "Underqualified",
                 "contacted": "Contacted",
                 "efficiency": "Efficiency",
                 "noActivity": "No team activity recorded yet. Start sourcing!"

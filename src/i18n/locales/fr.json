@@ -691,7 +691,7 @@
                 "conversion": "Conversion",
                 "velocity": "Vélocité",
                 "rate": "Taux",
-                "rejected": "Rejetés",
+                "rejected": "Sous-qualifiés",
                 "failed": "Échecs"
             },
             "cards": {
@@ -726,7 +726,7 @@
                 "member": "Membre",
                 "sourced": "Sourcé",
                 "qualified": "Qualifié",
-                "rejected": "Rejeté",
+                "rejected": "Sous-qualifié",
                 "contacted": "Contacté",
                 "efficiency": "Efficacité",
                 "noActivity": "Aucune activité d'équipe enregistrée. Commencez le sourcing !"

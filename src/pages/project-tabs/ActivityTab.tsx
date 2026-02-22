@@ -436,7 +436,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                             {isFilterOpen && (
                                 <div
                                     onClick={(e) => e.stopPropagation()}
-                                    className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-xl border z-30 animate-fade-in-up p-4 ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}
+                                    className={`absolute right-0 top-full mt-2 w-72 rounded-xl shadow-xl border z-30 animate-fade-in-up p-4 max-h-[500px] overflow-y-auto custom-scrollbar ${isLight ? 'bg-white border-slate-100 shadow-slate-200/50' : 'bg-[#18181b] border-white/10'}`}
                                 >
                                     <div className="space-y-4">
                                         {/* Scanner Filter */}
