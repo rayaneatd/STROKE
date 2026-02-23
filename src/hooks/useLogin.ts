@@ -98,6 +98,16 @@ export const useLogin = () => {
         }
     };
 
+    const handleLinkedInLogin = async () => {
+        // TODO: Implement LinkedIn Login
+        console.log("LinkedIn Login - Coming Soon");
+    };
+
+    const handleSamlLogin = async () => {
+        // TODO: Implement SAML SSO
+        console.log("SAML SSO - Coming Soon");
+    };
+
     const handleSocialLogin = async (provider: 'google' | 'azure' | 'github' | 'linkedin' | string) => {
         setSocialLoading(provider);
         try {
@@ -216,6 +226,8 @@ export const useLogin = () => {
         generatePassword,
         handleSubmit,
         handleSocialLogin,
+        handleLinkedInLogin,
+        handleSamlLogin,
         handleForgotPassword,
         toggleMode,
         marketingConsent,
