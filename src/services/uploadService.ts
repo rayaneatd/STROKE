@@ -88,27 +88,16 @@ export const processValidatedUploads = async (
           throw new Error("Failed to upload to storage");
         }
 
-        // B. Insert into DB with enriched metadata
+        // B. Insert into DB is REMOVED
+        // We only want to upload to Storage. The Edge Function will handle the DB insertion/processing.
+        // This prevents "filling the table" before analysis.
+        
+        /* 
+        // DISABLED CLIENT-SIDE INSERTION
         const { error: dbError } = await supabase
           .from('candidates')
-          .insert({
-            id: metadata.resumeId, // Use client-side generated UUID
-            project_id: projectId,
-            // name: metadata.sanitizedName, // REMOVED DUPLICATE: We use originalName below for better display
-            name: metadata.originalName, 
-            original_resume_name: metadata.originalName,
-            
-            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-            uploaded_by: userId,
-            
-            // New fields
-            file_hash: metadata.hash,
-            page_count: metadata.pageCount,
-          });
-
-        if (dbError) {
-          throw dbError;
-        }
+          .insert({ ... });
+        */
 
       } catch (error: any) {
         console.error(`Upload failed for ${file.name}`, error);
