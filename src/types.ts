@@ -53,7 +53,8 @@ export interface FailedFile {
     | 'DUPLICATE_FILE'
     | 'PASSWORD_PROTECTED'
     | 'TOO_MANY_PAGES'
-    | 'EMPTY_FILE';
+    | 'EMPTY_FILE'
+    | 'QUOTA_EXCEEDED';
   errorMessage?: string;
 }
 

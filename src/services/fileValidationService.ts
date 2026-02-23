@@ -20,6 +20,7 @@ export interface FileMetadata {
   textPreview: string;
   sanitizedName: string; // UUID based name for storage
   originalName: string;
+  resumeId: string; // Client-side generated UUID
 }
 
 export interface ValidationResult {
@@ -87,7 +88,7 @@ export const checkDuplicate = async (hash: string, projectId: string): Promise<b
   // Use a raw count query to avoid deep type instantiation issues with TypeScript
   const { count, error } = await supabase
     .from('candidates')
-    .select('*', { count: 'exact', head: true }) // Using '*' instead of 'id' sometimes helps TS inference
+    .select('id', { count: 'exact', head: true }) // Using 'id' instead of '*' is safer
     .eq('project_id', projectId)
     .eq('file_hash', hash);
 
@@ -102,15 +103,17 @@ export const checkDuplicate = async (hash: string, projectId: string): Promise<b
 /**
  * 3. Sanitize File Name
  */
-export const sanitizeFileName = (originalName: string): { originalName: string; storageName: string } => {
+export const sanitizeFileName = (originalName: string): { originalName: string; storageName: string; resumeId: string } => {
   // Keep original name for display, but clean it slightly if needed (optional)
   // Generate UUID for storage to avoid collision and URL issues
   const extension = originalName.split('.').pop() || 'pdf';
-  const storageName = `${uuidv4()}.${extension}`;
+  const resumeId = uuidv4();
+  const storageName = `${resumeId}.${extension}`;
   
   return {
     originalName,
-    storageName
+    storageName,
+    resumeId
   };
 };
 
@@ -215,7 +218,7 @@ export const processFilePipeline = async (
     }
 
     // 3. Sanitize
-    const { originalName, storageName } = sanitizeFileName(file.name);
+    const { originalName, storageName, resumeId } = sanitizeFileName(file.name);
 
     // 4. PDF Analysis
     const { pageCount, textPreview } = await extractMetadataAndPreview(file);
@@ -228,7 +231,8 @@ export const processFilePipeline = async (
         pageCount,
         textPreview,
         sanitizedName: storageName,
-        originalName
+        originalName,
+        resumeId
       }
     };
 

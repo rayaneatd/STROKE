@@ -8,14 +8,26 @@ const STORAGE_BUCKET = 'resumes';
 /**
  * Upload a single file to Supabase Storage using sanitized name
  */
-const uploadToStorage = async (file: File, projectId: string, storageName: string): Promise<string | null> => {
+const uploadToStorage = async (
+  file: File, 
+  projectId: string, 
+  storageName: string,
+  originalName: string,
+  fileHash: string,
+  size: number
+): Promise<string | null> => {
   const filePath = `${projectId}/${storageName}`;
 
   const { error } = await supabase.storage
     .from(STORAGE_BUCKET)
     .upload(filePath, file, {
       cacheControl: '3600',
-      upsert: false
+      upsert: false,
+      metadata: {
+        original_name: originalName,
+        file_hash: fileHash,
+        size: size
+      }
     });
 
   if (error) {
@@ -34,7 +46,8 @@ export const processValidatedUploads = async (
   items: { file: File; metadata: FileMetadata }[],
   projectId: string,
   userId: string,
-  onBatchComplete: (count: number) => void
+  onBatchComplete: (count: number) => void,
+  onDeductCredits: (count: number) => Promise<boolean> // New callback for credit deduction
 ): Promise<FailedFile[]> => {
   const uploadFailures: FailedFile[] = [];
   const UPLOAD_CONCURRENCY = 30;
@@ -42,10 +55,35 @@ export const processValidatedUploads = async (
   for (let i = 0; i < items.length; i += UPLOAD_CONCURRENCY) {
     const chunk = items.slice(i, i + UPLOAD_CONCURRENCY);
 
+    // 1. Deduct credits for this chunk BEFORE processing
+    const deductionSuccess = await onDeductCredits(chunk.length);
+    
+    if (!deductionSuccess) {
+      // If deduction fails (e.g. out of credits mid-process), fail the remaining files
+      console.error("Credit deduction failed for chunk. Aborting remaining uploads.");
+      chunk.forEach(({ file }) => {
+        uploadFailures.push({
+          file,
+          reason: 'QUOTA_EXCEEDED',
+          errorMessage: 'Solde insuffisant pour traiter ce lot de fichiers.'
+        });
+      });
+      // Skip processing this chunk
+      continue;
+    }
+
+    // 2. Process Chunk if credits secured
     await Promise.all(chunk.map(async ({ file, metadata }) => {
       try {
         // A. Upload to Storage using sanitized name
-        const storagePath = await uploadToStorage(file, projectId, metadata.sanitizedName);
+        const storagePath = await uploadToStorage(
+          file, 
+          projectId, 
+          metadata.sanitizedName,
+          metadata.originalName,
+          metadata.hash,
+          file.size
+        );
         if (!storagePath) {
           throw new Error("Failed to upload to storage");
         }
@@ -54,6 +92,7 @@ export const processValidatedUploads = async (
         const { error: dbError } = await supabase
           .from('candidates')
           .insert({
+            id: metadata.resumeId, // Use client-side generated UUID
             project_id: projectId,
             // name: metadata.sanitizedName, // REMOVED DUPLICATE: We use originalName below for better display
             name: metadata.originalName, 

@@ -269,13 +269,39 @@ export const useFileProcessing = (
 
         setIsUploading(true);
 
-        // 2. Process Uploads (Storage -> DB)
+        // 2. Process Uploads (Storage -> DB) with Progressive Credit Deduction
         const processingFailures = await processValidatedUploads(
             pendingFiles,
             projectId,
             currentUser.id,
             (count) => {
                 console.log(`[UI Sync] Batch of ${count} processed successfully`);
+            },
+            // Callback for credit deduction per chunk
+            async (count) => {
+                try {
+                    const { data, error } = await supabase.rpc('deduct_scan_credits' as any, {
+                        p_project_id: projectId,
+                        p_user_id: currentUser.id,
+                        p_cost: count
+                    });
+
+                    if (error) {
+                        console.error('Failed to deduct credits:', error);
+                        return false;
+                    }
+
+                    const result = data as { success: boolean; error?: string };
+                    if (!result.success) {
+                        console.error('Credit deduction denied:', result.error);
+                        return false;
+                    }
+
+                    return true;
+                } catch (err) {
+                    console.error('Error executing credit deduction:', err);
+                    return false;
+                }
             }
         );
 

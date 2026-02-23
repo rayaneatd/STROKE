@@ -454,23 +454,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
             return;
         }
 
-        // Deduct credits via RPC
         try {
-            const { data, error } = await supabase.rpc('deduct_scan_credits' as any, {
-                p_project_id: projectId,
-                p_user_id: currentUser.id,
-                p_cost: cost
-            });
-
-            if (error) throw error;
-            
-            const result = data as { success: boolean; error?: string };
-            if (!result.success) {
-                setQuotaError(result.error || 'Failed to deduct credits');
-                return;
-            }
-
             // Upload files first
+            // Note: Credit deduction is now handled progressively inside uploadPendingFiles
             await uploadPendingFiles();
 
             // Delegate real processing to useFileProcessing or an edge function
@@ -480,7 +466,6 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
             queryClient.invalidateQueries({ queryKey: ['project', projectId] });
             queryClient.invalidateQueries({ queryKey: ['profile'] }); // Update user balance if OWNER_WALLET
             if (refreshUser) refreshUser();
-            
         } catch (err) {
             console.error('Scan deduction error:', err);
             setQuotaError('An error occurred while processing scan credits.');
