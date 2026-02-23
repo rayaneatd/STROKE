@@ -14,7 +14,8 @@ const uploadToStorage = async (
   storageName: string,
   originalName: string,
   fileHash: string,
-  size: number
+  size: number,
+  userId: string
 ): Promise<string | null> => {
   const filePath = `${projectId}/${storageName}`;
 
@@ -26,7 +27,8 @@ const uploadToStorage = async (
       metadata: {
         original_name: originalName,
         file_hash: fileHash,
-        size: size
+        size: size,
+        scanned_by: userId
       }
     });
 
@@ -82,7 +84,8 @@ export const processValidatedUploads = async (
           metadata.sanitizedName,
           metadata.originalName,
           metadata.hash,
-          file.size
+          file.size,
+          userId
         );
         if (!storagePath) {
           throw new Error("Failed to upload to storage");
