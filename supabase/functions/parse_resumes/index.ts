@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
-import pdf from "npm:pdf-parse";
-import { Buffer } from "node:buffer";
+import * as pdfjsLib from "https://esm.sh/pdfjs-dist@4.0.379/build/pdf.mjs";
+import "https://esm.sh/pdfjs-dist@4.0.379/build/pdf.worker.mjs";
+
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -8,7 +9,7 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const CONCURRENCY_LIMIT = 30;
+const CONCURRENCY_LIMIT = 3; // Reduced from 30 to 3 to prevent memory exhaustion (503 error) with pdf-parse
 
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
@@ -68,48 +69,52 @@ Deno.serve(async (req: Request) => {
 
         // --- ÉTAPE 2 : Parsing PDF avec concurrence ---
         const results: any[] = [];
-        const queue = [...filesToParse];
+        // Lancement des workers en parallèle via p-limit or manual chunks
+        // But since Deno edge functions have strict CPU/Memory limits (e.g. 150MB, small CPU slice),
+        // we process the files sequentially in smaller chunks.
 
-        const worker = async () => {
-            while (queue.length > 0) {
-                const file = queue.shift();
-                if (!file) break;
+        for (const file of filesToParse) {
+            try {
+                // Téléchargement depuis le bucket
+                const { data: blob, error: dlError } = await supabase.storage
+                    .from('resumes')
+                    .download(file.path);
+                if (dlError) throw dlError;
 
-                try {
-                    // Téléchargement depuis le bucket
-                    const { data: blob, error: dlError } = await supabase.storage
-                        .from('resumes')
-                        .download(file.path);
-                    if (dlError) throw dlError;
+                // Conversion Buffer + parsing PDF avec pdfjs-dist
+                const arrayBuffer = await blob.arrayBuffer();
+                const pdfData = new Uint8Array(arrayBuffer);
 
-                    // Conversion Buffer + parsing PDF
-                    const arrayBuffer = await blob.arrayBuffer();
-                    const pdfBuffer = Buffer.from(arrayBuffer);
-                    const pdfData = await pdf(pdfBuffer);
-                    const cleanText = pdfData.text.replace(/\0/g, '').trim();
+                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                const pdfDocument = await loadingTask.promise;
 
-                    results.push({
-                        file_hash: file.hash,
-                        raw_text: cleanText || null,
-                        status: cleanText ? 'PENDING' : 'FAILED'
-                    });
-
-                    console.log(`✅ Parsé: ${file.name} (${cleanText.length} chars)`);
-
-                } catch (err: any) {
-                    console.error(`❌ Échec parsing ${file.name}:`, err.message);
-                    results.push({
-                        file_hash: file.hash,
-                        raw_text: null,
-                        status: 'FAILED'
-                    });
+                let fullText = "";
+                for (let i = 1; i <= pdfDocument.numPages; i++) {
+                    const page = await pdfDocument.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map((item: any) => item.str).join(" ");
+                    fullText += pageText + "\n";
                 }
-            }
-        };
 
-        // Lancement des workers en parallèle
-        const workerCount = Math.min(CONCURRENCY_LIMIT, filesToParse.length);
-        await Promise.all(Array.from({ length: workerCount }, () => worker()));
+                const cleanText = fullText.replace(/\0/g, '').trim();
+
+                results.push({
+                    file_hash: file.hash,
+                    raw_text: cleanText || null,
+                    status: cleanText ? 'PENDING' : 'FAILED'
+                });
+
+                console.log(`✅ Parsé: ${file.name} (${cleanText.length} chars)`);
+
+            } catch (err: any) {
+                console.error(`❌ Échec parsing ${file.name}:`, err.message);
+                results.push({
+                    file_hash: file.hash,
+                    raw_text: null,
+                    status: 'FAILED'
+                });
+            }
+        }
 
         // --- ÉTAPE 3 : Upsert dans resume_texts ---
         if (results.length > 0) {
