@@ -59,14 +59,19 @@ Deno.serve(async (req: Request) => {
             } else {
                 const validBatch = files
                     .filter(f => f.name !== '.emptyFolderPlaceholder' && f.id)
-                    .map(f => ({
-                        path: `${project_id}/${f.name}`,
-                        name: f.name,
-                        size: f.metadata?.size || 0,
-                        hash: f.metadata?.file_hash,
-                        original_name: f.metadata?.original_name,
-                        scanned_by: f.metadata?.scanned_by
-                    }));
+                    .map(f => {
+                        // Supabase list() returns eTag wrapped in quotes like '"hash"'
+                        const cleanETag = f.metadata?.eTag ? f.metadata.eTag.replace(/"/g, '') : null;
+                        return {
+                            path: `${project_id}/${f.name}`,
+                            name: f.name,
+                            size: f.metadata?.size || 0,
+                            // Use eTag if custom file_hash metadata is not returned by list()
+                            hash: f.metadata?.file_hash || cleanETag || f.id,
+                            original_name: f.metadata?.original_name || f.name,
+                            scanned_by: f.metadata?.scanned_by || null
+                        };
+                    });
 
                 allFilesToProcess = [...allFilesToProcess, ...validBatch];
                 console.log(`Chargé ${allFilesToProcess.length} fichiers depuis le bucket...`);
