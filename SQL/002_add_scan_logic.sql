@@ -3,7 +3,7 @@
 ALTER TABLE public.candidates 
 ADD COLUMN IF NOT EXISTS file_hash TEXT,
 ADD COLUMN IF NOT EXISTS raw_text TEXT,
-ADD COLUMN IF NOT EXISTS page_count INTEGER,
+
 ADD COLUMN IF NOT EXISTS original_resume_name TEXT,
 ADD COLUMN IF NOT EXISTS ai_analysis JSONB;
 

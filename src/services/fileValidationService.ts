@@ -16,7 +16,6 @@ const ENABLE_DEEP_ANALYSIS = false;
 
 export interface FileMetadata {
   hash: string;
-  pageCount: number;
   textPreview: string;
   sanitizedName: string; // UUID based name for storage
   originalName: string;
@@ -109,7 +108,7 @@ export const sanitizeFileName = (originalName: string): { originalName: string; 
   const extension = originalName.split('.').pop() || 'pdf';
   const resumeId = uuidv4();
   const storageName = `${resumeId}.${extension}`;
-  
+
   return {
     originalName,
     storageName,
@@ -120,11 +119,10 @@ export const sanitizeFileName = (originalName: string): { originalName: string; 
 /**
  * 4. Extract Metadata and Preview (PDF Analysis)
  */
-export const extractMetadataAndPreview = async (file: File): Promise<{ pageCount: number; textPreview: string }> => {
+export const extractMetadataAndPreview = async (file: File): Promise<{ textPreview: string }> => {
   // SPEED MODE: Skip expensive PDF parsing
   // Always return dummy data to avoid loading PDF.js
   return {
-    pageCount: 1, // Default dummy value
     textPreview: '' // No preview
   };
 
@@ -191,7 +189,7 @@ export const extractMetadataAndPreview = async (file: File): Promise<{ pageCount
  * Orchestrator: Process a single file through the pipeline
  */
 export const processFilePipeline = async (
-  file: File, 
+  file: File,
   projectId: string
 ): Promise<ValidationResult> => {
   // 1. Constraints
@@ -204,7 +202,7 @@ export const processFilePipeline = async (
     // 2. Hash & Duplicate Check
     const hash = await generateFileHash(file);
     const isDuplicate = await checkDuplicate(hash, projectId);
-    
+
     if (isDuplicate) {
       return {
         file,
@@ -221,14 +219,13 @@ export const processFilePipeline = async (
     const { originalName, storageName, resumeId } = sanitizeFileName(file.name);
 
     // 4. PDF Analysis
-    const { pageCount, textPreview } = await extractMetadataAndPreview(file);
+    const { textPreview } = await extractMetadataAndPreview(file);
 
     return {
       file,
       isValid: true,
       metadata: {
         hash,
-        pageCount,
         textPreview,
         sanitizedName: storageName,
         originalName,
