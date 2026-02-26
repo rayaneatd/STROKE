@@ -14,7 +14,10 @@ Write-Host "Projet: $PROJECT_REF`n" -ForegroundColor Gray
 
 foreach ($fn in $functions) {
     Write-Host "  ⬆  $fn..." -NoNewline
-    $output = supabase functions deploy $fn --project-ref $PROJECT_REF 2>&1
+    
+    $args = @("functions", "deploy", $fn, "--project-ref", $PROJECT_REF, "--no-verify-jwt")
+
+    $output = & supabase $args 2>&1
     if ($output -match "Deployed Functions") {
         Write-Host " ✅" -ForegroundColor Green
         $success++

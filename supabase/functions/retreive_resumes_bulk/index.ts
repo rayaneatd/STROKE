@@ -32,6 +32,10 @@ Deno.serve(async (req: Request) => {
             });
         }
 
+        // Extract auth header from the incoming request to forward it to parse_resumes
+        const authHeader = req.headers.get('Authorization');
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+
         console.log(`🚀 Dispatcher démarré pour le projet: ${project_id}`);
 
         // --- ÉTAPE A : Pagination pour lister TOUT le bucket ---
@@ -118,8 +122,14 @@ Deno.serve(async (req: Request) => {
         const dispatchAll = async () => {
             for (const batch of batches) {
                 try {
+                    // Forward the Authorization header to the next Edge Function
+                    const invokeHeaders: Record<string, string> = {};
+                    if (authHeader) invokeHeaders['Authorization'] = authHeader;
+                    if (anonKey) invokeHeaders['apikey'] = anonKey;
+
                     const { error: invokeErr } = await supabase.functions.invoke('parse_resumes', {
-                        body: { project_id, files: batch }
+                        body: { project_id, files: batch },
+                        headers: invokeHeaders
                     });
                     if (invokeErr) {
                         console.error(`Erreur dispatch batch:`, invokeErr.message);
