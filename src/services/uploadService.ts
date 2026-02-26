@@ -9,8 +9,8 @@ const STORAGE_BUCKET = 'resumes';
  * Upload a single file to Supabase Storage using sanitized name
  */
 const uploadToStorage = async (
-  file: File, 
-  projectId: string, 
+  file: File,
+  projectId: string,
   storageName: string,
   originalName: string,
   fileHash: string,
@@ -49,7 +49,8 @@ export const processValidatedUploads = async (
   projectId: string,
   userId: string,
   onBatchComplete: (count: number) => void,
-  onDeductCredits: (count: number) => Promise<boolean> // New callback for credit deduction
+  onDeductCredits: (count: number) => Promise<boolean>, // New callback for credit deduction
+  onFileUploadSuccess?: () => void // New callback for individual file success
 ): Promise<FailedFile[]> => {
   const uploadFailures: FailedFile[] = [];
   const UPLOAD_CONCURRENCY = 30;
@@ -59,7 +60,7 @@ export const processValidatedUploads = async (
 
     // 1. Deduct credits for this chunk BEFORE processing
     const deductionSuccess = await onDeductCredits(chunk.length);
-    
+
     if (!deductionSuccess) {
       // If deduction fails (e.g. out of credits mid-process), fail the remaining files
       console.error("Credit deduction failed for chunk. Aborting remaining uploads.");
@@ -79,8 +80,8 @@ export const processValidatedUploads = async (
       try {
         // A. Upload to Storage using sanitized name
         const storagePath = await uploadToStorage(
-          file, 
-          projectId, 
+          file,
+          projectId,
           metadata.sanitizedName,
           metadata.originalName,
           metadata.hash,
@@ -91,10 +92,13 @@ export const processValidatedUploads = async (
           throw new Error("Failed to upload to storage");
         }
 
+        // Trigger success callback for counter
+        if (onFileUploadSuccess) onFileUploadSuccess();
+
         // B. Insert into DB is REMOVED
         // We only want to upload to Storage. The Edge Function will handle the DB insertion/processing.
         // This prevents "filling the table" before analysis.
-        
+
         /* 
         // DISABLED CLIENT-SIDE INSERTION
         const { error: dbError } = await supabase

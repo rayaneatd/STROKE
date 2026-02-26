@@ -16,7 +16,7 @@ export const useFileProcessing = (
 
     // Current Files State (Initially empty, populated by useProjectDetail via setFiles)
     const [files, setFiles] = useState<ProjectFile[]>([]);
-    
+
     // Store File objects locally for upload
     const pendingUploadsRef = useRef<{ file: File; id: FileId; metadata: FileMetadata }[]>([]);
 
@@ -27,7 +27,7 @@ export const useFileProcessing = (
         try {
             const { data: { user } } = await supabase.auth.getUser();
             const userId = user?.id || currentUser.id;
-            
+
             if (!userId) {
                 console.error('No user ID found for logging failure');
                 return false;
@@ -58,7 +58,7 @@ export const useFileProcessing = (
     const addFiles = useCallback(async (rawFiles: File[]) => {
         setIsUploading(true);
         let shouldInvalidate = false;
-        
+
         // Helper for concurrency
         const CONCURRENCY_LIMIT = 30;
         const validForScan: File[] = [];
@@ -69,10 +69,10 @@ export const useFileProcessing = (
             const promises = filesChunk.map(async (file) => {
                 // 1. Check constraints
                 const constraintError = checkConstraints(file);
-                
+
                 if (constraintError) {
                     const reason = constraintError.errorMessage || constraintError.reason;
-                    
+
                     // 2. Log to DB (Awaited!)
                     await logFailure(file, reason);
                     shouldInvalidate = true;
@@ -105,7 +105,7 @@ export const useFileProcessing = (
             const results = await processChunk(chunk);
 
             const chunkFailures: ProjectFile[] = [];
-            
+
             results.forEach(res => {
                 if (res.type === 'FAILURE' && res.data) {
                     chunkFailures.push(res.data);
@@ -150,7 +150,7 @@ export const useFileProcessing = (
         // Use a concurrency pool of 30 workers to maximize throughput
         const CONCURRENCY_LIMIT_WORKERS = 30;
         const newPending: { file: File; id: FileId; metadata: FileMetadata }[] = [];
-        
+
         // Initialize known hashes with currently pending files to prevent duplicates
         const knownHashes = new Set(pendingUploadsRef.current.map(p => p.metadata.hash));
 
@@ -158,11 +158,11 @@ export const useFileProcessing = (
         let currentIndex = 0;
         const totalFiles = scanningFiles.length;
         const pendingUpdates: { id: FileId; status: ProjectFile['status']; failureReasons?: string[] }[] = [];
-        
+
         // Throttled UI Updater
         const flushUpdates = () => {
             if (pendingUpdates.length === 0) return;
-            
+
             const batch = [...pendingUpdates];
             pendingUpdates.length = 0; // Clear queue
 
@@ -170,7 +170,7 @@ export const useFileProcessing = (
                 const next = [...prev];
                 // Use Map for O(1) lookups during update
                 const updatesMap = new Map(batch.map(u => [u.id, u]));
-                
+
                 for (let i = 0; i < next.length; i++) {
                     const update = updatesMap.get(next[i].id);
                     if (update) {
@@ -192,7 +192,7 @@ export const useFileProcessing = (
                 if (index >= totalFiles) break;
 
                 const item = scanningFiles[index];
-                
+
                 try {
                     const result = await processFilePipeline(item.file, projectId);
 
@@ -229,10 +229,10 @@ export const useFileProcessing = (
                         });
                     }
                 } catch (error) {
-                     const reason = 'Unexpected processing error';
-                     const logged = await logFailure(item.file, reason);
-                     if (logged) shouldInvalidate = true;
-                     pendingUpdates.push({
+                    const reason = 'Unexpected processing error';
+                    const logged = await logFailure(item.file, reason);
+                    if (logged) shouldInvalidate = true;
+                    pendingUpdates.push({
                         id: item.id,
                         status: 'FAILED',
                         failureReasons: [reason]
@@ -243,7 +243,7 @@ export const useFileProcessing = (
 
         // Launch Workers
         const workers = Array.from({ length: Math.min(CONCURRENCY_LIMIT, totalFiles) }, () => worker());
-        
+
         // Wait for all to finish
         await Promise.all(workers);
 
@@ -258,16 +258,37 @@ export const useFileProcessing = (
         if (shouldInvalidate) {
             queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
         }
-        
+
         setIsUploading(false);
 
     }, [projectId, currentUser.id, logFailure, queryClient]);
+
+    const triggerBulkProcessing = useCallback(async () => {
+        try {
+            console.log(`[Edge Function] Triggering retrieve_resumes_bulk for project: ${projectId}`);
+            const { data, error } = await supabase.functions.invoke('retreive_resumes_bulk', {
+                body: { project_id: projectId }
+            });
+
+            if (error) {
+                console.error('Failed to trigger bulk processing:', error);
+                return false;
+            }
+
+            console.log('[Edge Function] Bulk processing triggered successfully:', data);
+            return true;
+        } catch (err) {
+            console.error('Error triggering bulk processing:', err);
+            return false;
+        }
+    }, [projectId]);
 
     const uploadPendingFiles = useCallback(async () => {
         const pendingFiles = [...pendingUploadsRef.current];
         if (pendingFiles.length === 0) return;
 
         setIsUploading(true);
+        let successCounter = 0;
 
         // 2. Process Uploads (Storage -> DB) with Progressive Credit Deduction
         const processingFailures = await processValidatedUploads(
@@ -302,8 +323,20 @@ export const useFileProcessing = (
                     console.error('Error executing credit deduction:', err);
                     return false;
                 }
+            },
+            // Callback for individual file success to track for bulk trigger
+            () => {
+                successCounter++;
+                if (successCounter % 1000 === 0) {
+                    triggerBulkProcessing();
+                }
             }
         );
+
+        // 3. Final trigger for any remaining files (remainder of 1000)
+        if (successCounter > 0 && successCounter % 1000 !== 0) {
+            triggerBulkProcessing();
+        }
 
         // 3. Handle Results
         if (processingFailures.length > 0) {
@@ -338,18 +371,18 @@ export const useFileProcessing = (
                 queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
             }
         }
-        
+
         // Remove processed files from pending ref (preserving any newly added ones)
         const processedIds = new Set(pendingFiles.map(p => p.id));
         pendingUploadsRef.current = pendingUploadsRef.current.filter(p => !processedIds.has(p.id));
-        
+
         setIsUploading(false);
     }, [projectId, currentUser.id, logFailure, queryClient]);
 
     const removeFile = useCallback(async (fileId: string) => {
         // Optimistic removal
         setFiles(prev => prev.filter(f => f.id !== fileId));
-        
+
         // Remove from pending ref if it's there
         pendingUploadsRef.current = pendingUploadsRef.current.filter(p => p.id !== fileId);
 
