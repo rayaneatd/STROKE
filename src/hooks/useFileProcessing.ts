@@ -266,7 +266,7 @@ export const useFileProcessing = (
     const triggerBulkProcessing = useCallback(async () => {
         try {
             console.log(`[Edge Function] Triggering retrieve_resumes_bulk for project: ${projectId}`);
-            const { data, error } = await supabase.functions.invoke('retreive_resumes_bulk', {
+            const { data, error } = await supabase.functions.invoke('retrieve_resumes_bulk', {
                 body: { project_id: projectId }
             });
 
