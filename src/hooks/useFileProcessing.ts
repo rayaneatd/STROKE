@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ProjectFile, Project, User, FileId, FailedFile } from '../types';
 import { processValidatedUploads } from '../services/uploadService';
 import { checkConstraints, processFilePipeline, FileMetadata } from '../services/fileValidationService';
-import { supabase } from '../lib/supabase';
+import { supabase, SUPABASE_ANON_KEY } from '../lib/supabase';
 
 export const useFileProcessing = (
     projectId: string,
@@ -266,8 +266,19 @@ export const useFileProcessing = (
     const triggerBulkProcessing = useCallback(async () => {
         try {
             console.log(`[Edge Function] Triggering retreive_resumes_bulk for project: ${projectId}`);
+
+            // Get the current session to extract both tokens
+            const { data: { session } } = await supabase.auth.getSession();
+            const userJwt = session?.access_token;
+            const anonKey = SUPABASE_ANON_KEY;
+
             const { data, error } = await supabase.functions.invoke('retreive_resumes_bulk', {
-                body: { project_id: projectId }
+                body: { project_id: projectId },
+                headers: {
+                    // Explicitly pass both headers the Gateway expects
+                    'apikey': anonKey,
+                    ...(userJwt ? { 'Authorization': `Bearer ${userJwt}` } : {})
+                }
             });
 
             if (error) {

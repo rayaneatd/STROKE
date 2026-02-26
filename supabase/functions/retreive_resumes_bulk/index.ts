@@ -1,0 +1,158 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+const BATCH_SIZE = 30;
+const PAGE_SIZE = 1000;
+
+Deno.serve(async (req: Request) => {
+    // Handle CORS Preflight
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: corsHeaders, status: 200 });
+    }
+
+    try {
+        // Always use Service Role to read storage & candidates without RLS restrictions
+        const supabase = createClient(
+            Deno.env.get("SUPABASE_URL") ?? "",
+            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+
+        const body = await req.json();
+        const { project_id } = body;
+
+        if (!project_id) {
+            return new Response(JSON.stringify({ error: "project_id manquant" }), {
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+
+        console.log(`🚀 Dispatcher démarré pour le projet: ${project_id}`);
+
+        // --- ÉTAPE A : Pagination pour lister TOUT le bucket ---
+        let allFilesToProcess: any[] = [];
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            const { data: files, error } = await supabase.storage
+                .from('resumes')
+                .list(project_id, {
+                    limit: PAGE_SIZE,
+                    offset: offset,
+                    sortBy: { column: 'name', order: 'asc' }
+                });
+
+            if (error) throw error;
+
+            if (!files || files.length === 0) {
+                hasMore = false;
+            } else {
+                const validBatch = files
+                    .filter(f => f.name !== '.emptyFolderPlaceholder' && f.id)
+                    .map(f => ({
+                        path: `${project_id}/${f.name}`,
+                        name: f.name,
+                        size: f.metadata?.size || 0,
+                        hash: f.metadata?.file_hash,
+                        original_name: f.metadata?.original_name,
+                        scanned_by: f.metadata?.scanned_by
+                    }));
+
+                allFilesToProcess = [...allFilesToProcess, ...validBatch];
+                console.log(`Chargé ${allFilesToProcess.length} fichiers depuis le bucket...`);
+
+                if (files.length < PAGE_SIZE) hasMore = false;
+                else offset += PAGE_SIZE;
+            }
+        }
+
+        if (allFilesToProcess.length === 0) {
+            return new Response(JSON.stringify({ message: "Bucket vide pour ce projet" }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+
+        // --- ÉTAPE B : Double Check Anti-Duplication via resume_path ---
+        const { data: existing, error: existingError } = await supabase
+            .from('candidates')
+            .select('resume_path')
+            .eq('project_id', project_id)
+            .not('resume_path', 'is', null);
+
+        if (existingError) {
+            console.warn("Impossible de vérifier les doublons:", existingError.message);
+        }
+
+        const existingSet = new Set(existing?.map(c => c.resume_path) ?? []);
+        const newFiles = allFilesToProcess.filter(f => !existingSet.has(f.path));
+
+        console.log(`Total bucket: ${allFilesToProcess.length} | Déjà traités: ${existingSet.size} | Nouveaux: ${newFiles.length}`);
+
+        if (newFiles.length === 0) {
+            return new Response(JSON.stringify({
+                message: "Tous les fichiers ont déjà été traités",
+                total: allFilesToProcess.length,
+                skipped: existingSet.size
+            }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
+
+        // --- ÉTAPE C : Dispatch vers parse_resumes par batches via EdgeRuntime.waitUntil ---
+        const batches: any[][] = [];
+        for (let i = 0; i < newFiles.length; i += BATCH_SIZE) {
+            batches.push(newFiles.slice(i, i + BATCH_SIZE));
+        }
+
+        console.log(`Dispatching ${batches.length} batches de ${BATCH_SIZE} vers parse_resumes...`);
+
+        // waitUntil permet aux invocations de se terminer APRÈS que la réponse HTTP est envoyée
+        const dispatchAll = async () => {
+            for (const batch of batches) {
+                try {
+                    const { error: invokeErr } = await supabase.functions.invoke('parse_resumes', {
+                        body: { project_id, files: batch }
+                    });
+                    if (invokeErr) {
+                        console.error(`Erreur dispatch batch:`, invokeErr.message);
+                    }
+                } catch (e: any) {
+                    console.error(`Exception dispatch batch:`, e.message);
+                }
+            }
+            console.log(`✅ Tous les ${batches.length} batches dispatched.`);
+        };
+
+        // @ts-ignore - EdgeRuntime est disponible dans le runtime Supabase
+        EdgeRuntime.waitUntil(dispatchAll());
+
+        // --- ÉTAPE D : Réponse immédiate au client ---
+        return new Response(JSON.stringify({
+            success: true,
+            message: "Dispatch lancé en arrière-plan",
+            total_bucket: allFilesToProcess.length,
+            already_processed: existingSet.size,
+            new_files: newFiles.length,
+            batches_dispatched: batches.length,
+            status: "RUNNING_ASYNC"
+        }), {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+
+    } catch (error: any) {
+        console.error("Erreur critique dispatcher:", error.message, error.stack);
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    }
+});
