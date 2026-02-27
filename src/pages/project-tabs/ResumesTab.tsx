@@ -1,14 +1,14 @@
 
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import {
-        Upload, Loader2, FileText, Clock,
-        X, Search, Filter, Zap,
-        SortAsc, SortDesc,
-        Download, FileCheck, FolderUp,
-        Medal, Trophy, Sparkles, User as UserIcon, Mail, Phone, MapPin, ExternalLink, Eye, GraduationCap,
-        FileUp, AlertCircle, Crown, Award, Send, ThumbsUp, ThumbsDown, BrainCircuit, Wand2, Ghost, MailCheck, Edit3, Check, EyeOff, RotateCcw, AlertTriangle,
-        Linkedin, Github, Briefcase, TrendingUp, AlertOctagon, HelpCircle, MessageSquare, Code
-    } from 'lucide-react';
+    Upload, Loader2, FileText, Clock,
+    X, Search, Filter, Zap,
+    SortAsc, SortDesc,
+    Download, FileCheck, FolderUp,
+    Medal, Trophy, Sparkles, User as UserIcon, Mail, Phone, MapPin, ExternalLink, Eye, GraduationCap,
+    FileUp, AlertCircle, Crown, Award, Send, ThumbsUp, ThumbsDown, BrainCircuit, Wand2, Ghost, MailCheck, Edit3, Check, EyeOff, RotateCcw, AlertTriangle,
+    Linkedin, Github, Briefcase, TrendingUp, AlertOctagon, HelpCircle, MessageSquare, Code
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ProjectFile, User, ProjectMember } from '../../types';
 import { useCandidates } from '../../hooks/useCandidates';
@@ -37,6 +37,7 @@ interface ResumesTabProps {
     currentUser: User;
 }
 
+
 const ITEM_HEIGHT = 80;
 const CONTAINER_HEIGHT = 600;
 const PENDING_ITEM_HEIGHT = 56; // Smaller height for upload list
@@ -56,7 +57,7 @@ type ScoreFilter = 'HIGH' | 'MID' | 'LOW';
 type ActivityFilter = 'EMAILED' | 'NOT_EMAILED' | 'EXPORTED' | 'NOT_EXPORTED' | 'VIEWED' | 'NOT_VIEWED';
 type DrawerTab = 'ANALYSIS' | 'COMMUNICATION' | 'RESUME' | 'INTERVIEW';
 
-    // Helper to scan directory entries recursively (Moved outside component to avoid re-creation and potential scope issues)
+// Helper to scan directory entries recursively (Moved outside component to avoid re-creation and potential scope issues)
 const scanFiles = async (item: FileSystemEntry): Promise<File[]> => {
     if (item.isFile) {
         return new Promise((resolve) => {
@@ -76,7 +77,7 @@ const scanFiles = async (item: FileSystemEntry): Promise<File[]> => {
 };
 
 const ResumesTab: React.FC<ResumesTabProps> = ({
-        projectId,
+    projectId,
     files = [],
     members = [],
     isUploading,
@@ -113,13 +114,13 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     }, [members]);
 
     // Server-side Pagination & Filtering (My Scans)
-    const { 
-        candidates: myCandidates, 
-        totalCount: totalCompleted, 
-        fetchNextPage: fetchNextCompleted, 
-        hasNextPage: hasNextCompleted, 
+    const {
+        candidates: myCandidates,
+        totalCount: totalCompleted,
+        fetchNextPage: fetchNextCompleted,
+        hasNextPage: hasNextCompleted,
         isFetchingNextPage: isFetchingNextCompleted,
-        isLoading: isCompletedLoading 
+        isLoading: isCompletedLoading
     } = useCandidates({
         projectId,
         userId: currentUser.id,
@@ -166,9 +167,13 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
     const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400' : 'bg-white/5 border-white/10 text-white placeholder:text-zinc-500';
 
+    // State to track files that are currently processing or have just finished processing
+    const [processingFileIds, setProcessingFileIds] = useState<Set<string>>(new Set());
+    const [animatingOutFileIds, setAnimatingOutFileIds] = useState<Set<string>>(new Set());
+
     const pendingFiles = useMemo(() => {
-        return files.filter(f => f.status === 'PENDING' || f.status === 'PROCESSING');
-    }, [files]);
+        return files.filter(f => (f.status === 'PENDING' || f.status === 'PROCESSING') && !animatingOutFileIds.has(f.id));
+    }, [files, animatingOutFileIds]);
 
     const failedFiles = useMemo(() => {
         return files.filter(f => f.status === 'FAILED');
@@ -242,6 +247,52 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         onPendingScroll(e);
     };
 
+    // Auto-scroll to top when processing starts
+    useEffect(() => {
+        if (isProcessingActive && pendingListRef.current) {
+            pendingListRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [isProcessingActive]);
+
+    const triggerIgnite = () => {
+        if (pendingFiles.length === 0) return;
+
+        // Mark all current pending files for processing animation
+        setProcessingFileIds(new Set(pendingFiles.map(f => f.id)));
+        onScan();
+    };
+
+    // Effect to handle files transitioning from PROCESSING to removed (animated out)
+    useEffect(() => {
+        // Files that were processing but are no longer in the 'files' prop
+        const currentFileIds = new Set(files.map(f => f.id));
+        const newlyRemovedProcessedFiles = new Set<string>();
+
+        processingFileIds.forEach(id => {
+            if (!currentFileIds.has(id)) {
+                newlyRemovedProcessedFiles.add(id);
+            }
+        });
+
+        if (newlyRemovedProcessedFiles.size > 0) {
+            setAnimatingOutFileIds(prev => new Set([...Array.from(prev), ...Array.from(newlyRemovedProcessedFiles)]));
+            setProcessingFileIds(prev => {
+                const newSet = new Set(prev);
+                newlyRemovedProcessedFiles.forEach(id => newSet.delete(id));
+                return newSet;
+            });
+
+            // After animation duration, remove from animatingOutFileIds
+            setTimeout(() => {
+                setAnimatingOutFileIds(prev => {
+                    const newSet = new Set(prev);
+                    newlyRemovedProcessedFiles.forEach(id => newSet.delete(id));
+                    return newSet;
+                });
+            }, 500); // Match animation duration
+        }
+    }, [files, processingFileIds]);
+
     // --- Handlers ---
 
     const handleFilesAddedWrapper = (files: File[]) => {
@@ -278,9 +329,9 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
         // Check if any item is a directory
         const hasDirectory = items.some(item => {
-             // Use type assertion for non-standard webkitGetAsEntry
-             const entry = (item as any).webkitGetAsEntry ? (item as any).webkitGetAsEntry() : null;
-             return entry && entry.isDirectory;
+            // Use type assertion for non-standard webkitGetAsEntry
+            const entry = (item as any).webkitGetAsEntry ? (item as any).webkitGetAsEntry() : null;
+            return entry && entry.isDirectory;
         });
 
         if (hasDirectory) {
@@ -292,15 +343,15 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
             });
 
             const allFiles = (await Promise.all(filePromises)).flat() as File[];
-            const validFiles = allFiles.filter((file: File) => acceptedTypes.includes(file.type) || file.name.endsWith('.pdf') || file.name.endsWith('.docx') || file.name.endsWith('.doc')); 
-            
+            const validFiles = allFiles.filter((file: File) => acceptedTypes.includes(file.type) || file.name.endsWith('.pdf') || file.name.endsWith('.docx') || file.name.endsWith('.doc'));
+
             if (validFiles.length > 0) {
                 handleFilesAddedWrapper(validFiles);
             } else {
-                 // Fallback or error if no valid files found in folders
+                // Fallback or error if no valid files found in folders
             }
         } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-             // Fallback for browsers without webkitGetAsEntry
+            // Fallback for browsers without webkitGetAsEntry
             const validFiles = Array.from(e.dataTransfer.files).filter((file: File) => acceptedTypes.includes(file.type)) as File[];
 
             if (validFiles.length > 0) {
@@ -314,20 +365,20 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     // Paste Handler
     useEffect(() => {
         const handlePaste = (e: ClipboardEvent) => {
-         if (isReadOnly || isProcessingActive) return;
-         if (e.clipboardData?.files && e.clipboardData.files.length > 0) {
-             e.preventDefault();
-             const files = Array.from(e.clipboardData.files);
-             const acceptedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
-             const validFiles = files.filter(file => acceptedTypes.includes(file.type));
-             
-             if (validFiles.length > 0) {
-                 // Trigger visual feedback manually before processing
-                 setIsCardHovered(true);
-                 setTimeout(() => setIsCardHovered(false), 500);
-                 handleFilesAddedWrapper(validFiles);
-             }
-         }
+            if (isReadOnly || isProcessingActive) return;
+            if (e.clipboardData?.files && e.clipboardData.files.length > 0) {
+                e.preventDefault();
+                const files = Array.from(e.clipboardData.files);
+                const acceptedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'];
+                const validFiles = files.filter(file => acceptedTypes.includes(file.type));
+
+                if (validFiles.length > 0) {
+                    // Trigger visual feedback manually before processing
+                    setIsCardHovered(true);
+                    setTimeout(() => setIsCardHovered(false), 500);
+                    handleFilesAddedWrapper(validFiles);
+                }
+            }
         };
 
         document.addEventListener('paste', handlePaste);
@@ -389,7 +440,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         setIsExportMenuOpen(false);
     };
 
@@ -455,10 +506,10 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                     {/* Decoration - Lightning Effect when Processing */}
                     {isProcessingActive && (
                         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                             <div className="scan-line-effect" style={{ background: `linear-gradient(to right, transparent, ${themeColorHex}, transparent)`, boxShadow: `0 0 8px ${themeColorHex}` }}></div>
-                             <div className={`absolute inset-0 bg-${accentColor}-500/10 animate-pulse-fast`}></div>
-                             {/* Lightning Flash Overlay */}
-                             <div className="absolute inset-0 bg-white mix-blend-overlay animate-lightning"></div>
+                            <div className="scan-line-effect" style={{ background: `linear-gradient(to right, transparent, ${themeColorHex}, transparent)`, boxShadow: `0 0 8px ${themeColorHex}` }}></div>
+                            <div className={`absolute inset-0 bg-${accentColor}-500/10 animate-pulse-fast`}></div>
+                            {/* Lightning Flash Overlay */}
+                            <div className="absolute inset-0 bg-white mix-blend-overlay animate-lightning"></div>
                         </div>
                     )}
 
@@ -505,17 +556,17 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                     </p>
                                 </div>
                                 <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                     <button 
+                                    <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             folderInputRef.current?.click();
                                         }}
                                         className={`p-2 rounded-lg bg-${accentColor}-500/10 hover:bg-${accentColor}-500/20 text-${accentColor}-500 text-xs font-bold flex items-center gap-1 transition-colors`}
                                         title="Upload entire folder"
-                                     >
+                                    >
                                         <FolderUp size={14} />
                                         <span>Folder</span>
-                                     </button>
+                                    </button>
                                 </div>
                             </div>
                         ) : (
@@ -529,31 +580,42 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                 <div style={{ height: totalPendingHeight, position: 'relative' }}>
                                     {visiblePending.map(({ index, offsetTop }) => {
                                         const f = pendingFiles[index];
-                                        const isProcessing = f.status === 'PROCESSING';
+                                        const isProcessing = processingFileIds.has(f.id);
+                                        const isAnimatingOut = animatingOutFileIds.has(f.id);
 
                                         return (
                                             <div
                                                 key={f.id}
-                                                style={{ position: 'absolute', top: offsetTop, left: 0, width: '100%', height: PENDING_ITEM_HEIGHT - 8 }}
-                                                className={`group relative flex items-center p-3 rounded-xl border backdrop-blur-sm transition-all item-enter electric-hover ${
-                                                    isProcessing 
-                                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-lg shadow-blue-500/20 translate-x-2 neon-border' 
-                                                    : isLight ? 'bg-white/60 border-slate-100 hover:bg-white' : 'bg-white/5 border-white/5 hover:bg-white/10'
-                                                }`}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: offsetTop,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    height: PENDING_ITEM_HEIGHT - 8,
+                                                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    opacity: isAnimatingOut ? 0 : 1,
+                                                    transform: isAnimatingOut ? 'translateX(100%)' : (isProcessing ? 'translateX(2px)' : 'translateX(0)')
+                                                }}
+                                                className={`group relative flex items-center p-3 rounded-xl border backdrop-blur-sm transition-all item-enter electric-hover ${isProcessing
+                                                        ? 'bg-blue-500/10 border-blue-500/50 shadow-lg shadow-blue-500/20 neon-border'
+                                                        : isLight ? 'bg-white/60 border-slate-100 hover:bg-white' : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                                    } ${isAnimatingOut ? 'processed' : ''}`}
                                             >
+                                                {/* Outbound Animation for Processed Files */}
+                                                <div className="absolute inset-x-0 bottom-0 h-[2px] bg-blue-500/50 origin-left scale-x-0 group-[.processed]:animate-removal-progress"></div>
+
                                                 {/* Processing Glow Effect */}
                                                 {isProcessing && (
-                                                    <div className="absolute inset-0 bg-blue-400/10 animate-pulse rounded-xl overflow-hidden">
-                                                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-blue-400/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                                                    <div className="absolute inset-0 bg-blue-400/5 animate-pulse rounded-xl overflow-hidden pointer-events-none">
+                                                        <div className="absolute top-0 left-0 w-full h-[150%] bg-gradient-to-b from-blue-500/20 via-transparent to-transparent -translate-y-full animate-[scan-vertical_2s_linear_infinite]"></div>
                                                     </div>
                                                 )}
 
                                                 <div className="flex-shrink-0 mr-3 relative z-10">
-                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
-                                                        isProcessing 
-                                                        ? 'bg-blue-500 border-blue-400 text-white shadow-blue-500/50 shadow-md scale-110 animate-pulse' 
+                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${isProcessing
+                                                        ? 'bg-blue-500 border-blue-400 text-white shadow-blue-500/50 shadow-md scale-110 animate-pulse'
                                                         : isLight ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-white/5 border-white/5 text-zinc-400'
-                                                    }`}>
+                                                        }`}>
                                                         {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <FileText size={14} />}
                                                     </div>
                                                 </div>
@@ -567,14 +629,13 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                                         </span>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); onRemoveFile(f.id); }}
-                                                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-20 ${
-                                                        isLight 
-                                                        ? 'text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm' 
+                                                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 z-20 ${isLight
+                                                        ? 'text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm'
                                                         : 'text-zinc-500 hover:text-red-400 hover:bg-red-500/20 hover:shadow-[0_0_10px_rgba(248,113,113,0.5)]'
-                                                    }`}
+                                                        }`}
                                                     title={isProcessing ? "Cancel" : "Remove"}
                                                 >
                                                     <X size={14} />
@@ -588,10 +649,9 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
 
                         <div className={`mt-6 pt-4 border-t shrink-0 space-y-3 ${isLight ? 'border-slate-100' : 'border-white/5'}`}>
                             <button
-                                onClick={onScan}
+                                onClick={triggerIgnite}
                                 disabled={isUploading || isReadOnly || pendingFiles.length === 0 || isProcessingActive}
-                                className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] relative overflow-hidden group ${
-                                    isUploading || isProcessingActive
+                                className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] relative overflow-hidden group ${isUploading || isProcessingActive
                                     ? `bg-zinc-900/90 backdrop-blur-md text-${accentColor}-400 cursor-progress border border-${accentColor}-500/50 shadow-[0_0_15px_rgba(0,0,0,0.5)]`
                                     : pendingFiles.length === 0
                                         ? isLight ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
@@ -610,13 +670,13 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
                                     </>
                                 )}
-                                
+
                                 <span className="relative flex items-center gap-2 z-20">
                                     {isUploading || isProcessingActive ? (
                                         <>
                                             <Loader2 className={`animate-spin text-${accentColor}-500`} size={18} />
                                             <span className={`font-mono tracking-wider font-bold ${isProcessingActive ? `text-${accentColor}-400 animate-pulse` : 'text-zinc-400'}`}>
-                                                 {isProcessingActive ? '⚡ SYSTEM OVERDRIVE' : 'INITIALIZING...'}
+                                                {isProcessingActive ? '⚡ SYSTEM OVERDRIVE' : 'INITIALIZING...'}
                                             </span>
                                         </>
                                     ) : (
@@ -770,7 +830,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                 >
                                     <div className="space-y-4">
                                         {/* Scanner Filter Removed as we only show own uploads */}
-                                        
+
                                         {/* Score Filter */}
                                         <div>
                                             <label className={`text-xs font-bold uppercase tracking-wider block mb-2 ${textSecondary}`}>Score Range</label>

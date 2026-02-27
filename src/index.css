@@ -142,6 +142,16 @@
   to { transform: translateX(0); opacity: 1; }
 }
 
+@keyframes scan-vertical {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes removal-progress {
+  from { scale: 0 1; }
+  to { scale: 1 1; }
+}
+
 /* Turbo Mode / Intense Processing */
 @keyframes turbo-glow {
   0% {
