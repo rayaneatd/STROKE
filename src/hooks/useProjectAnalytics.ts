@@ -26,6 +26,7 @@ interface ProjectAnalytics {
         qualified: number;
         contacted: number;
         failed: number;
+        avgScore: number;
     }[];
 
     scoreDistribution: { range: string; count: number }[];
@@ -145,7 +146,8 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     date: item.date, // 'YYYY-MM-DD'
                     added: Number(item.added || 0),
                     qualified: Number(item.qualified || 0),
-                    failed: Number(item.failed || 0)
+                    failed: Number(item.failed || 0),
+                    avgScore: Number(item.avg_score || 0)
                 }));
             } else {
                 // Fallback Logic (Legacy)
@@ -180,7 +182,10 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 timelineData = Array.from(timelineMap.entries())
                     .map(([date, stats]) => ({
                         date,
-                        ...stats
+                        added: stats.added,
+                        qualified: stats.qualified,
+                        failed: stats.failed,
+                        avgScore: stats.added > 0 ? Math.round(stats.qualified * 100 / stats.added) : 0 // Fallback estimate
                     }))
                     .sort((a, b) => a.date.localeCompare(b.date));
             }

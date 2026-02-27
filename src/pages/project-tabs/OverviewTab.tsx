@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-    FileText, TrendingUp, Briefcase, Download, Coins, Users, Target, Activity, 
-    Filter, Calendar, ChevronDown, CheckCircle, XCircle, Mail, AlertTriangle 
+import {
+    FileText, TrendingUp, Briefcase, Download, Coins, Users, Target, Activity,
+    Filter, Calendar, ChevronDown, CheckCircle, XCircle, Mail, AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    BarChart, Bar, Cell, PieChart, Pie, Legend
+    BarChart, Bar, Cell, PieChart, Pie, Legend, Line
 } from 'recharts';
 import { Project, ProjectFile, User } from '../../types';
 import { useProjectAnalytics, TimeRange } from '../../hooks/useProjectAnalytics';
@@ -15,7 +15,7 @@ import { fr } from 'date-fns/locale';
 
 interface OverviewTabProps {
     // Legacy props (might still be passed but we'll fetch our own data)
-    analytics?: any; 
+    analytics?: any;
     project: Project;
     files: ProjectFile[];
     topCandidates?: any[];
@@ -31,12 +31,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 }) => {
     const { t } = useTranslation();
     const [timeRange, setTimeRange] = useState<TimeRange>('ALL');
-    
+
     // Fetch analytics with time range
     const { data: analytics, isLoading } = useProjectAnalytics(project.id, timeRange);
 
     const isLight = currentUser.preferences?.uiConfig?.theme === 'LIGHT';
-    
+
     // Theme configurations
     const cardClass = isLight
         ? 'bg-white border-slate-200 shadow-sm'
@@ -87,7 +87,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                         {t('project.overview.stats.basedOnCandidates', { count: analytics.total })}
                     </p>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                     {/* Time Range Selector */}
                     <div className={`flex items-center p-1 rounded-lg border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-zinc-900 border-white/5'}`}>
@@ -95,11 +95,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                             <button
                                 key={range}
                                 onClick={() => setTimeRange(range)}
-                                className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${
-                                    timeRange === range
-                                        ? 'bg-emerald-500 text-white shadow-sm'
-                                        : `${textSecondary} hover:${textPrimary}`
-                                }`}
+                                className={`px-3 py-1.5 text-[10px] font-bold rounded-md transition-all ${timeRange === range
+                                    ? 'bg-emerald-500 text-white shadow-sm'
+                                    : `${textSecondary} hover:${textPrimary}`
+                                    }`}
                             >
                                 {t(`project.overview.timeRange.${range.toLowerCase()}` as any, range)}
                             </button>
@@ -181,18 +180,18 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
                 {/* Budget/Velocity */}
                 {project.settings?.billingMode === 'PROJECT_INVESTMENT' ? (
-                     <div className={`p-5 rounded-xl border ${cardClass} relative overflow-hidden`}>
+                    <div className={`p-5 rounded-xl border ${cardClass} relative overflow-hidden`}>
                         <div className="flex justify-between items-start mb-2">
                             <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg border border-purple-500/20"><Coins size={18} /></div>
                         </div>
                         <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>{t('project.budget')}</h3>
                         <p className={`text-3xl font-bold ${textPrimary} mt-1`}>{project.investmentBalance || 0}</p>
-                         <div className="w-full bg-purple-500/10 h-1.5 rounded-full mt-3 overflow-hidden">
-                             <div 
-                                 className="bg-purple-500 h-full rounded-full transition-all duration-500" 
-                                 style={{ width: `${Math.min(((project.investmentBalance || 0) / (project.totalInvested || 1)) * 100, 100)}%` }} 
-                             />
-                         </div>
+                        <div className="w-full bg-purple-500/10 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div
+                                className="bg-purple-500 h-full rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(((project.investmentBalance || 0) / (project.totalInvested || 1)) * 100, 100)}%` }}
+                            />
+                        </div>
                     </div>
                 ) : (
                     <div className={`p-5 rounded-xl border ${cardClass} relative overflow-hidden`}>
@@ -201,13 +200,13 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                         </div>
                         <h3 className={`${textSecondary} text-[10px] font-bold uppercase tracking-wider`}>{t('project.overview.kpi.velocity')}</h3>
                         <p className={`text-3xl font-bold ${textPrimary} mt-1`}>
-                            {analytics.timelineData.length > 0 
-                                ? Math.round(analytics.total / analytics.timelineData.length * 10) / 10 
+                            {analytics.timelineData.length > 0
+                                ? Math.round(analytics.total / analytics.timelineData.length * 10) / 10
                                 : 0}
                             <span className="text-xs font-normal text-slate-400 ml-1">/ jour</span>
                         </p>
                         <p className={`text-[10px] ${textSecondary} mt-1`}>
-                           {t('project.overview.charts.activity')}
+                            {t('project.overview.charts.activity')}
                         </p>
                     </div>
                 )}
@@ -228,19 +227,19 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                             <AreaChart data={analytics.timelineData}>
                                 <defs>
                                     <linearGradient id="colorAdded" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                     </linearGradient>
                                     <linearGradient id="colorQualified" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#e2e8f0' : '#27272a'} vertical={false} />
-                                <XAxis 
-                                    dataKey="date" 
-                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
-                                    fontSize={10} 
+                                <XAxis
+                                    dataKey="date"
+                                    stroke={isLight ? '#94a3b8' : '#52525b'}
+                                    fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
                                     tickFormatter={(str) => {
@@ -251,50 +250,58 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                         }
                                     }}
                                 />
-                                <YAxis 
-                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
-                                    fontSize={10} 
+                                <YAxis
+                                    stroke={isLight ? '#94a3b8' : '#52525b'}
+                                    fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="added" 
+                                <Area
+                                    type="monotone"
+                                    dataKey="added"
                                     name={t('project.overview.kpi.volume')}
-                                    stroke="#3b82f6" 
-                                    fillOpacity={1} 
-                                    fill="url(#colorAdded)" 
+                                    stroke="#3b82f6"
+                                    fillOpacity={1}
+                                    fill="url(#colorAdded)"
                                     strokeWidth={2}
                                 />
-                                <Area 
-                                type="monotone" 
-                                dataKey="qualified" 
-                                name={t('project.overview.kpi.qualified')}
-                                stroke="#10b981" 
-                                fillOpacity={1} 
-                                fill="url(#colorQualified)" 
-                                strokeWidth={2}
-                            />
-                            <Area 
-                                type="monotone" 
-                                dataKey="failed" 
-                                name={t('project.overview.kpi.failed')}
-                                stroke="#ef4444" 
-                                fillOpacity={1} 
-                                fill="url(#colorFailed)" 
-                                strokeWidth={2}
-                            />
-                            <defs>
-                                <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                        </AreaChart>
-                    </ResponsiveContainer>
+                                <Area
+                                    type="monotone"
+                                    dataKey="qualified"
+                                    name={t('project.overview.kpi.qualified')}
+                                    stroke="#10b981"
+                                    fillOpacity={1}
+                                    fill="url(#colorQualified)"
+                                    strokeWidth={2}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="failed"
+                                    name={t('project.overview.kpi.failed')}
+                                    stroke="#ef4444"
+                                    fillOpacity={1}
+                                    fill="url(#colorFailed)"
+                                    strokeWidth={2}
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="avgScore"
+                                    name={t('project.overview.cards.avgScore')}
+                                    stroke="#f59e0b"
+                                    strokeWidth={3}
+                                    dot={{ r: 4, strokeWidth: 2, fill: isLight ? '#fff' : '#0e0e10' }}
+                                />
+                                <defs>
+                                    <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
-            </div>
 
                 {/* Funnel Chart (1 col) */}
                 <div className={`p-6 rounded-xl border ${cardClass}`}>
@@ -311,9 +318,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                             >
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isLight ? '#e2e8f0' : '#27272a'} />
                                 <XAxis type="number" hide />
-                                <YAxis 
-                                    dataKey="stage" 
-                                    type="category" 
+                                <YAxis
+                                    dataKey="stage"
+                                    type="category"
                                     stroke={isLight ? '#64748b' : '#a1a1aa'}
                                     fontSize={10}
                                     tickLine={false}
@@ -321,8 +328,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                     width={60}
                                     tickFormatter={(value) => t(`project.overview.funnel.${value}` as any, value)}
                                 />
-                                <Tooltip 
-                                    cursor={{fill: isLight ? '#f1f5f9' : '#18181b'}}
+                                <Tooltip
+                                    cursor={{ fill: isLight ? '#f1f5f9' : '#18181b' }}
                                     content={<CustomTooltip />}
                                 />
                                 <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={30}>
@@ -338,8 +345,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
             {/* Bottom Grid: Distribution & Team */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 {/* Score Distribution */}
-                 <div className={`p-6 rounded-xl border ${cardClass}`}>
+                {/* Score Distribution */}
+                <div className={`p-6 rounded-xl border ${cardClass}`}>
                     <h3 className={`text-sm font-bold ${textPrimary} mb-6 flex items-center gap-2`}>
                         <Target size={16} className="text-orange-500" />
                         {t('project.overview.charts.distribution')}
@@ -348,21 +355,21 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={analytics.scoreDistribution}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isLight ? '#e2e8f0' : '#27272a'} />
-                                <XAxis 
-                                    dataKey="range" 
-                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
-                                    fontSize={10} 
+                                <XAxis
+                                    dataKey="range"
+                                    stroke={isLight ? '#94a3b8' : '#52525b'}
+                                    fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
                                 />
-                                <YAxis 
-                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
-                                    fontSize={10} 
+                                <YAxis
+                                    stroke={isLight ? '#94a3b8' : '#52525b'}
+                                    fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
                                 />
-                                <Tooltip 
-                                    cursor={{fill: isLight ? '#f1f5f9' : '#18181b'}}
+                                <Tooltip
+                                    cursor={{ fill: isLight ? '#f1f5f9' : '#18181b' }}
                                     content={<CustomTooltip />}
                                 />
                                 <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={40} />
@@ -395,8 +402,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                         ))}
                                     </Pie>
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Legend 
-                                        verticalAlign="bottom" 
+                                    <Legend
+                                        verticalAlign="bottom"
                                         height={36}
                                         iconType="circle"
                                         formatter={(value, entry: any) => (
@@ -406,12 +413,12 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                 </PieChart>
                             </ResponsiveContainer>
                         ) : (
-                             <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                            <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                 <CheckCircle size={32} className="mb-2 text-emerald-500 opacity-50" />
                                 <span className="text-xs">{t('project.overview.noFailures')}</span>
                             </div>
                         )}
-                        
+
                         {/* Center Total */}
                         {analytics.failureDistribution && analytics.failureDistribution.length > 0 && (
                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[60%] text-center">
@@ -446,11 +453,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                     const user = project.members.find(m => m.userId === member.userId)?.user;
                                     const decisions = member.qualified + member.rejected;
                                     const efficiency = decisions > 0 ? Math.round((member.qualified / decisions) * 100) : 0;
-                                    
+
                                     return (
                                         <tr key={member.userId} className={`border-b ${isLight ? 'border-slate-50' : 'border-white/5'} hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors`}>
                                             <td className="py-3 px-2">
-                                                 <div className={`w-6 h-6 rounded-full ${index < 3 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-[10px] font-bold`}>
+                                                <div className={`w-6 h-6 rounded-full ${index < 3 ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-[10px] font-bold`}>
                                                     {index + 1}
                                                 </div>
                                             </td>
@@ -483,7 +490,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
                                 })}
                             </tbody>
                         </table>
-                        
+
                         {analytics.contributionData.length === 0 && (
                             <div className={`text-center py-12 ${textSecondary} text-xs italic`}>
                                 {t('project.overview.team.noActivity')}

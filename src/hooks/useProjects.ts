@@ -18,7 +18,10 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        const saved = localStorage.getItem('project-list-view-mode');
+        return (saved === 'grid' || saved === 'list') ? saved : 'grid';
+    });
     const [displayCount, setDisplayCount] = useState(PROJECTS_PER_PAGE);
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'ARCHIVED' | 'COMPLETED'>('ALL');
     const [dateFilter, setDateFilter] = useState<'ALL' | 'LAST_7' | 'LAST_30' | 'LAST_90'>('ALL');
@@ -37,15 +40,15 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         queryKey: ['projects', currentUser.id],
         queryFn: async () => {
             const { data, error } = await supabase
-                 .rpc('get_user_projects', { target_user_id: currentUser.id });
+                .rpc('get_user_projects', { target_user_id: currentUser.id });
 
             if (error) throw error;
             if (!data) return [];
 
             return data.map((p: any) => {
-                 if (!p) return null; // Skip invalid entries
-                 try {
-                     return {
+                if (!p) return null; // Skip invalid entries
+                try {
+                    return {
                         id: p.id,
                         title: p.title || 'Untitled Project',
                         description: p.description || '',
@@ -55,7 +58,7 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                         settings: p.settings || {},
                         investmentBalance: Number(p.investment_balance) || 0,
                         totalInvested: Number(p.total_invested) || 0,
-                        fileCount: 0, 
+                        fileCount: 0,
                         memberCount: Number(p.member_count) || 0,
                         members: Array.isArray(p.members) ? p.members.map((m: any) => {
                             if (!m || !m.userId) return null;
@@ -131,6 +134,11 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         setDisplayCount(PROJECTS_PER_PAGE);
     }, [debouncedSearchTerm, statusFilter, dateFilter, ownerFilter, orgFilter]);
 
+    // Persist View Mode
+    useEffect(() => {
+        localStorage.setItem('project-list-view-mode', viewMode);
+    }, [viewMode]);
+
     // Mutations
     const createMutation = useMutation({
         mutationFn: async ({ projectData, ownerId, investmentAmount }: { projectData: any, ownerId: string, investmentAmount: number }) => {
@@ -139,11 +147,11 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                 p_owner_id: ownerId,
                 p_investment_amount: investmentAmount
             });
-            
+
             if (error) throw error;
             const result = data as { success: boolean; error?: string; new_balance?: number };
             if (!result.success) throw new Error(result.error || 'Project creation failed');
-            
+
             return result;
         },
         onSuccess: (data) => {
@@ -366,8 +374,8 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                 }
             });
         } else {
-            const targetBudget = (projectData.settings?.billingMode === 'PROJECT_INVESTMENT') 
-                ? (projectData.investmentBalance || 0) 
+            const targetBudget = (projectData.settings?.billingMode === 'PROJECT_INVESTMENT')
+                ? (projectData.investmentBalance || 0)
                 : 0;
 
             if (targetBudget > 0 && currentUser.scansBalance < targetBudget) {

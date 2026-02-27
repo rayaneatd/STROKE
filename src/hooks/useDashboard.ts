@@ -87,7 +87,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     .select('*')
                     .eq('event_type', 'FAIL')
                     .in('project_id', projectIds);
-                
+
                 if (failEventsError) {
                     console.error("Fail events fetch error:", failEventsError);
                     throw failEventsError;
@@ -117,7 +117,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     startDate = new Date(minDate);
                     // Calculate days difference
                     const diffTime = Math.abs(now.getTime() - startDate.getTime());
-                    daysToLookBack = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    daysToLookBack = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     // Add a buffer day to ensure we cover everything
                     daysToLookBack += 1;
                 } else {
@@ -142,9 +142,9 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 return eDate >= startDate;
             });
 
-            const completedCandidates = candidates.filter(c => c.score != null);
-            const qualifiedCandidates = completedCandidates.filter(c => (c.score || 0) >= 80);
-            
+            const completedCandidates = candidates.filter(c => c.match_score != null);
+            const qualifiedCandidates = completedCandidates.filter(c => (c.match_score || 0) >= 80);
+
             // New Status Logic
             const newCount = candidates.filter(c => c.status === 'new' || !c.status).length;
             const rejectedCount = candidates.filter(c => c.status === 'rejected').length;
@@ -170,13 +170,13 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                     // For now, default to unknown to ensure clean UI
                     label = t('dashboard.failReasons.unknown');
                 }
-                
+
                 failReasonsMap.set(label, (failReasonsMap.get(label) || 0) + 1);
             });
 
             // Color palette for error types
             const errorColors = ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#6366f1'];
-            
+
             const errorData = Array.from(failReasonsMap.entries()).map(([name, value], index) => ({
                 name,
                 value,
@@ -185,7 +185,7 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
 
             // Timeline Calculation
             const timelineMap = new Map<string, { total: number, scoreSum: number, count: number, dateObj: Date, qualified: number, failed: number }>();
-            
+
             for (let i = 0; i < daysToLookBack; i++) {
                 const d = new Date(now);
                 d.setDate(d.getDate() - i);
@@ -199,10 +199,10 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 if (timelineMap.has(isoDate)) {
                     const stats = timelineMap.get(isoDate)!;
                     stats.total++;
-                    if (c.score) {
-                        stats.scoreSum += c.score;
+                    if (c.match_score) {
+                        stats.scoreSum += c.match_score;
                         stats.count++;
-                        if (c.score >= 80) stats.qualified++;
+                        if (c.match_score >= 80) stats.qualified++;
                     }
                 }
             });
@@ -219,8 +219,8 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             const timelineData: TimelineDataPoint[] = Array.from(timelineMap.entries())
                 .sort((a, b) => a[0].localeCompare(b[0]))
                 .map(([_, stats]) => ({
-                    date: stats.dateObj.toLocaleDateString(undefined, { 
-                        month: 'short', 
+                    date: stats.dateObj.toLocaleDateString(undefined, {
+                        month: 'short',
                         day: 'numeric',
                         year: daysToLookBack > 365 ? '2-digit' : undefined
                     }),
@@ -253,11 +253,11 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 });
             });
 
-            const roleCounts = { 
-                admins: adminIds.size, 
-                partners: partnerIds.size, 
-                scouts: scoutIds.size, 
-                analysts: analystIds.size 
+            const roleCounts = {
+                admins: adminIds.size,
+                partners: partnerIds.size,
+                scouts: scoutIds.size,
+                analysts: analystIds.size
             };
 
             const analytics: DashboardAnalytics = {
@@ -282,14 +282,14 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
                 errorData,
                 projectPerformance: projectsData.map(p => {
                     const pCandidates = candidates.filter(c => c.project_id === p.id);
-                    const pCompleted = pCandidates.filter(c => c.score != null);
+                    const pCompleted = pCandidates.filter(c => c.match_score != null);
                     return {
                         id: p.id,
                         name: p.title,
                         status: p.status as any,
                         candidates: pCandidates.length,
-                        qualified: pCandidates.filter(c => (c.score || 0) >= 80).length,
-                        avgScore: pCompleted.length ? Math.round(pCompleted.reduce((acc, c) => acc + (c.score || 0), 0) / pCompleted.length) : 0
+                        qualified: pCandidates.filter(c => (c.match_score || 0) >= 80).length,
+                        avgScore: pCompleted.length ? Math.round(pCompleted.reduce((acc, c) => acc + (c.match_score || 0), 0) / pCompleted.length) : 0
                     } as ProjectPerformanceRow;
                 })
             };

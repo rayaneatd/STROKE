@@ -338,12 +338,14 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                     <span className={`px-1.5 py-0.5 rounded text-[10px] ${tabBadgeClass}`}>{project.members.length}</span>
                 </button>
 
+                {/* 
                 <button
                     onClick={() => setActiveTab('discussions')}
                     className={`pb-3 px-1 text-sm font-bold transition-all relative whitespace-nowrap flex items-center gap-2 ${tabClass(activeTab === 'discussions')}`}
                 >
                     <MessageSquare size={16} /> {t('project.tabs.discussions')}
                 </button>
+                */}
             </div>
 
             {/* --- CONTENT --- */}
@@ -416,6 +418,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                     />
                 )}
 
+                {/* 
                 {activeTab === 'discussions' && (
                     <DiscussionsTab
                         project={project}
@@ -424,6 +427,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         isReadOnly={!canChat}
                     />
                 )}
+                */}
             </div>
 
             {/* ... (Modals) ... */}
