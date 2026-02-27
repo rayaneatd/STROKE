@@ -111,8 +111,8 @@ const CandidateList: React.FC<CandidateListProps> = ({
                     const file = candidates[index];
                     if (!file) return null;
 
-                    const hasScore = file.score !== null && file.score !== undefined;
-                    const score = hasScore ? file.score : 0;
+                    const hasScore = file.matchScore !== null && file.matchScore !== undefined;
+                    const score = hasScore ? file.matchScore : 0;
                     const isTop = score >= 80;
                     const isMid = score >= 50 && score < 80;
 
@@ -126,7 +126,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                     // Rank Logic
                     const rank = file.rank;
                     let rankDisplay: React.ReactNode = '-';
-                    
+
                     if (rank !== undefined) {
                         if (rank === 1) {
                             rankDisplay = (
@@ -139,7 +139,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 </div>
                             );
                         } else if (rank === 2) {
-                             rankDisplay = (
+                            rankDisplay = (
                                 <div className="relative flex items-center justify-center w-10 h-8 mx-auto gap-1">
                                     <div className="relative w-6 h-6 bg-gradient-to-br from-slate-300 to-slate-500 rounded-full flex items-center justify-center shadow-md border border-slate-300/30">
                                         <Medal size={12} className="text-white fill-white/20" />
@@ -148,7 +148,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 </div>
                             );
                         } else if (rank === 3) {
-                             rankDisplay = (
+                            rankDisplay = (
                                 <div className="relative flex items-center justify-center w-10 h-8 mx-auto gap-1">
                                     <div className="relative w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-700 rounded-full flex items-center justify-center shadow-md border border-orange-300/30">
                                         <Medal size={12} className="text-white fill-white/20" />
@@ -235,7 +235,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {showScannedBy && (
                                 <div className="col-span-3 flex items-center gap-2">
                                     {scanner ? (
@@ -290,11 +290,10 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                                 e.stopPropagation();
                                                 onToggleFavorite(file.id, file.isFavorite || false);
                                             }}
-                                            className={`p-1.5 rounded-lg transition-colors ${
-                                                file.isFavorite 
-                                                    ? 'text-yellow-500 bg-yellow-500/10' 
+                                            className={`p-1.5 rounded-lg transition-colors ${file.isFavorite
+                                                    ? 'text-yellow-500 bg-yellow-500/10'
                                                     : `text-slate-400 hover:text-yellow-500 hover:bg-yellow-500/10`
-                                            }`}
+                                                }`}
                                             title={file.isFavorite ? "Remove from favorites" : "Add to favorites"}
                                         >
                                             <Star size={16} fill={file.isFavorite ? "currentColor" : "none"} />
