@@ -267,7 +267,6 @@ export interface ProjectFile {
   email?: string;
   phone?: string;
   location?: string;
-  summary?: string;
   rank?: number;
 
   // --- ELITE DATA FIELDS ---

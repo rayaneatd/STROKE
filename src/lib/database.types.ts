@@ -172,7 +172,6 @@ export type Database = {
                     social_links: Json | null
                     soft_skills_analysis: string | null
                     status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
-                    summary: string | null
                     uploaded_at: string | null
                     uploaded_by: string | null
                     viewed_by: string[] | null
@@ -204,7 +203,6 @@ export type Database = {
                     social_links?: Json | null
                     soft_skills_analysis?: string | null
                     status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
-                    summary?: string | null
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
@@ -236,7 +234,6 @@ export type Database = {
                     social_links?: Json | null
                     soft_skills_analysis?: string | null
                     status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
-                    summary?: string | null
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
@@ -620,7 +617,6 @@ export type Database = {
                     email: string | null
                     phone: string | null
                     location: string | null
-                    summary: string | null
                     current_position: string | null
                     years_of_experience: number | null
                     score_justification: string | null
@@ -652,7 +648,6 @@ export type Database = {
                     score_justification: string | null
                     career_trajectory: string | null
                     executive_summary: string | null
-                    summary: string | null
                     soft_skills_analysis: string | null
                     key_skills: Json | null
                     missing_skills: Json | null

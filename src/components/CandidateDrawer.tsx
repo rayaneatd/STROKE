@@ -39,7 +39,6 @@ interface CandidateDrawerData {
   score_justification: string | null;
   career_trajectory: string | null;
   executive_summary: string | null;
-  summary: string | null;
   soft_skills_analysis: string | null;
   key_skills: unknown;
   missing_skills: unknown;
@@ -341,7 +340,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
           {t('candidateDrawer.analysis.executiveSummary')}
         </h3>
         <p className="text-zinc-200 leading-relaxed text-sm">
-          {data?.executive_summary || data?.summary || t('candidateDrawer.analysis.noSummary')}
+          {data?.executive_summary || t('candidateDrawer.analysis.noSummary')}
         </p>
       </div>
 

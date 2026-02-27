@@ -102,7 +102,6 @@ export const useCandidates = ({
                 email: row.email,
                 phone: row.phone,
                 location: row.location,
-                summary: row.summary,
 
                 // Elite Data Mapping
                 currentPosition: row.current_position,
