@@ -87,11 +87,9 @@ export const useCandidates = ({
             const candidates = (data || []).map((row: any) => ({
                 id: row.id,
                 projectId: row.project_id,
-                name: row.name || row.candidate_name || 'Unknown Candidate', // Fallback to candidate name or default
-                size: row.size || '0 KB', 
+                candidateName: row.candidate_name || 'Unknown Candidate',
+                size: row.size || '0 KB',
                 uploadedAt: row.uploaded_at,
-                score: row.score,
-                candidateName: row.candidate_name,
                 uploadedByUserId: row.uploaded_by,
                 viewedBy: row.viewed_by,
                 exportedBy: row.exported_by,
@@ -105,7 +103,6 @@ export const useCandidates = ({
                 phone: row.phone,
                 location: row.location,
                 summary: row.summary,
-                skills: row.skills,
 
                 // Elite Data Mapping
                 currentPosition: row.current_position,
@@ -150,7 +147,7 @@ export const useCandidates = ({
             console.error('Error updating status:', error);
             throw error;
         }
-        
+
         // Optimistic update via invalidation
         queryClient.invalidateQueries({ queryKey });
         // Also invalidate analytics to update counts

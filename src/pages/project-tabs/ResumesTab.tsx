@@ -423,7 +423,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         const csvContent = [
             headers.join(','),
             ...candidatesToExport.map(c => [
-                `"${c.name}"`,
+                `"${c.candidateName}"`,
                 `"${c.email || ''}"`,
                 `"${c.phone || ''}"`,
                 `"${c.matchScore || 0}"`,
@@ -597,8 +597,8 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                                     transform: isAnimatingOut ? 'translateX(100%)' : (isProcessing ? 'translateX(2px)' : 'translateX(0)')
                                                 }}
                                                 className={`group relative flex items-center p-3 rounded-xl border backdrop-blur-sm transition-all item-enter electric-hover ${isProcessing
-                                                        ? 'bg-blue-500/10 border-blue-500/50 shadow-lg shadow-blue-500/20 neon-border'
-                                                        : isLight ? 'bg-white/60 border-slate-100 hover:bg-white' : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-lg shadow-blue-500/20 neon-border'
+                                                    : isLight ? 'bg-white/60 border-slate-100 hover:bg-white' : 'bg-white/5 border-white/5 hover:bg-white/10'
                                                     } ${isAnimatingOut ? 'processed' : ''}`}
                                             >
                                                 {/* Outbound Animation for Processed Files */}
@@ -620,7 +620,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                                                     </div>
                                                 </div>
                                                 <div className="flex-1 min-w-0 relative z-10">
-                                                    <div className={`text-xs font-bold truncate pr-6 transition-colors ${isProcessing ? 'text-blue-400 neon-text' : `${textPrimary} group-hover:text-blue-400`}`}>{f.name}</div>
+                                                    <div className={`text-xs font-bold truncate pr-6 transition-colors ${isProcessing ? 'text-blue-400 neon-text' : `${textPrimary} group-hover:text-blue-400`}`}>{f.candidateName}</div>
                                                     <div className={`text-[10px] flex items-center gap-1 ${textSecondary}`}>
                                                         <span>{f.size}</span>
                                                         <span className="w-0.5 h-0.5 rounded-full bg-zinc-400"></span>

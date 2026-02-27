@@ -45,7 +45,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 }) => {
     const { t } = useTranslation();
     const [search, setSearch] = useState('');
-    
+
     // --- Filter & Sort State (Multi-Select) ---
     const [sortOption, setSortOption] = useState<SortOption>('DATE_DESC');
     const [filterScanners, setFilterScanners] = useState<string[]>([]);
@@ -74,7 +74,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const textPrimary = isLight ? 'text-slate-900' : 'text-white';
     const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
     const selectBg = isLight ? 'bg-white border-slate-200 text-slate-700' : 'bg-[#18181b] border-white/10 text-zinc-300';
-    
+
     // Map user IDs to User objects for quick lookup
     const userMap = useMemo(() => {
         const map = new Map<string, User>();
@@ -88,8 +88,8 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         return project.members
             .map(m => m.user)
             .filter((u): u is User => !!u)
-            .filter(u => 
-                u.displayName.toLowerCase().includes(scannerSearch.toLowerCase()) || 
+            .filter(u =>
+                u.displayName.toLowerCase().includes(scannerSearch.toLowerCase()) ||
                 u.email.toLowerCase().includes(scannerSearch.toLowerCase())
             );
     }, [project.members, scannerSearch]);
@@ -97,12 +97,12 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const activeFiltersCount = filterScanners.length + filterScores.length + filterActivities.length;
 
     // --- Server-side Data Fetching ---
-    const { 
-        candidates, 
-        totalCount: totalScans, 
-        fetchNextPage, 
-        hasNextPage, 
-        isFetchingNextPage, 
+    const {
+        candidates,
+        totalCount: totalScans,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
         isLoading,
         updateCandidateStatus,
         toggleFavorite
@@ -151,7 +151,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
     // Handlers
     const handleSearch = (val: string) => setSearch(val);
-    
+
     const toggleFilter = <T,>(item: T, current: T[], setFn: React.Dispatch<React.SetStateAction<T[]>>) => {
         if (current.includes(item)) {
             setFn(current.filter(i => i !== item));
@@ -206,7 +206,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         const csvContent = [
             headers.join(','),
             ...candidatesToExport.map(c => [
-                `"${c.name}"`,
+                `"${c.candidateName}"`,
                 `"${c.email || ''}"`,
                 `"${c.phone || ''}"`,
                 `"${c.matchScore || 0}"`,
@@ -224,7 +224,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         setIsExportMenuOpen(false);
     };
 
@@ -264,7 +264,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     // --- Bulk Action Helpers ---
     const visibleWithDraft = candidates.filter(c => c.emailDraft && !c.emailSentAt);
     const visibleNoDraft = candidates.filter(c => !c.emailDraft && !c.emailSentAt);
-    
+
     const selectedCandidates = candidates.filter(c => selectedIds.has(c.id));
     const selectedWithDraft = selectedCandidates.filter(c => c.emailDraft && !c.emailSentAt);
     // For "Write Draft", we might overwrite existing or only target those without?
@@ -275,39 +275,39 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const handleBulkDraft = async (targetCandidates: ProjectFile[]) => {
         if (!onBatchUpdate || targetCandidates.length === 0) return;
         setIsDrafting(true);
-        
+
         // Mocking AI draft generation for now (or simple placeholder)
         const { data, error } = await supabase.rpc('get_project_owner_ai_tone', {
             p_project_id: project.id
         });
-        
+
         const tone = String(data || 'PROFESSIONAL').toUpperCase();
         const draft =
             tone === 'CASUAL' ? 'Casual draft...' :
-            tone === 'DIRECT' ? 'Direct draft...' :
-            'Professional draft...';
-            
+                tone === 'DIRECT' ? 'Direct draft...' :
+                    'Professional draft...';
+
         const updates = targetCandidates.map(c => ({
             id: c.id,
             changes: { emailDraft: draft }
         }));
-        
+
         await onBatchUpdate(updates);
         setIsDrafting(false);
         // Clear selection if it was selection based? Maybe keep it.
     };
 
     const handleBulkSend = async (targetCandidates: ProjectFile[]) => {
-         if (!onBatchUpdate || targetCandidates.length === 0) return;
-         setIsSending(true);
-         
-         // Mock sending - in reality we would call an API
-         // Here we just mark as emailed
-         const updates = targetCandidates.map(c => ({
+        if (!onBatchUpdate || targetCandidates.length === 0) return;
+        setIsSending(true);
+
+        // Mock sending - in reality we would call an API
+        // Here we just mark as emailed
+        const updates = targetCandidates.map(c => ({
             id: c.id,
             changes: { emailSentAt: new Date().toISOString() }
         }));
-        
+
         await onBatchUpdate(updates);
         setIsSending(false);
         if (selectedIds.size > 0) setSelectedIds(new Set());
@@ -316,12 +316,12 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const handleBulkClearDrafts = async (targetCandidates: ProjectFile[]) => {
         if (!onBatchUpdate || targetCandidates.length === 0) return;
         setIsClearing(true);
-        
+
         const updates = targetCandidates.map(c => ({
             id: c.id,
             changes: { emailDraft: null as any }
         }));
-        
+
         await onBatchUpdate(updates);
         setIsClearing(false);
     };
@@ -381,7 +381,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
 
             {/* Candidate List Section */}
             <div className={`flex-1 flex flex-col rounded-[2rem] border shadow-sm overflow-hidden min-w-0 relative min-h-0 ${cardBg}`}>
-                
+
                 {/* Toolbar */}
                 <div className={`p-4 border-b flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-20 ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/5'}`}>
                     <div className="flex flex-1 gap-2 w-full">
@@ -614,7 +614,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     onToggleFavorite={toggleFavorite}
                     onUpdateStatus={updateCandidateStatus}
                 />
-                
+
                 {/* Anti Ghosting Bar */}
                 {canUseAntiGhosting && (
                     <div className={`shrink-0 border-t p-3 flex items-center justify-between transition-colors ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#18181b] border-white/10'}`}>
@@ -652,7 +652,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                                         {isDrafting ? <Loader2 size={14} className="animate-spin" /> : <PenTool size={14} />}
                                         {t('antiGhosting.writeDrafts')} ({selectedNoDraft.length})
                                     </button>
-                                    
+
                                     <button
                                         onClick={handleBulkFavorite}
                                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${isLight

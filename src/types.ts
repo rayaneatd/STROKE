@@ -44,17 +44,17 @@ export interface WebhookPayload {
 
 export interface FailedFile {
   file: File;
-  reason: 
-    | 'SIZE_LIMIT' 
-    | 'INVALID_FORMAT' 
-    | 'CORRUPTION' 
-    | 'STORAGE_UPLOAD_FAILED' 
-    | 'WEBHOOK_FAILED'
-    | 'DUPLICATE_FILE'
-    | 'PASSWORD_PROTECTED'
-    | 'TOO_MANY_PAGES'
-    | 'EMPTY_FILE'
-    | 'QUOTA_EXCEEDED';
+  reason:
+  | 'SIZE_LIMIT'
+  | 'INVALID_FORMAT'
+  | 'CORRUPTION'
+  | 'STORAGE_UPLOAD_FAILED'
+  | 'WEBHOOK_FAILED'
+  | 'DUPLICATE_FILE'
+  | 'PASSWORD_PROTECTED'
+  | 'TOO_MANY_PAGES'
+  | 'EMPTY_FILE'
+  | 'QUOTA_EXCEEDED';
   errorMessage?: string;
 }
 
@@ -154,7 +154,7 @@ export interface User {
 
   // Updated: List of integrations
   emailIntegrations: EmailIntegration[];
-  
+
   // Auth Identity Info
   identities?: {
     id: string;
@@ -241,12 +241,10 @@ export interface Project {
 export interface ProjectFile {
   id: FileId;
   projectId: ProjectId;
-  name: string;
+  candidateName: string;
   size: string;
   status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'SCANNING' | 'new' | 'screened' | 'interview' | 'rejected' | 'hired';
   uploadedAt: string;
-  score?: number;
-  candidateName?: string;
   uploadedByUserId?: UserId;
   failureReasons?: string[];
   isFavorite?: boolean;
@@ -270,7 +268,6 @@ export interface ProjectFile {
   phone?: string;
   location?: string;
   summary?: string;
-  skills?: string[];
   rank?: number;
 
   // --- ELITE DATA FIELDS ---
@@ -283,10 +280,10 @@ export interface ProjectFile {
   missingSkills?: string[];
   redFlags?: string[];
   softSkillsAnalysis?: string;
-  interviewQuestions?: { 
-    id: string; 
-    question: string; 
-    context?: string; 
+  interviewQuestions?: {
+    id: string;
+    question: string;
+    context?: string;
     type: 'AI' | 'MANUAL';
     createdBy?: string;
     createdAt: string;

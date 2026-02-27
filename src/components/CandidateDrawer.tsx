@@ -42,7 +42,6 @@ interface CandidateDrawerData {
   summary: string | null;
   soft_skills_analysis: string | null;
   key_skills: unknown;
-  skills: unknown;
   missing_skills: unknown;
   red_flags: unknown;
   interview_questions: unknown;
@@ -65,10 +64,10 @@ interface CandidateDrawerProps {
 
 type DrawerTab = 'analysis' | 'communication' | 'interview';
 
-const CandidateDrawer: React.FC<CandidateDrawerProps> = ({ 
-  isOpen, 
-  candidateId, 
-  onClose, 
+const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
+  isOpen,
+  candidateId,
+  onClose,
   hideCommunicationTab = false,
   status,
   isFavorite,
@@ -91,7 +90,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
 
   // --- Autosave Logic ---
-  
+
   const saveDraft = useCallback(
     async (currentDraft: string) => {
       if (!candidateId) return;
@@ -141,12 +140,12 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
   const handleSendEmail = async () => {
     if (!candidateId || !draft.trim()) return;
-    
+
     setIsSending(true);
     try {
       // 1. Simulate sending (replace with real API later)
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // 2. Log for debug
       console.log('draft envoyé');
       console.log(`[Debug] To: ${data?.email || 'N/A'} | Content: ${draft.substring(0, 50)}...`);
@@ -163,7 +162,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
       // 4. Update local state
       setData(prev => prev ? { ...prev, email_sent_at: now } : null);
-      
+
     } catch (err) {
       console.error('Failed to send email:', err);
       // Could add toast here
@@ -250,15 +249,13 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   }, [data?.years_of_experience, t]);
 
   const normalized = useMemo(() => {
-    const keySkills = toStringArray(data?.key_skills);
-    const fallbackSkills = toStringArray(data?.skills);
     return {
-      keySkills: keySkills.length > 0 ? keySkills : fallbackSkills,
+      keySkills: toStringArray(data?.key_skills),
       missingSkills: toStringArray(data?.missing_skills),
       redFlags: toStringArray(data?.red_flags),
       questions: toQuestions(data?.interview_questions)
     };
-  }, [data?.key_skills, data?.skills, data?.missing_skills, data?.red_flags, data?.interview_questions]);
+  }, [data?.key_skills, data?.missing_skills, data?.red_flags, data?.interview_questions]);
 
   if (!isOpen) return null;
 
@@ -310,10 +307,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     // Optimistic update
     const currentQuestions = normalized.questions;
     const updatedQuestions = currentQuestions.filter((_, i) => i !== index);
-    
+
     // Save previous state for rollback
     const previousData = data;
-    
+
     // Update local state immediately
     setData(prev => prev ? { ...prev, interview_questions: updatedQuestions } : null);
 
@@ -416,73 +413,73 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
   const renderCommunication = () => {
     const isEmailSent = !!data?.email_sent_at;
-    
+
     return (
-    <div className="space-y-6 h-full flex flex-col animate-fade-in">
-      <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 space-y-4 flex-1 flex flex-col">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
-            <Mail className="w-4 h-4 text-purple-500" />
-            {t('candidateDrawer.email.draftTitle')}
-          </h3>
-          {data?.email_sent_at && (
-            <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-500 text-xs font-bold border border-emerald-500/20">
-              {t('candidateDrawer.email.sent')} {new Date(data.email_sent_at).toLocaleDateString()}
-            </span>
-          )}
-        </div>
-        <div className="flex-1">
-          <textarea
-            className={`w-full h-full min-h-[300px] bg-zinc-950 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none ${isEmailSent ? 'opacity-50 cursor-not-allowed' : ''}`}
-            placeholder={t('candidateDrawer.email.draftPlaceholder')}
-            value={draft}
-            onChange={handleDraftChange}
-            disabled={isSending || isEmailSent}
-          />
-        </div>
-        <div className="flex justify-end gap-3 pt-2 items-center">
-          <div className="flex items-center gap-2 mr-auto text-xs text-zinc-500">
-             {saveStatus === 'saving' && (
-               <>
-                 <Loader2 className="w-3 h-3 animate-spin" />
-                 <span>Saving...</span>
-               </>
-             )}
-             {saveStatus === 'saved' && (
-               <>
-                 <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                 <span>Saved</span>
-               </>
-             )}
-             {saveStatus === 'error' && (
-               <>
-                 <AlertTriangle className="w-3 h-3 text-rose-500" />
-                 <span>Error saving</span>
-               </>
-             )}
+      <div className="space-y-6 h-full flex flex-col animate-fade-in">
+        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 space-y-4 flex-1 flex flex-col">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
+              <Mail className="w-4 h-4 text-purple-500" />
+              {t('candidateDrawer.email.draftTitle')}
+            </h3>
+            {data?.email_sent_at && (
+              <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-500 text-xs font-bold border border-emerald-500/20">
+                {t('candidateDrawer.email.sent')} {new Date(data.email_sent_at).toLocaleDateString()}
+              </span>
+            )}
           </div>
-          <button
-            onClick={() => {
-              setDraft('');
-              saveDraft(''); // Immediate save for clear
-            }}
-            disabled={isSending || isEmailSent}
-            className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {t('candidateDrawer.email.clear')}
-          </button>
-          <button 
-            onClick={handleSendEmail}
-            disabled={isSending || !draft.trim() || isEmailSent}
-            className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isEmailSent ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Mail className="w-3.5 h-3.5" />}
-            {isSending ? 'Sending...' : isEmailSent ? 'Sent' : t('candidateDrawer.email.send')}
-          </button>
+          <div className="flex-1">
+            <textarea
+              className={`w-full h-full min-h-[300px] bg-zinc-950 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none ${isEmailSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+              placeholder={t('candidateDrawer.email.draftPlaceholder')}
+              value={draft}
+              onChange={handleDraftChange}
+              disabled={isSending || isEmailSent}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2 items-center">
+            <div className="flex items-center gap-2 mr-auto text-xs text-zinc-500">
+              {saveStatus === 'saving' && (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                  <span>Saved</span>
+                </>
+              )}
+              {saveStatus === 'error' && (
+                <>
+                  <AlertTriangle className="w-3 h-3 text-rose-500" />
+                  <span>Error saving</span>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                setDraft('');
+                saveDraft(''); // Immediate save for clear
+              }}
+              disabled={isSending || isEmailSent}
+              className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('candidateDrawer.email.clear')}
+            </button>
+            <button
+              onClick={handleSendEmail}
+              disabled={isSending || !draft.trim() || isEmailSent}
+              className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isEmailSent ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Mail className="w-3.5 h-3.5" />}
+              {isSending ? 'Sending...' : isEmailSent ? 'Sent' : t('candidateDrawer.email.send')}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
   };
 
   const renderInterview = () => (
@@ -607,11 +604,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 {onToggleFavorite && (
                   <button
                     onClick={() => onToggleFavorite(candidateId!, isFavorite || false)}
-                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${
-                      isFavorite 
-                      ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20' 
-                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
-                    }`}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${isFavorite
+                        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20'
+                        : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                      }`}
                   >
                     <Star className={`w-4 h-4 ${isFavorite ? 'fill-amber-500' : ''}`} />
                     {isFavorite ? t('candidateList.actions.favorited') : t('candidateList.actions.favorite')}
@@ -621,11 +617,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 {onUpdateStatus && (
                   <button
                     onClick={() => onUpdateStatus(candidateId!, status === 'rejected' ? 'new' : 'rejected')}
-                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${
-                      status === 'rejected'
-                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20'
-                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
-                    }`}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${status === 'rejected'
+                        ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20'
+                        : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                      }`}
                   >
                     <ThumbsDown className={`w-4 h-4 ${status === 'rejected' ? 'fill-rose-500' : ''}`} />
                     {status === 'rejected' ? t('candidateList.actions.rejected') : t('candidateList.actions.reject')}
@@ -633,7 +628,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 )}
 
                 <div className="h-8 w-px bg-white/10 mx-1" />
-                
+
                 <button
                   onClick={() => data.email && window.open(`mailto:${data.email}`)}
                   className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
