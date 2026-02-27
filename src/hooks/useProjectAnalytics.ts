@@ -13,36 +13,36 @@ interface ProjectAnalytics {
     contacted: number; // Email sent
     rejected: number; // Score < 50
     avgScore: number;
-    
+
     // Rates
     qualificationRate: number;
     contactRate: number;
     completionRate: number;
-    
+
     // Charts
-    timelineData: { 
-        date: string; 
-        added: number; 
+    timelineData: {
+        date: string;
+        added: number;
         qualified: number;
         contacted: number;
         failed: number;
     }[];
-    
+
     scoreDistribution: { range: string; count: number }[];
     failureDistribution: { reason: string; count: number }[];
-    
+
     funnelData: { stage: string; count: number; fill: string }[];
 
-    contributionData: { 
-        userId: string; 
-        scans: number; 
+    contributionData: {
+        userId: string;
+        scans: number;
         qualified: number;
         rejected: number;
         contacted: number;
     }[];
-    
+
     topCandidates: { id: string; candidateName: string; score: number; uploadedAt: string }[];
-    
+
     // Health
     recentFailures: number;
     riskCount: number;
@@ -50,27 +50,27 @@ interface ProjectAnalytics {
 
 export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'ALL') => {
     const { t, i18n } = useTranslation();
-    
+
     return useQuery({
         queryKey: ['project-analytics', projectId, timeRange, i18n.language],
         queryFn: async (): Promise<ProjectAnalytics> => {
             // Calculate start date based on range
             let startDate: Date | null = null;
             const now = new Date();
-            
+
             if (timeRange === '7d') startDate = subDays(now, 7);
             if (timeRange === '30d') startDate = subDays(now, 30);
             if (timeRange === '90d') startDate = subDays(now, 90);
-            
+
             // Parallel requests:
             // 1. All candidates for legacy stats
             // 2. Analytics Events for accurate historical & team data
             // 3. Top 5 candidates
-            
+
             const [statsResult, eventsResult, topResult, timelineResult, failureDistResult] = await Promise.all([
                 supabase
                     .from('candidates')
-                    .select('score, uploaded_at, uploaded_by, email_sent_at, size, status')
+                    .select('match_score, uploaded_at, uploaded_by, email_sent_at, size, status')
                     .eq('project_id', projectId),
                 supabase
                     .from('analytics_events')
@@ -78,10 +78,10 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     .eq('project_id', projectId),
                 supabase
                     .from('candidates')
-                    .select('id, candidate_name, score, uploaded_at')
+                    .select('id, candidate_name, match_score, uploaded_at')
                     .eq('project_id', projectId)
-                    .not('score', 'is', null)
-                    .order('score', { ascending: false })
+                    .not('match_score', 'is', null)
+                    .order('match_score', { ascending: false })
                     .limit(5),
                 // New optimized RPC calls
                 supabase.rpc('get_project_activity_timeline', {
@@ -104,29 +104,29 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const allData = statsResult.data || [];
             const allEvents = eventsResult.data || [];
 
-            const data = startDate 
+            const data = startDate
                 ? allData.filter(c => isAfter(parseISO(c.uploaded_at), startDate))
                 : allData;
-            
+
             // Basic Stats (Still based on current state for accuracy of "now")
             const total = data.length;
-            const completed = data.filter(c => c.score != null).length;
-            
+            const completed = data.filter(c => c.match_score != null).length;
+
             // Pending -> Imported Today
             const todayStart = startOfDay(new Date());
             const pending = data.filter(c => isAfter(parseISO(c.uploaded_at), todayStart)).length;
 
-            const qualified = data.filter(c => c.score != null && c.score >= 50).length;
-            
+            const qualified = data.filter(c => c.match_score != null && c.match_score >= 50).length;
+
             // Rejected -> Explicit status 'rejected'
             const rejected = data.filter(c => c.status === 'rejected').length;
 
             const contacted = data.filter(c => c.email_sent_at != null).length;
 
             const scores = data
-                .filter(c => c.score != null)
-                .map(c => c.score as number);
-            
+                .filter(c => c.match_score != null)
+                .map(c => c.match_score as number);
+
             const avgScore = scores.length > 0
                 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
                 : 0;
@@ -138,7 +138,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
 
             // Timeline (Use RPC result if available, otherwise fallback to legacy calculation)
             let timelineData: any[] = [];
-            
+
             if (timelineResult.data && Array.isArray(timelineResult.data) && timelineResult.data.length > 0) {
                 // Ensure data types are correct for Recharts
                 timelineData = timelineResult.data.map((item: any) => ({
@@ -150,16 +150,16 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             } else {
                 // Fallback Logic (Legacy)
                 const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number; failed: number }>();
-                
+
                 data.forEach(c => {
                     const date = c.uploaded_at.split('T')[0];
                     const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
-                    
+
                     current.added++;
-                    if (c.score != null && c.score >= 50) current.qualified++;
+                    if (c.match_score != null && c.match_score >= 50) current.qualified++;
                     if (c.email_sent_at) current.contacted++;
-                    if (c.score != null && c.score < 50) current.rejected++;
-                    
+                    if (c.match_score != null && c.match_score < 50) current.rejected++;
+
                     timelineMap.set(date, current);
                 });
 
@@ -199,10 +199,10 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             };
 
             if (failureDistResult.data && Array.isArray(failureDistResult.data) && failureDistResult.data.length > 0) {
-                 failureDistResult.data.forEach((item: any) => {
+                failureDistResult.data.forEach((item: any) => {
                     const label = getFailLabel(item.reason);
                     failureMap.set(label, (failureMap.get(label) || 0) + Number(item.count || 0));
-                 });
+                });
             } else {
                 // Fallback Logic
                 const events = startDate
@@ -248,18 +248,18 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
 
             // Contribution (Legacy source for consistency)
             const contributionMap = new Map<string, { scans: number; qualified: number; rejected: number; contacted: number }>();
-            
+
             data.forEach(c => {
                 if (c.uploaded_by) {
                     const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
                     current.scans++;
-                    if (c.score != null && c.score >= 50) current.qualified++;
-                    if (c.score != null && c.score < 50) current.rejected++;
+                    if (c.match_score != null && c.match_score >= 50) current.qualified++;
+                    if (c.match_score != null && c.match_score < 50) current.rejected++;
                     if (c.email_sent_at) current.contacted++;
                     contributionMap.set(c.uploaded_by, current);
                 }
             });
-            
+
             const contributionData = Array.from(contributionMap.entries())
                 .map(([userId, stats]) => ({ userId, ...stats }))
                 .sort((a, b) => b.scans - a.scans);
@@ -267,7 +267,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const topCandidates = topResult.data.map((c: any) => ({
                 id: c.id,
                 candidateName: c.candidate_name,
-                score: c.score,
+                score: c.match_score,
                 uploadedAt: c.uploaded_at
             }));
 

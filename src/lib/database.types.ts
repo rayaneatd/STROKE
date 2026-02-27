@@ -148,51 +148,99 @@ export type Database = {
             candidates: {
                 Row: {
                     candidate_name: string | null
+                    current_position: string | null
+                    email: string | null
                     email_draft: string | null
                     email_sent_at: string | null
+                    executive_summary: string | null
                     exported_by: string[] | null
+                    file_hash: string | null
                     id: string
-                    name: string
+                    interview_questions: Json | null
+                    is_favorite: boolean
+                    key_skills: Json | null
+                    location: string | null
+                    match_score: number | null
+                    missing_skills: Json | null
+                    original_resume_name: string | null
+                    phone: string | null
                     project_id: string
-                    score: number | null
+                    red_flags: Json | null
+                    resume_path: string | null
+                    score_justification: string | null
                     size: string | null
+                    social_links: Json | null
+                    soft_skills_analysis: string | null
+                    status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    summary: string | null
                     uploaded_at: string | null
                     uploaded_by: string | null
                     viewed_by: string[] | null
-                    status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
-                    is_favorite: boolean
+                    years_of_experience: number | null
                 }
                 Insert: {
                     candidate_name?: string | null
+                    current_position?: string | null
+                    email?: string | null
                     email_draft?: string | null
                     email_sent_at?: string | null
+                    executive_summary?: string | null
                     exported_by?: string[] | null
+                    file_hash?: string | null
                     id?: string
-                    name: string
+                    interview_questions?: Json | null
+                    is_favorite?: boolean
+                    key_skills?: Json | null
+                    location?: string | null
+                    match_score?: number | null
+                    missing_skills?: Json | null
+                    original_resume_name?: string | null
+                    phone?: string | null
                     project_id: string
-                    score?: number | null
+                    red_flags?: Json | null
+                    resume_path?: string | null
+                    score_justification?: string | null
                     size?: string | null
+                    social_links?: Json | null
+                    soft_skills_analysis?: string | null
+                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    summary?: string | null
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
-                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired' // useful for future implementations
-                    is_favorite?: boolean
+                    years_of_experience?: number | null
                 }
                 Update: {
                     candidate_name?: string | null
+                    current_position?: string | null
+                    email?: string | null
                     email_draft?: string | null
                     email_sent_at?: string | null
+                    executive_summary?: string | null
                     exported_by?: string[] | null
+                    file_hash?: string | null
                     id?: string
-                    name?: string
+                    interview_questions?: Json | null
+                    is_favorite?: boolean
+                    key_skills?: Json | null
+                    location?: string | null
+                    match_score?: number | null
+                    missing_skills?: Json | null
+                    original_resume_name?: string | null
+                    phone?: string | null
                     project_id?: string
-                    score?: number | null
+                    red_flags?: Json | null
+                    resume_path?: string | null
+                    score_justification?: string | null
                     size?: string | null
+                    social_links?: Json | null
+                    soft_skills_analysis?: string | null
+                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
+                    summary?: string | null
                     uploaded_at?: string | null
                     uploaded_by?: string | null
                     viewed_by?: string[] | null
-                    status?: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
-                    is_favorite?: boolean
+                    years_of_experience?: number | null
                 }
                 Relationships: [
                     {
@@ -555,40 +603,65 @@ export type Database = {
                     p_user_id: string
                 }
                 Returns: {
-                    candidate_name: string | null
-                    career_trajectory: string | null
-                    current_position: string | null
-                    email: string | null
-                    email_draft: string | null
-                    email_sent_at: string | null
-                    executive_summary: string | null
-                    exported_by: string[] | null
-                    full_count: number
                     id: string
-                    interview_questions: Json | null
-                    key_skills: Json | null
-                    location: string | null
-                    match_score: number | null
-                    missing_skills: Json | null
-                    name: string
-                    original_resume_name: string | null
-                    phone: string | null
                     project_id: string
-                    rank: number | null
-                    red_flags: Json | null
-                    score: number | null
-                    score_justification: string | null
+                    candidate_name: string | null
                     size: string | null
-                    skills: string[] | null
-                    social_links: Json | null
-                    soft_skills_analysis: string | null
-                    summary: string | null
                     uploaded_at: string | null
+                    match_score: number | null
                     uploaded_by: string | null
                     viewed_by: string[] | null
-                    years_of_experience: number | null
+                    exported_by: string[] | null
+                    email_sent_at: string | null
+                    email_draft: string | null
+                    rank: number | null
                     status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired'
                     is_favorite: boolean
+                    email: string | null
+                    phone: string | null
+                    location: string | null
+                    summary: string | null
+                    current_position: string | null
+                    years_of_experience: number | null
+                    score_justification: string | null
+                    executive_summary: string | null
+                    key_skills: Json | null
+                    missing_skills: Json | null
+                    red_flags: Json | null
+                    soft_skills_analysis: string | null
+                    interview_questions: Json | null
+                    career_trajectory: string | null
+                    social_links: Json | null
+                    original_resume_name: string | null
+                    full_count: number
+                }[]
+            }
+            get_candidate_drawer_data: {
+                Args: {
+                    p_candidate_id: string
+                }
+                Returns: {
+                    candidate_name: string | null
+                    current_position: string | null
+                    years_of_experience: number | null
+                    location: string | null
+                    email: string | null
+                    phone: string | null
+                    social_links: Json | null
+                    match_score: number | null
+                    score_justification: string | null
+                    career_trajectory: string | null
+                    executive_summary: string | null
+                    summary: string | null
+                    soft_skills_analysis: string | null
+                    key_skills: Json | null
+                    missing_skills: Json | null
+                    red_flags: Json | null
+                    interview_questions: Json | null
+                    email_draft: string | null
+                    email_sent_at: string | null
+                    original_resume_name: string | null
+                    uploaded_at: string | null
                 }[]
             }
             get_project_owner_ai_tone: {

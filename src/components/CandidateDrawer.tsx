@@ -179,9 +179,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       setData(null);
       setActiveTab('analysis');
       try {
-        const { data, error } = (await supabase.rpc('get_candidate_drawer_data' as any, {
+        const { data, error } = await supabase.rpc('get_candidate_drawer_data', {
           p_candidate_id: candidateId
-        })) as { data: CandidateDrawerData[] | CandidateDrawerData | null; error: any };
+        });
         if (error) throw error;
         const candidateData = Array.isArray(data) ? data[0] : data;
         if (!candidateData) {
@@ -605,8 +605,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                   <button
                     onClick={() => onToggleFavorite(candidateId!, isFavorite || false)}
                     className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${isFavorite
-                        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20'
-                        : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                      ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20'
+                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
                       }`}
                   >
                     <Star className={`w-4 h-4 ${isFavorite ? 'fill-amber-500' : ''}`} />
@@ -618,8 +618,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                   <button
                     onClick={() => onUpdateStatus(candidateId!, status === 'rejected' ? 'new' : 'rejected')}
                     className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${status === 'rejected'
-                        ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20'
-                        : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20'
+                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
                       }`}
                   >
                     <ThumbsDown className={`w-4 h-4 ${status === 'rejected' ? 'fill-rose-500' : ''}`} />
