@@ -273,7 +273,6 @@ export interface ProjectFile {
   currentPosition?: string;
   yearsOfExperience?: number;
   matchScore?: number;
-  scoreJustification?: string;
   executiveSummary?: string;
   keySkills?: string[];
   missingSkills?: string[];

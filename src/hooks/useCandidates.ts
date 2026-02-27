@@ -107,7 +107,6 @@ export const useCandidates = ({
                 currentPosition: row.current_position,
                 yearsOfExperience: row.years_of_experience,
                 matchScore: row.match_score,
-                scoreJustification: row.score_justification,
                 executiveSummary: row.executive_summary,
                 keySkills: row.key_skills, // Already JSONB/Array from RPC
                 missingSkills: row.missing_skills,

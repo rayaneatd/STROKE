@@ -36,7 +36,6 @@ interface CandidateDrawerData {
     github?: string;
   } | null;
   match_score: number | null;
-  score_justification: string | null;
   career_trajectory: string | null;
   executive_summary: string | null;
   soft_skills_analysis: string | null;
@@ -682,11 +681,6 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 text-xl font-bold ${getScoreColor(matchScoreValue || 0)}`}>
                 {matchScoreValue ?? 0}%
               </div>
-              {data.score_justification && (
-                <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-zinc-900 border border-white/10 rounded-xl shadow-xl text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                  {data.score_justification}
-                </div>
-              )}
             </div>
           </div>
           <div className="flex items-center gap-1 mt-8 border-b border-white/5">

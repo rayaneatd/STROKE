@@ -167,7 +167,6 @@ export type Database = {
                     project_id: string
                     red_flags: Json | null
                     resume_path: string | null
-                    score_justification: string | null
                     size: string | null
                     social_links: Json | null
                     soft_skills_analysis: string | null
@@ -198,7 +197,6 @@ export type Database = {
                     project_id: string
                     red_flags?: Json | null
                     resume_path?: string | null
-                    score_justification?: string | null
                     size?: string | null
                     social_links?: Json | null
                     soft_skills_analysis?: string | null
@@ -229,7 +227,6 @@ export type Database = {
                     project_id?: string
                     red_flags?: Json | null
                     resume_path?: string | null
-                    score_justification?: string | null
                     size?: string | null
                     social_links?: Json | null
                     soft_skills_analysis?: string | null
@@ -619,7 +616,6 @@ export type Database = {
                     location: string | null
                     current_position: string | null
                     years_of_experience: number | null
-                    score_justification: string | null
                     executive_summary: string | null
                     key_skills: Json | null
                     missing_skills: Json | null
@@ -645,7 +641,6 @@ export type Database = {
                     phone: string | null
                     social_links: Json | null
                     match_score: number | null
-                    score_justification: string | null
                     career_trajectory: string | null
                     executive_summary: string | null
                     soft_skills_analysis: string | null
