@@ -88,8 +88,12 @@ export const useFileProcessing = (
                             status: 'FAILED',
                             uploadedAt: new Date().toISOString(),
                             uploadedByUserId: currentUser.id,
-                            failureReasons: [reason]
-                        } as ProjectFile
+                            failureReasons: [reason],
+                            candidateName: file.name.split('.')[0],
+                            summary: '',
+                            keySkills: [],
+                            matchScore: 0
+                        } as unknown as ProjectFile
                     };
                 } else {
                     return { type: 'VALID', file };
@@ -263,19 +267,17 @@ export const useFileProcessing = (
 
     }, [projectId, currentUser.id, logFailure, queryClient]);
 
-    const triggerBulkProcessing = useCallback(async () => {
+    const triggerBulkProcessing = useCallback(async (filesList?: any[]) => {
         try {
-            console.log(`[Edge Function] Triggering retreive_resumes_bulk for project: ${projectId}`);
+            console.log(`[Edge Function] Triggering retreive_resumes_bulk for project: ${projectId} with ${filesList?.length || 'all'} files`);
 
-            // Get the current session to extract both tokens
             const { data: { session } } = await supabase.auth.getSession();
             const userJwt = session?.access_token;
             const anonKey = SUPABASE_ANON_KEY;
 
             const { data, error } = await supabase.functions.invoke('retreive_resumes_bulk', {
-                body: { project_id: projectId },
+                body: { project_id: projectId, files: filesList },
                 headers: {
-                    // Explicitly pass both headers the Gateway expects
                     'apikey': anonKey,
                     ...(userJwt ? { 'Authorization': `Bearer ${userJwt}` } : {})
                 }
@@ -302,6 +304,7 @@ export const useFileProcessing = (
         let successCounter = 0;
 
         // 2. Process Uploads (Storage -> DB) with Progressive Credit Deduction
+        let currentBatch: any[] = [];
         const processingFailures = await processValidatedUploads(
             pendingFiles,
             projectId,
@@ -335,18 +338,22 @@ export const useFileProcessing = (
                     return false;
                 }
             },
-            // Callback for individual file success to track for bulk trigger
-            () => {
+            // Callback for individual file success to track and batch for bulk trigger
+            (fileInfo) => {
                 successCounter++;
+                currentBatch.push(fileInfo);
+
+                // Trigger dispatcher every 1000 files to avoid overlapping discovery issues
                 if (successCounter % 1000 === 0) {
-                    triggerBulkProcessing();
+                    triggerBulkProcessing([...currentBatch]);
+                    currentBatch = [];
                 }
             }
         );
 
         // 3. Final trigger for any remaining files (remainder of 1000)
-        if (successCounter > 0 && successCounter % 1000 !== 0) {
-            triggerBulkProcessing();
+        if (currentBatch.length > 0) {
+            triggerBulkProcessing(currentBatch);
         }
 
         // 3. Handle Results

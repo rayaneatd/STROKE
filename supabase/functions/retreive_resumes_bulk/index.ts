@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
         );
 
         const body = await req.json();
-        const { project_id } = body;
+        const { project_id, files: filesProvided } = body;
 
         if (!project_id) {
             return new Response(JSON.stringify({ error: "project_id manquant" }), {
@@ -38,46 +38,53 @@ Deno.serve(async (req: Request) => {
 
         console.log(`🚀 Dispatcher démarré pour le projet: ${project_id}`);
 
-        // --- ÉTAPE A : Pagination pour lister TOUT le bucket ---
         let allFilesToProcess: any[] = [];
-        let offset = 0;
-        let hasMore = true;
 
-        while (hasMore) {
-            const { data: files, error } = await supabase.storage
-                .from('resumes')
-                .list(project_id, {
-                    limit: PAGE_SIZE,
-                    offset: offset,
-                    sortBy: { column: 'name', order: 'asc' }
-                });
+        if (filesProvided && Array.isArray(filesProvided) && filesProvided.length > 0) {
+            console.log(`📦 Utilisation de la liste de ${filesProvided.length} fichiers fournie par le client.`);
+            allFilesToProcess = filesProvided;
+        } else {
+            console.log("🔍 Aucun fichier fourni, listing du bucket...");
+            // --- ÉTAPE A : Pagination pour lister TOUT le bucket ---
+            let offset = 0;
+            let hasMore = true;
 
-            if (error) throw error;
-
-            if (!files || files.length === 0) {
-                hasMore = false;
-            } else {
-                const validBatch = files
-                    .filter(f => f.name !== '.emptyFolderPlaceholder' && f.id)
-                    .map(f => {
-                        // Supabase list() returns eTag wrapped in quotes like '"hash"'
-                        const cleanETag = f.metadata?.eTag ? f.metadata.eTag.replace(/"/g, '') : null;
-                        return {
-                            path: `${project_id}/${f.name}`,
-                            name: f.name,
-                            size: f.metadata?.size || 0,
-                            // Use eTag if custom file_hash metadata is not returned by list()
-                            hash: f.metadata?.file_hash || cleanETag || f.id,
-                            original_name: f.metadata?.original_name || f.name,
-                            scanned_by: f.metadata?.scanned_by || null
-                        };
+            while (hasMore) {
+                const { data: files, error } = await supabase.storage
+                    .from('resumes')
+                    .list(project_id, {
+                        limit: PAGE_SIZE,
+                        offset: offset,
+                        sortBy: { column: 'name', order: 'asc' }
                     });
 
-                allFilesToProcess = [...allFilesToProcess, ...validBatch];
-                console.log(`Chargé ${allFilesToProcess.length} fichiers depuis le bucket...`);
+                if (error) throw error;
 
-                if (files.length < PAGE_SIZE) hasMore = false;
-                else offset += PAGE_SIZE;
+                if (!files || files.length === 0) {
+                    hasMore = false;
+                } else {
+                    const validBatch = files
+                        .filter(f => f.name !== '.emptyFolderPlaceholder' && f.id)
+                        .map(f => {
+                            // Supabase list() returns eTag wrapped in quotes like '"hash"'
+                            const cleanETag = f.metadata?.eTag ? f.metadata.eTag.replace(/"/g, '') : null;
+                            return {
+                                path: `${project_id}/${f.name}`,
+                                name: f.name,
+                                size: f.metadata?.size || 0,
+                                // Use eTag if custom file_hash metadata is not returned by list()
+                                hash: f.metadata?.file_hash || cleanETag || f.id,
+                                original_name: f.metadata?.original_name || f.name,
+                                scanned_by: f.metadata?.scanned_by || null
+                            };
+                        });
+
+                    allFilesToProcess = [...allFilesToProcess, ...validBatch];
+                    console.log(`Chargé ${allFilesToProcess.length} fichiers depuis le bucket...`);
+
+                    if (files.length < PAGE_SIZE) hasMore = false;
+                    else offset += PAGE_SIZE;
+                }
             }
         }
 

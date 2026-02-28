@@ -50,7 +50,14 @@ export const processValidatedUploads = async (
   userId: string,
   onBatchComplete: (count: number) => void,
   onDeductCredits: (count: number) => Promise<boolean>, // New callback for credit deduction
-  onFileUploadSuccess?: () => void // New callback for individual file success
+  onFileUploadSuccess?: (fileInfo: {
+    path: string,
+    name: string,
+    original_name: string,
+    hash: string,
+    size: number,
+    scanned_by: string
+  }) => void // Updated callback with info
 ): Promise<FailedFile[]> => {
   const uploadFailures: FailedFile[] = [];
   const UPLOAD_CONCURRENCY = 30;
@@ -92,8 +99,17 @@ export const processValidatedUploads = async (
           throw new Error("Failed to upload to storage");
         }
 
-        // Trigger success callback for counter
-        if (onFileUploadSuccess) onFileUploadSuccess();
+        // Trigger success callback for counter and batching
+        if (onFileUploadSuccess) {
+          onFileUploadSuccess({
+            path: storagePath,
+            name: metadata.sanitizedName,
+            original_name: metadata.originalName,
+            hash: metadata.hash,
+            size: file.size,
+            scanned_by: userId
+          });
+        }
 
         // B. Insert into DB is REMOVED
         // We only want to upload to Storage. The Edge Function will handle the DB insertion/processing.
