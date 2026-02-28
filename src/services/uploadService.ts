@@ -45,12 +45,13 @@ const uploadToStorage = async (
  * Handles: Storage Upload -> DB Insert (with metadata)
  */
 export const processValidatedUploads = async (
-  items: { file: File; metadata: FileMetadata }[],
+  items: { file: File; id: string; metadata: FileMetadata }[],
   projectId: string,
   userId: string,
   onBatchComplete: (count: number) => void,
   onDeductCredits: (count: number) => Promise<boolean>, // New callback for credit deduction
   onFileUploadSuccess?: (fileInfo: {
+    id: string,
     path: string,
     name: string,
     original_name: string,
@@ -83,7 +84,7 @@ export const processValidatedUploads = async (
     }
 
     // 2. Process Chunk if credits secured
-    await Promise.all(chunk.map(async ({ file, metadata }) => {
+    await Promise.all(chunk.map(async ({ file, id, metadata }) => {
       try {
         // A. Upload to Storage using sanitized name
         const storagePath = await uploadToStorage(
@@ -102,6 +103,7 @@ export const processValidatedUploads = async (
         // Trigger success callback for counter and batching
         if (onFileUploadSuccess) {
           onFileUploadSuccess({
+            id,
             path: storagePath,
             name: metadata.sanitizedName,
             original_name: metadata.originalName,

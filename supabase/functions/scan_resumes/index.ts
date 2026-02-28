@@ -1,5 +1,5 @@
 import { createClient as createSupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
-import { createClient } from "npm:@google/genai";
+import genai from "npm:@google/genai";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -15,8 +15,9 @@ const INITIAL_RETRY_DELAY_MS = 2000;
 const SERVICE_ACCOUNT_JSON = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON") || "{}";
 const serviceAccount = JSON.parse(SERVICE_ACCOUNT_JSON);
 
-// Initialize Unified Client for Vertex AI
-const client = createClient({
+// Initialize Unified Client for Vertex AI 
+// Note: Using default export to avoid named export issues in Deno's npm interop
+const client = (genai as any).createClient({
     vertex: true,
     project: serviceAccount.project_id || Deno.env.get("GOOGLE_PROJECT_ID"),
     location: Deno.env.get("GOOGLE_LOCATION") || "europe-west1",

@@ -306,7 +306,7 @@ export const useFileProcessing = (
         // 2. Process Uploads (Storage -> DB) with Progressive Credit Deduction
         let currentBatch: any[] = [];
         const processingFailures = await processValidatedUploads(
-            pendingFiles,
+            pendingFiles, // pendingFiles already contains { file, id, metadata }
             projectId,
             currentUser.id,
             (count) => {
@@ -342,6 +342,11 @@ export const useFileProcessing = (
             (fileInfo) => {
                 successCounter++;
                 currentBatch.push(fileInfo);
+
+                // --- PROGRESSIVE UI REMOVAL ---
+                // Remove from local list as soon as it is safely in the bucket
+                // This gives the "illusion of speed" requested by USER
+                setFiles(prev => prev.filter(f => f.id !== fileInfo.id));
 
                 // Trigger dispatcher every 1000 files to avoid overlapping discovery issues
                 if (successCounter % 1000 === 0) {
