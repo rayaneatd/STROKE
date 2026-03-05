@@ -29,6 +29,7 @@ const Connections = React.lazy(() => import('./pages/Connections'));
 const BuyScans = React.lazy(() => import('./pages/BuyScans'));
 const UpgradePlan = React.lazy(() => import('./pages/UpgradePlan'));
 const Profile = React.lazy(() => import('./pages/Profile'));
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 
 // Wrapper to extract route params for ProjectDetail
 import { useParams } from 'react-router-dom';
@@ -96,7 +97,7 @@ const AppContent: React.FC = () => {
                 .select('language')
                 .eq('id', user.id)
                 .single();
-            
+
             if (profile?.language && profile.language !== i18n.language) {
                 i18n.changeLanguage(profile.language);
             } else if (!profile?.language) {
@@ -190,10 +191,11 @@ const AppContent: React.FC = () => {
             <ThemeProvider>
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
+                        <Route path="/" element={<LandingPage />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/terms-of-service" element={<TermsOfService />} />
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                        <Route path="*" element={<Navigate to="/login" replace />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </Suspense>
             </ThemeProvider>
@@ -280,7 +282,7 @@ const AppContent: React.FC = () => {
                                 onBack={() => navigate(-1)}
                                 onBuy={(amount) => {
                                     // Local update only, backend handled by RPC in useBuyScans
-                                    updateUser({ scansBalance: (user.scansBalance || 0) + amount }); 
+                                    updateUser({ scansBalance: (user.scansBalance || 0) + amount });
                                 }}
                                 currentBalance={user.scansBalance}
                             />
