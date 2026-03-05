@@ -1,12 +1,33 @@
-import React, { useState, useRef } from 'react';
-import { motion, useInView, useAnimation, useDragControls } from 'framer-motion';
-import { Ghost, Settings } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Ghost, Settings, ScanLine } from 'lucide-react';
 
 const AgitationSection: React.FC = () => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
-    const [sliderPos, setSliderPos] = useState(50);
-    const constraintsRef = useRef(null);
+    const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setMousePos({ x, y });
+    };
+
+    // Auto-drift if no mouse interaction
+    useEffect(() => {
+        let angle = 0;
+        const interval = setInterval(() => {
+            angle += 0.02;
+            setMousePos(prev => ({
+                x: 50 + Math.cos(angle) * 30,
+                y: 50 + Math.sin(angle) * 20
+            }));
+        }, 16);
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <section
@@ -77,7 +98,7 @@ const AgitationSection: React.FC = () => {
                     </motion.div>
                 </div>
 
-                {/* Tactile Comparison Slider (Asymmetrical placement) */}
+                {/* Tactile "Truth Lens" Comparison (Replacing buggy slider) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
@@ -86,86 +107,84 @@ const AgitationSection: React.FC = () => {
                         className="lg:col-span-10 lg:col-start-2 relative"
                     >
                         <div
-                            ref={constraintsRef}
-                            className="relative w-full aspect-[16/10] md:aspect-[21/7] glass-card rounded-[1.5rem] overflow-hidden cursor-ew-resize select-none border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] group"
+                            ref={containerRef}
+                            onMouseMove={handleMouseMove}
+                            className="relative w-full aspect-[16/10] md:aspect-[21/7] glass-card rounded-[1.5rem] overflow-hidden select-none border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] group group cursor-none"
                         >
-                            {/* STROKE Content (Right/Base) */}
-                            <div className="absolute inset-0 bg-blue-900/5 flex flex-col justify-center px-10 md:px-24">
-                                <div className="max-w-xl self-end text-right">
-                                    <h3 className="text-3xl font-black text-blue-400 mb-6 uppercase tracking-widest">STROKE Insight</h3>
-                                    <ul className="space-y-6">
-                                        {[
-                                            "Decodes 14-month hyper-growth patterns.",
-                                            "Exposes gap manipulation via contextual cross-referencing.",
-                                            "Weights 'Velocity' above static job titles."
-                                        ].map((text, i) => (
-                                            <li key={i} className="text-lg md:text-xl font-mono text-blue-100/90 leading-tight">
-                                                {text} <span className="text-blue-500 ml-2">_</span>
-                                            </li>
-                                        ))}
+                            {/* Base Layer: Legacy Content (Grayscale / Boring) */}
+                            <div className="absolute inset-0 bg-[#121214] flex flex-col justify-center px-10 md:px-24 grayscale opacity-40">
+                                <div className="max-w-xl">
+                                    <h3 className="text-3xl font-black text-slate-600 mb-6 uppercase tracking-[0.2em]">Legacy Logic</h3>
+                                    <ul className="space-y-4 font-mono text-slate-500">
+                                        <li>Searching for explicit string "React"...</li>
+                                        <li>Keyword density: 42.1%</li>
+                                        <li>Formatting status: Unrecognized</li>
+                                        <li>Outcome: Automated Rejection</li>
                                     </ul>
                                 </div>
                             </div>
 
-                            {/* Legacy Content (Left/Clip) */}
-                            <motion.div
-                                className="absolute inset-0 bg-[#121214] overflow-hidden border-r border-red-500/50"
-                                style={{ width: `${sliderPos}%` }}
+                            {/* Revealing Layer: STROKE (Full Color / Contextual) */}
+                            <div
+                                className="absolute inset-0 bg-blue-900/10 backdrop-blur-3xl flex flex-col justify-center px-10 md:px-24 pointer-events-none"
+                                style={{
+                                    clipPath: `circle(15% at ${mousePos.x}% ${mousePos.y}%)`,
+                                    WebkitClipPath: `circle(15% at ${mousePos.x}% ${mousePos.y}%)`
+                                }}
                             >
-                                <div className="absolute inset-0 w-[80vw] flex flex-col justify-center px-10 md:px-24 grayscale">
-                                    <div className="max-w-xl">
-                                        <h3 className="text-3xl font-black text-red-500/80 mb-6 uppercase tracking-widest">Legacy Logic</h3>
-                                        <ul className="space-y-6">
-                                            {[
-                                                "Keyword density: 42% (Fail).",
-                                                "Scanning for exact string matches...",
-                                                "Unable to parse non-standard formatting."
-                                            ].map((text, i) => (
-                                                <li key={i} className="text-lg md:text-xl font-mono text-slate-500 leading-tight">
-                                                    {text}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                                <div className="max-w-xl">
+                                    <h3 className="text-3xl font-black text-blue-400 mb-6 uppercase tracking-[0.2em] neon-text">STROKE Insight</h3>
+                                    <ul className="space-y-4 font-mono text-blue-100">
+                                        <li className="flex items-center gap-3">
+                                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                            Hyper-growth pattern detected (1.4x trajectory)
+                                        </li>
+                                        <li className="flex items-center gap-3">
+                                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                            Contextual expertise: Core Infrastructure
+                                        </li>
+                                        <li className="flex items-center gap-3">
+                                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                            Soft skill: Cross-functional architecture
+                                        </li>
+                                        <li className="flex items-center gap-3 text-blue-400 font-bold">
+                                            <span className="w-2 h-2 rounded-full bg-blue-500" />
+                                            Match: High Potential Lead
+                                        </li>
+                                    </ul>
                                 </div>
+                            </div>
+
+                            {/* Neon Cursor Lens Ring */}
+                            <motion.div
+                                className="absolute top-0 left-0 w-[30%] aspect-square rounded-full border-2 border-blue-500/50 -translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen shadow-[0_0_50px_rgba(59,130,246,0.3)] flex items-center justify-center"
+                                animate={{
+                                    left: `${mousePos.x}%`,
+                                    top: `${mousePos.y}%`,
+                                    rotate: [0, 360]
+                                }}
+                                transition={{
+                                    left: { type: "spring", damping: 20, stiffness: 100 },
+                                    top: { type: "spring", damping: 20, stiffness: 100 },
+                                    rotate: { duration: 10, repeat: Infinity, ease: "linear" }
+                                }}
+                            >
+                                <ScanLine className="text-blue-400 opacity-50" size={48} />
+                                <div className="absolute inset-0 bg-blue-500/10 rounded-full blur-2xl" />
                             </motion.div>
 
-                            {/* Tactile Handle */}
-                            <div
-                                className="absolute top-0 bottom-0 w-1 -ml-[0.5px] z-30 pointer-events-none"
-                                style={{ left: `${sliderPos}%` }}
-                            >
-                                <div className="h-full w-full bg-gradient-to-b from-transparent via-white/50 to-transparent" />
-                                <motion.div
-                                    drag="x"
-                                    dragConstraints={constraintsRef}
-                                    dragElastic={0}
-                                    dragMomentum={false}
-                                    onDrag={(e, info) => {
-                                        if (constraintsRef.current) {
-                                            const rect = (constraintsRef.current as HTMLDivElement).getBoundingClientRect();
-                                            const x = info.point.x - rect.left;
-                                            const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-                                            setSliderPos(percentage);
-                                        }
-                                    }}
-                                    className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white rounded-full shadow-[0_0_30px_rgba(255,255,255,0.4)] flex items-center justify-center cursor-ew-resize pointer-events-auto group-hover:scale-110 transition-transform"
-                                >
-                                    <div className="flex gap-1.5">
-                                        <div className="w-1 h-6 bg-black rounded-full" />
-                                        <div className="w-1 h-6 bg-black rounded-full" />
-                                    </div>
-                                </motion.div>
+                            <div className="absolute bottom-6 right-8 text-[9px] font-mono text-slate-500 uppercase tracking-[0.4em] opacity-40">
+                                Move lens to expose truth
                             </div>
                         </div>
 
                         {/* Asymmetrical Labeling */}
                         <div className="absolute -bottom-12 left-0 right-0 flex justify-between items-center text-[10px] font-mono tracking-[0.2em] text-slate-500 uppercase">
                             <span className="flex items-center gap-4">
-                                <Settings size={12} className="animate-spin-slow" /> Binary Parser
+                                <Settings size={12} className="animate-spin-slow" /> Passive Scanning
                             </span>
                             <span className="flex items-center gap-4 text-blue-400">
-                                Contextual Engine <Ghost size={12} className="animate-pulse" />
+                                Active Contextual Analysis <Ghost size={12} className="animate-pulse" />
                             </span>
                         </div>
                     </motion.div>

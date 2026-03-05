@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
                         transition={{ duration: 1 }}
                         className="lg:col-span-5 xl:col-span-4"
                     >
-                        <Logo variant="full" height={48} />
+                        <Logo variant="full" height={120} />
                         <motion.p
                             animate={{
                                 skewX: [0, 1, -1, 0],
