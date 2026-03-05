@@ -125,13 +125,13 @@ const AgitationSection: React.FC = () => {
                         >
                             {/* Base Layer: Legacy Content */}
                             <div className="absolute inset-0 bg-[#0a0a0c] flex flex-col justify-center px-10 md:px-24 grayscale opacity-30">
-                                <div className="max-w-xl">
+                                <div className="max-w-xl text-left">
                                     <h3 className="text-3xl font-black text-slate-700 mb-6 uppercase tracking-[0.3em]">Legacy Logic</h3>
                                     <ul className="space-y-4 font-mono text-slate-600 text-sm">
-                                        <li>[SYSTEM] Searching for explicit string "React"...</li>
-                                        <li>[SYSTEM] Keyword density: 42.1% (FAIL)</li>
-                                        <li>[SYSTEM] Formatting status: Unrecognized</li>
-                                        <li>[STATUS] Outcome: Automated Rejection</li>
+                                        <li>[SYSTEM] Manual Filtering: ~10m / resume</li>
+                                        <li>[SYSTEM] Work Silos: No real-time collab</li>
+                                        <li>[SYSTEM] Ghosting Rate: 72% (unmanaged)</li>
+                                        <li>[STATUS] Outcome: Extreme Processing Latency</li>
                                     </ul>
                                 </div>
                             </div>
@@ -144,23 +144,23 @@ const AgitationSection: React.FC = () => {
                                     WebkitClipPath: `circle(150px at ${mousePos.x}% ${mousePos.y}%)`
                                 }}
                             >
-                                <div className="max-w-xl">
+                                <div className="max-w-xl text-left">
                                     <h3 className="text-3xl font-black text-blue-400 mb-6 uppercase tracking-[0.3em] shadow-blue-500/20">STROKE Insight</h3>
                                     <ul className="space-y-4 font-mono text-blue-100 italic">
                                         <li className="flex items-center gap-3">
                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                                            Hyper-growth pattern (1.4x trajectory)
+                                            Smart Rating: Instant Predictive Scoring
                                         </li>
                                         <li className="flex items-center gap-3">
                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                                            Contextual expertise: Core Infra
+                                            Anti-Ghosting: Mass Email Automation
                                         </li>
                                         <li className="flex items-center gap-3">
                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                                            Soft skill: Cross-functional architecture
+                                            Multi-Tenancy: Shared Team Workspace
                                         </li>
                                         <li className="flex items-center gap-3 text-blue-400 font-bold not-italic mt-6 bg-blue-500/10 w-fit px-4 py-1 rounded-sm">
-                                            MATCH: HIGH POTENTIAL LEAD (0.97)
+                                            STATUS: 12x FASTER / SMARTER / LIGHTER
                                         </li>
                                     </ul>
                                 </div>

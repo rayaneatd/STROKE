@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
-import { ScanSearch, ShieldCheck } from 'lucide-react';
+import { ScanSearch, ShieldCheck, Star, Users, Mail, Zap } from 'lucide-react';
 import TruthLensCanvas from './TruthLensCanvas';
 
 const TheGapSection: React.FC = () => {
@@ -86,33 +86,64 @@ const TheGapSection: React.FC = () => {
                                     See past the PDF formatting. STROKE extracts the underlying <span className="text-slate-100 font-bold not-italic">JSON data graph</span>, instantly highlighting temporal gaps and pattern anomalies.
                                 </motion.p>
 
-                                <div className="grid grid-cols-1 gap-8 relative">
-                                    {/* Tactile Governance Cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                                    {/* Smart Card 1 */}
                                     <motion.div
                                         variants={itemVariants}
-                                        whileHover={{ x: 10, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
-                                        className="glass-card p-8 flex items-start gap-8 border-white/5 shadow-3xl transition-all duration-500 group cursor-default rounded-2xl"
+                                        whileHover={{ y: -5, backgroundColor: 'rgba(59, 130, 246, 0.1)', borderColor: 'rgba(59, 130, 246, 0.3)' }}
+                                        className="glass-card p-6 flex flex-col items-start gap-4 border-white/5 shadow-2xl transition-all duration-500 group cursor-default rounded-2xl"
                                     >
-                                        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:rotate-12 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.2)]">
-                                            <ScanSearch size={28} className="text-blue-400" />
+                                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                                            <Star size={24} className="text-blue-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-base mb-3 uppercase">JSON Extraction</h4>
-                                            <p className="text-slate-500 text-sm leading-relaxed">Deconstructs legacy documents into clean, semantic primitive objects for deep AI analysis.</p>
+                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-sm mb-2 uppercase">Smart Rating</h4>
+                                            <p className="text-slate-500 text-xs leading-relaxed">Predictive scoring that ranks candidates by cultural and technical trajectory, not just keywords.</p>
                                         </div>
                                     </motion.div>
 
+                                    {/* Smart Card 2 */}
                                     <motion.div
                                         variants={itemVariants}
-                                        whileHover={{ x: 10, backgroundColor: 'rgba(16, 185, 129, 0.1)' }}
-                                        className="glass-card p-8 flex items-start gap-8 border-white/5 shadow-3xl transition-all duration-500 group cursor-default rounded-2xl"
+                                        whileHover={{ y: -5, backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.3)' }}
+                                        className="glass-card p-6 flex flex-col items-start gap-4 border-white/5 shadow-2xl transition-all duration-500 group cursor-default rounded-2xl"
                                     >
-                                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:rotate-12 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                                            <ShieldCheck size={28} className="text-emerald-400" />
+                                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                                            <Users size={24} className="text-emerald-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-base mb-3 uppercase">Temporal Auditing</h4>
-                                            <p className="text-slate-500 text-sm leading-relaxed">Identifies career progression speed and identifies "hidden gems" by analyzing time-to-impact.</p>
+                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-sm mb-2 uppercase">Multi-Tenancy</h4>
+                                            <p className="text-slate-500 text-xs leading-relaxed">Collaborative workspaces for the whole team. Move from isolation to synchronized hiring cycles.</p>
+                                        </div>
+                                    </motion.div>
+
+                                    {/* Smart Card 3 */}
+                                    <motion.div
+                                        variants={itemVariants}
+                                        whileHover={{ y: -5, backgroundColor: 'rgba(139, 92, 246, 0.1)', borderColor: 'rgba(139, 92, 246, 0.3)' }}
+                                        className="glass-card p-6 flex flex-col items-start gap-4 border-white/5 shadow-2xl transition-all duration-500 group cursor-default rounded-2xl"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+                                            <Mail size={24} className="text-purple-400" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-sm mb-2 uppercase">Anti-Ghosting</h4>
+                                            <p className="text-slate-500 text-xs leading-relaxed">Mass email automation protocol designed to keep candidates in the loop with zero manual effort.</p>
+                                        </div>
+                                    </motion.div>
+
+                                    {/* Smart Card 4 */}
+                                    <motion.div
+                                        variants={itemVariants}
+                                        whileHover={{ y: -5, backgroundColor: 'rgba(244, 63, 94, 0.1)', borderColor: 'rgba(244, 63, 94, 0.3)' }}
+                                        className="glass-card p-6 flex flex-col items-start gap-4 border-white/5 shadow-2xl transition-all duration-500 group cursor-default rounded-2xl"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(244,63,94,0.2)]">
+                                            <Zap size={24} className="text-rose-400" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-sm mb-2 uppercase">Lighter Engine</h4>
+                                            <p className="text-slate-500 text-xs leading-relaxed">No bloat. A high-performance, responsive interface built for speed and effortless navigation.</p>
                                         </div>
                                     </motion.div>
                                 </div>
