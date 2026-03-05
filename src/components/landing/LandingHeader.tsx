@@ -36,11 +36,32 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                 WebkitBackdropFilter: `blur(${headerBlur.get()}px)`
             }}
         >
-            <div className="flex items-center gap-3">
+            <motion.div
+                animate={{
+                    y: [0, -2, 2, 0],
+                    rotate: [0, 0.5, -0.5, 0]
+                }}
+                transition={{
+                    duration: 12,
+                    repeat: Infinity,
+                    ease: "linear"
+                }}
+                className="flex items-center gap-3"
+            >
                 <Logo variant="full" height={40} />
-            </div>
+            </motion.div>
 
-            <div className="flex items-center gap-6">
+            <motion.div
+                animate={{
+                    y: [0, 2, -2, 0]
+                }}
+                transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                }}
+                className="flex items-center gap-6"
+            >
                 {isAuthenticated ? (
                     <button
                         onClick={onCTA}
@@ -60,7 +81,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:animate-[shimmer_1.5s_infinite] skew-x-[-20deg]"></div>
                     </button>
                 )}
-            </div>
+            </motion.div>
         </motion.header>
     );
 };

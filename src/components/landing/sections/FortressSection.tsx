@@ -29,23 +29,60 @@ const FortressSection: React.FC = () => {
                                 animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
                                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                             >
-                                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8 backdrop-blur-xl">
+                                <motion.div
+                                    animate={{
+                                        opacity: [0.4, 1, 0.4],
+                                        scale: [1, 1.05, 1]
+                                    }}
+                                    transition={{
+                                        duration: 4,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                    className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8 backdrop-blur-xl"
+                                >
                                     <ShieldCheck size={16} className="text-blue-400 animate-pulse" />
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Section 03 — Governance</span>
-                                </div>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Hardened Intelligence</span>
+                                </motion.div>
 
-                                <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic">
+                                <motion.h2
+                                    animate={{
+                                        x: [0, -5, 5, 0],
+                                        skewY: [0, 0.5, -0.5, 0]
+                                    }}
+                                    transition={{
+                                        duration: 15,
+                                        repeat: Infinity,
+                                        ease: "linear"
+                                    }}
+                                    className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic"
+                                >
                                     Enterprise <br />
                                     <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Fortification.</span>
-                                </h2>
+                                </motion.h2>
 
-                                <p className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
+                                <motion.p
+                                    animate={{
+                                        opacity: [0.8, 1, 0.8]
+                                    }}
+                                    transition={{ duration: 5, repeat: Infinity }}
+                                    className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8"
+                                >
                                     We don't "trust" AI. We govern it. STROKE is a fortified processing engine engineered on Google Cloud's most secure <span className="text-slate-200">EU infrastructure</span>.
-                                </p>
+                                </motion.p>
 
                                 <div className="grid grid-cols-1 gap-6 relative">
                                     {/* Tactile Governance Cards */}
                                     <motion.div
+                                        animate={{
+                                            y: [0, -8, 0],
+                                            rotate: [0, 1, 0]
+                                        }}
+                                        transition={{
+                                            duration: 7,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
                                         whileHover={{ x: 10, borderColor: 'rgba(59, 130, 246, 0.3)' }}
                                         className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
                                     >
@@ -59,6 +96,16 @@ const FortressSection: React.FC = () => {
                                     </motion.div>
 
                                     <motion.div
+                                        animate={{
+                                            y: [0, 8, 0],
+                                            rotate: [0, -1, 0]
+                                        }}
+                                        transition={{
+                                            duration: 9,
+                                            repeat: Infinity,
+                                            ease: "easeInOut",
+                                            delay: 1
+                                        }}
                                         whileHover={{ x: 10, borderColor: 'rgba(16, 185, 129, 0.3)' }}
                                         className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
                                     >

@@ -20,22 +20,59 @@ const AgitationSection: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                        animate={isInView ? {
+                            opacity: 1,
+                            y: 0,
+                        } : { opacity: 0, y: 30 }}
                         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
                         className="lg:col-span-8 lg:col-start-3"
                     >
-                        <span className="text-blue-500 font-mono text-[10px] tracking-[0.6em] uppercase mb-4 block">The invisible attrition</span>
-                        <h2 className="text-4xl md:text-7xl font-black mb-8 leading-[0.95] text-slate-100 italic">
+                        {/* Floating Section Tag */}
+                        <motion.span
+                            animate={{
+                                x: [0, 5, -5, 0],
+                                rotate: [0, 2, -2, 0]
+                            }}
+                            transition={{
+                                duration: 8,
+                                repeat: Infinity,
+                                ease: "linear"
+                            }}
+                            className="text-blue-500 font-mono text-[10px] tracking-[0.6em] uppercase mb-4 block"
+                        >
+                            The invisible attrition
+                        </motion.span>
+
+                        <motion.h2
+                            animate={{
+                                skewX: [0, 1, -1, 0],
+                                y: [0, -5, 0]
+                            }}
+                            transition={{
+                                duration: 20,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                            className="text-4xl md:text-7xl font-black mb-8 leading-[0.95] text-slate-100 italic"
+                        >
                             The Hidden Cost of the <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 not-italic">Invisible Top 1%</span>.
-                        </h2>
+                        </motion.h2>
 
                         <div className="flex flex-col md:flex-row gap-8 items-start">
-                            <div className="w-12 h-[1px] bg-slate-700 mt-4 shrink-0" />
-                            <p className="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl">
+                            <motion.div
+                                animate={{ height: [1, 2, 1], opacity: [0.3, 0.7, 0.3] }}
+                                transition={{ duration: 4, repeat: Infinity }}
+                                className="w-12 h-[1px] bg-slate-700 mt-4 shrink-0"
+                            />
+                            <motion.p
+                                animate={{ x: [0, 2, -2, 0] }}
+                                transition={{ duration: 15, repeat: Infinity }}
+                                className="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl"
+                            >
                                 Legacy ATS systems scan for characters, not context. They miss the trajectory.
                                 <span className="text-slate-200"> 68% of elite talent is discarded </span> by algorithms that can't read between the lines.
-                            </p>
+                            </motion.p>
                         </div>
                     </motion.div>
                 </div>

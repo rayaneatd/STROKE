@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import Logo from '../ui/Logo';
 
 const Footer: React.FC = () => {
@@ -8,40 +9,71 @@ const Footer: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24 items-start">
 
                     {/* Brand / Logo Spread */}
-                    <div className="lg:col-span-5 xl:col-span-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1 }}
+                        className="lg:col-span-5 xl:col-span-4"
+                    >
                         <Logo variant="full" height={48} />
-                        <p className="mt-8 text-slate-400 text-lg font-light leading-relaxed italic max-w-sm">
-                            Recruiting is no longer a search for strings. It is an art of trajectory analysis.
-                        </p>
+                        <motion.p
+                            animate={{
+                                skewX: [0, 1, -1, 0],
+                                rotate: [0, 0.5, -0.5, 0]
+                            }}
+                            transition={{
+                                duration: 15,
+                                repeat: Infinity,
+                                ease: "linear"
+                            }}
+                            className="mt-8 text-slate-100 text-3xl font-black leading-[0.9] uppercase tracking-tighter max-w-sm"
+                        >
+                            F**k the ATS. <br />
+                            <span className="text-blue-500/80 font-mono tracking-widest text-lg lowercase block mt-2 italic not-italic">Use STROKE instead.</span>
+                        </motion.p>
 
                         {/* Issue Tag detail */}
-                        <div className="mt-12 flex items-center gap-6">
+                        <motion.div
+                            animate={{
+                                x: [0, 5, 0]
+                            }}
+                            transition={{ duration: 10, repeat: Infinity }}
+                            className="mt-12 flex items-center gap-6"
+                        >
                             <div className="w-[1px] h-12 bg-slate-800" />
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-mono tracking-[0.4em] text-slate-600 uppercase">Issue v.2.1</span>
                                 <span className="text-[10px] font-mono tracking-[0.4em] text-blue-500/50 uppercase">Mar 2026 Archive</span>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
 
                     {/* Navigation Clusters (Asymmetrical) */}
-                    <div className="lg:col-span-2 lg:col-start-7">
+                    <motion.div
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{ duration: 12, repeat: Infinity, delay: 1 }}
+                        className="lg:col-span-2 lg:col-start-7"
+                    >
                         <h4 className="text-white font-bold mb-8 font-mono tracking-[0.3em] text-[10px] uppercase opacity-40">The Platform</h4>
                         <ul className="space-y-6 text-sm text-slate-400 font-medium">
-                            <li><a href="#" className="hover:text-blue-400 transition-colors border-b border-transparent hover:border-blue-400/30 pb-1">Governance Engine</a></li>
-                            <li><a href="#" className="hover:text-blue-400 transition-colors border-b border-transparent hover:border-blue-400/30 pb-1">API Integrations</a></li>
-                            <li><a href="#" className="hover:text-blue-400 transition-colors border-b border-transparent hover:border-blue-400/30 pb-1">Archive Search</a></li>
+                            <li><a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 hover:translate-x-1 inline-block">Governance Engine</a></li>
+                            <li><a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 hover:translate-x-1 inline-block">API Integrations</a></li>
+                            <li><a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 hover:translate-x-1 inline-block">Archive Search</a></li>
                         </ul>
-                    </div>
+                    </motion.div>
 
-                    <div className="lg:col-span-2">
+                    <motion.div
+                        animate={{ y: [0, 5, 0] }}
+                        transition={{ duration: 15, repeat: Infinity, delay: 2 }}
+                        className="lg:col-span-2"
+                    >
                         <h4 className="text-white font-bold mb-8 font-mono tracking-[0.3em] text-[10px] uppercase opacity-40">Governance</h4>
                         <ul className="space-y-6 text-sm text-slate-400 font-medium">
-                            <li><a href="#" className="hover:text-blue-400 transition-colors border-b border-transparent hover:border-blue-400/30 pb-1">GDPR Compliance</a></li>
-                            <li><a href="#" className="hover:text-blue-400 transition-colors border-b border-transparent hover:border-blue-400/30 pb-1">Vertex AI Protocol</a></li>
-                            <li><a href="#" className="hover:text-blue-400 transition-colors border-b border-transparent hover:border-blue-400/30 pb-1">Data Residency</a></li>
+                            <li><a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 hover:translate-x-1 inline-block">GDPR Compliance</a></li>
+                            <li><a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 hover:translate-x-1 inline-block">Vertex AI Protocol</a></li>
+                            <li><a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 hover:translate-x-1 inline-block">Data Residency</a></li>
                         </ul>
-                    </div>
+                    </motion.div>
                 </div>
 
                 <div className="flex flex-col md:flex-row items-end justify-between pt-12 border-t border-white/5 text-[10px] text-slate-600 font-mono tracking-widest uppercase">

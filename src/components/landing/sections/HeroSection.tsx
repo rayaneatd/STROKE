@@ -13,10 +13,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
     const [wordIndex, setWordIndex] = useState(0);
 
     useEffect(() => {
-        if (wordIndex === WORDS.length - 1) return;
         const timeout = setTimeout(() => {
-            setWordIndex((prev) => prev + 1);
-        }, 1500);
+            setWordIndex((prev) => (prev + 1) % WORDS.length);
+        }, 2000);
         return () => clearTimeout(timeout);
     }, [wordIndex]);
 
@@ -67,16 +66,34 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
                                 </span>
                             </motion.div>
 
-                            <h1 className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.85] text-slate-100 mb-6 select-none">
+                            <motion.h1
+                                animate={{
+                                    y: [0, -10, 0],
+                                    rotateZ: [-0.5, 0.5, -0.5]
+                                }}
+                                transition={{
+                                    duration: 12,
+                                    repeat: Infinity,
+                                    ease: "linear"
+                                }}
+                                className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.85] text-slate-100 mb-6 select-none"
+                            >
                                 <span className="block opacity-95">Beyond</span>
                                 <span className="relative inline-block mt-4">
                                     Simple
-                                    {/* Overlapping Glass accent */}
+                                    {/* Overlapping Glass accent - Floating unpredictably */}
                                     <motion.div
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 1, duration: 1.5 }}
-                                        className="absolute -right-8 -top-8 w-16 h-16 md:w-32 md:h-32 rounded-2xl glass-panel border border-white/20 -z-10 rotate-12 backdrop-blur-sm shadow-2xl"
+                                        animate={{
+                                            y: [-10, 10, -10],
+                                            x: [-10, 10, -10],
+                                            rotate: [12, 5, 12]
+                                        }}
+                                        transition={{
+                                            duration: 6,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                        className="absolute -right-8 -top-8 w-16 h-16 md:w-32 md:h-32 rounded-2xl glass-panel border border-white/20 -z-10 backdrop-blur-sm shadow-2xl"
                                     />
                                 </span>
                                 <br />
@@ -89,29 +106,33 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
                                                 opacity: 1,
                                                 y: 0,
                                                 rotateX: 0,
-                                                color: isFinalWord ? '#3b82f6' : '#94a3b8'
+                                                color: wordIndex === WORDS.length - 1 ? '#3b82f6' : '#94a3b8'
                                             }}
                                             exit={{ opacity: 0, y: -100, rotateX: 90 }}
-                                            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                                            className={`inline-block origin-bottom ${isFinalWord ? 'neon-text' : ''}`}
+                                            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                                            className={`inline-block origin-bottom ${wordIndex === WORDS.length - 1 ? 'neon-text' : ''}`}
                                             aria-live="polite"
                                         >
                                             {WORDS[wordIndex].toLowerCase()}.
                                         </motion.span>
                                     </AnimatePresence>
                                 </div>
-                            </h1>
+                            </motion.h1>
 
                             <div className="flex flex-col lg:flex-row items-end lg:items-center gap-8 lg:gap-16 mt-12">
-                                <motion.p
-                                    className="text-base md:text-xl text-slate-400 font-light max-w-lg leading-relaxed italic"
+                                <motion.div
+                                    className="flex flex-col"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 1.5, duration: 1 }}
                                 >
-                                    Recruiting is an art of prediction, not a search for strings.
-                                    <span className="text-slate-100 font-normal"> STROKE decodes the trajectory</span> that legacy parsers simply cannot see.
-                                </motion.p>
+                                    <p className="text-4xl md:text-6xl text-slate-100 font-black leading-[0.9] uppercase mb-2 tracking-tighter">
+                                        F**k the ATS
+                                    </p>
+                                    <p className="text-xl md:text-2xl text-blue-400/80 font-mono tracking-widest lowercase">
+                                        Use STROKE instead
+                                    </p>
+                                </motion.div>
 
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.9 }}

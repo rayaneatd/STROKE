@@ -32,23 +32,60 @@ const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA }) 
                                 animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
                                 transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                             >
-                                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-orange-500/20 bg-orange-500/5 mb-8 backdrop-blur-xl">
+                                <motion.div
+                                    animate={{
+                                        opacity: [0.6, 1, 0.6],
+                                        rotate: [0, 1, -1, 0]
+                                    }}
+                                    transition={{
+                                        duration: 5,
+                                        repeat: Infinity,
+                                        ease: "linear"
+                                    }}
+                                    className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-orange-500/20 bg-orange-500/5 mb-8 backdrop-blur-xl"
+                                >
                                     <Play size={16} className="text-orange-400 fill-current" />
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-orange-300">Live Operation</span>
-                                </div>
+                                </motion.div>
 
-                                <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic">
+                                <motion.h2
+                                    animate={{
+                                        skewX: [0, 2, -2, 0],
+                                        y: [0, -3, 3, 0]
+                                    }}
+                                    transition={{
+                                        duration: 14,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                    className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic"
+                                >
                                     Witness the <br />
                                     <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Operation.</span>
-                                </h2>
+                                </motion.h2>
 
-                                <p className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
+                                <motion.p
+                                    animate={{
+                                        opacity: [0.7, 1, 0.7]
+                                    }}
+                                    transition={{ duration: 6, repeat: Infinity }}
+                                    className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8"
+                                >
                                     STROKE isn't a theory. It's a live data processing workbench. Watch the engine decode contextual talent trajectory in real-time.
-                                </p>
+                                </motion.p>
 
                                 <div className="grid grid-cols-1 gap-6 relative">
                                     {/* Tactile Governance Cards */}
                                     <motion.div
+                                        animate={{
+                                            rotateZ: [0, 0.5, -0.5, 0],
+                                            y: [0, -5, 5, 0]
+                                        }}
+                                        transition={{
+                                            duration: 10,
+                                            repeat: Infinity,
+                                            ease: "linear"
+                                        }}
                                         whileHover={{ x: 10, borderColor: 'rgba(59, 130, 246, 0.3)' }}
                                         className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
                                     >
@@ -68,9 +105,17 @@ const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA }) 
                                     transition={{ duration: 0.8, delay: 0.8 }}
                                     className="mt-16 flex flex-col md:flex-row gap-6"
                                 >
-                                    <button
+                                    <motion.button
+                                        animate={{
+                                            boxShadow: [
+                                                "0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(59,130,246,0.2)",
+                                                "0 20px 40px rgba(0,0,0,0.4), 0 0 40px rgba(59,130,246,0.4)",
+                                                "0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(59,130,246,0.2)"
+                                            ]
+                                        }}
+                                        transition={{ duration: 3, repeat: Infinity }}
                                         onClick={onCTA}
-                                        className="relative z-10 glass-button px-8 py-4 text-lg font-bold tracking-tight text-white flex items-center gap-4 bg-white/5 border-white/20 hover:border-blue-400/50 shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(59,130,246,0.2)]"
+                                        className="relative z-10 glass-button px-8 py-4 text-lg font-bold tracking-tight text-white flex items-center gap-4 bg-white/5 border-white/20 hover:border-blue-400/50"
                                     >
                                         Launch My Workbench
                                         <motion.div
@@ -79,7 +124,7 @@ const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA }) 
                                         >
                                             <ArrowRight />
                                         </motion.div>
-                                    </button>
+                                    </motion.button>
                                 </motion.div>
                             </motion.div>
                         </div>
