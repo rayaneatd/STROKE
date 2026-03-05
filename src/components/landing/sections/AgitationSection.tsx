@@ -121,7 +121,7 @@ const AgitationSection: React.FC = () => {
                             onMouseMove={handleMouseMove}
                             onMouseEnter={() => setIsHovering(true)}
                             onMouseLeave={() => setIsHovering(false)}
-                            className="relative w-full aspect-[16/10] md:aspect-[21/7] glass-card rounded-[2rem] overflow-hidden select-none border border-white/10 shadow-[0_60px_120px_rgba(0,0,0,0.7)] group cursor-none"
+                            className="relative w-full aspect-[16/10] md:aspect-[21/7] glass-card rounded-[2rem] overflow-hidden select-none border border-white/10 shadow-[0_60px_120px_rgba(0,0,0,0.7)] group"
                         >
                             {/* Base Layer: Legacy Content */}
                             <div className="absolute inset-0 bg-[#0a0a0c] flex flex-col justify-center px-10 md:px-24 grayscale opacity-30">

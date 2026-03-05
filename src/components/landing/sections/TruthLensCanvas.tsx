@@ -143,7 +143,7 @@ const TruthScene = () => {
 
 const TruthLensCanvas = () => {
     return (
-        <div className="w-full h-[600px] relative z-20 cursor-none"> {/* cursor-none to use the 3D lens as cursor */}
+        <div className="w-full h-full relative z-20 bg-[#0a0a0c]/50 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/5">
             <Canvas camera={{ position: [0, 0, 8], fov: 40 }}>
                 <React.Suspense fallback={null}>
                     <ambientLight intensity={0.5} />
