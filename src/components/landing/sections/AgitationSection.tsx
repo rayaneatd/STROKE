@@ -6,6 +6,7 @@ const AgitationSection: React.FC = () => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
     const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+    const [isHovering, setIsHovering] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const handleMouseMove = (e: React.MouseEvent) => {
@@ -18,16 +19,18 @@ const AgitationSection: React.FC = () => {
 
     // Auto-drift if no mouse interaction
     useEffect(() => {
+        if (isHovering) return;
+
         let angle = 0;
         const interval = setInterval(() => {
             angle += 0.02;
-            setMousePos(prev => ({
+            setMousePos({
                 x: 50 + Math.cos(angle) * 30,
                 y: 50 + Math.sin(angle) * 20
-            }));
+            });
         }, 16);
         return () => clearInterval(interval);
-    }, []);
+    }, [isHovering]);
 
     return (
         <section
@@ -109,7 +112,9 @@ const AgitationSection: React.FC = () => {
                         <div
                             ref={containerRef}
                             onMouseMove={handleMouseMove}
-                            className="relative w-full aspect-[16/10] md:aspect-[21/7] glass-card rounded-[1.5rem] overflow-hidden select-none border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] group group cursor-none"
+                            onMouseEnter={() => setIsHovering(true)}
+                            onMouseLeave={() => setIsHovering(false)}
+                            className="relative w-full aspect-[16/10] md:aspect-[21/7] glass-card rounded-[1.5rem] overflow-hidden select-none border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] group cursor-none"
                         >
                             {/* Base Layer: Legacy Content (Grayscale / Boring) */}
                             <div className="absolute inset-0 bg-[#121214] flex flex-col justify-center px-10 md:px-24 grayscale opacity-40">
@@ -128,8 +133,8 @@ const AgitationSection: React.FC = () => {
                             <div
                                 className="absolute inset-0 bg-blue-900/10 backdrop-blur-3xl flex flex-col justify-center px-10 md:px-24 pointer-events-none"
                                 style={{
-                                    clipPath: `circle(15% at ${mousePos.x}% ${mousePos.y}%)`,
-                                    WebkitClipPath: `circle(15% at ${mousePos.x}% ${mousePos.y}%)`
+                                    clipPath: `circle(150px at ${mousePos.x}% ${mousePos.y}%)`,
+                                    WebkitClipPath: `circle(150px at ${mousePos.x}% ${mousePos.y}%)`
                                 }}
                             >
                                 <div className="max-w-xl">
@@ -157,15 +162,15 @@ const AgitationSection: React.FC = () => {
 
                             {/* Neon Cursor Lens Ring */}
                             <motion.div
-                                className="absolute top-0 left-0 w-[30%] aspect-square rounded-full border-2 border-blue-500/50 -translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen shadow-[0_0_50px_rgba(59,130,246,0.3)] flex items-center justify-center"
+                                className="absolute top-0 left-0 w-[300px] h-[300px] rounded-full border-2 border-blue-500/50 -translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen shadow-[0_0_50px_rgba(59,130,246,0.3)] flex items-center justify-center"
                                 animate={{
                                     left: `${mousePos.x}%`,
                                     top: `${mousePos.y}%`,
                                     rotate: [0, 360]
                                 }}
                                 transition={{
-                                    left: { type: "spring", damping: 20, stiffness: 100 },
-                                    top: { type: "spring", damping: 20, stiffness: 100 },
+                                    left: { type: "tween", ease: "linear", duration: 0.1 },
+                                    top: { type: "tween", ease: "linear", duration: 0.1 },
                                     rotate: { duration: 10, repeat: Infinity, ease: "linear" }
                                 }}
                             >

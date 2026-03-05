@@ -52,13 +52,13 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
 
   return (
     <header
-      className={`absolute top-0 w-full h-48 z-50 flex items-center justify-between px-6 border-b transition-all duration-300 ${blurClass} ${borderColor}`}
+      className={`absolute top-0 w-full h-16 z-50 flex items-center justify-between px-6 border-b transition-all duration-300 ${blurClass} ${borderColor}`}
       style={{ backgroundColor: bgColor }}
     >
 
       {/* Left: Logo */}
       <div className="flex items-center gap-3 z-10 w-fit group cursor-pointer">
-        <Logo variant="full" height={160} />
+        <Logo variant="full" height={64} />
       </div>
 
       {/* Center: Premium Plan Indicator */}

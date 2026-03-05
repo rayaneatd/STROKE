@@ -37,7 +37,7 @@ const Login: React.FC = () => {
             <div className="w-full max-w-md bg-[#0A0A0A] border border-white/5 rounded-2xl px-8 pb-8 pt-0 shadow-2xl relative z-10">
                 {/* Header / Branding */}
                 <div className="text-center mb-8 flex flex-col items-center">
-                    <Logo variant="full" height={300} className="mb-4" />
+                    <Logo variant="full" height={120} className="mb-4" />
                     <p className="text-zinc-400">{t('auth.welcomeBack')}</p>
                 </div>
 
