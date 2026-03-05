@@ -79,7 +79,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
             id="hero"
             ref={ref}
             aria-label="Introduction"
-            className="relative min-h-screen w-full flex items-center justify-start overflow-hidden pt-16 bg-[#0e0e10]"
+            className="relative min-h-screen w-full flex items-center justify-start overflow-hidden pt-32 bg-[#0e0e10]"
         >
             {/* Ambient Lighting for Depth */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">

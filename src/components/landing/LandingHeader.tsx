@@ -21,28 +21,26 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
         return () => window.removeEventListener('scroll', updateScrolled);
     }, []);
 
-    const headerBgOpacity = useTransform(scrollY, [0, 100], [0, 0.6]);
-    const headerBlur = useTransform(scrollY, [0, 100], [0, 24]);
-    const headerBorderOpacity = useTransform(scrollY, [0, 100], [0, 0.1]);
-    const logoScale = useTransform(scrollY, [0, 200], [1, 0.8]);
-    const headerY = useTransform(scrollY, [0, 100], [0, -4]);
+    const headerBgOpacity = useTransform(scrollY, [0, 100], [0, 0.3]);
+    const headerBlur = useTransform(scrollY, [0, 100], [0, 12]);
+    const headerBorderOpacity = useTransform(scrollY, [0, 100], [0, 0.05]);
+    const logoScale = useTransform(scrollY, [0, 200], [1, 0.7]);
 
     return (
         <motion.header
-            className="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 py-4 flex items-center justify-between transition-all duration-300"
+            className="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 py-3 flex items-center justify-between transition-all duration-300"
             style={{
                 backgroundColor: `rgba(10, 10, 12, ${headerBgOpacity.get()})`,
                 borderBottom: `1px solid rgba(255, 255, 255, ${headerBorderOpacity.get()})`,
                 backdropFilter: `blur(${headerBlur.get()}px)`,
                 WebkitBackdropFilter: `blur(${headerBlur.get()}px)`,
-                y: headerY
             }}
         >
             <motion.div
                 style={{ scale: logoScale }}
                 animate={{
-                    y: [0, -2, 2, 0],
-                    rotate: [0, 0.5, -0.5, 0]
+                    y: [0, -1, 1, 0],
+                    rotate: [0, 0.2, -0.2, 0]
                 }}
                 transition={{
                     duration: 12,
@@ -51,7 +49,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                 }}
                 className="flex items-center gap-3 origin-left"
             >
-                <Logo variant="full" height={160} />
+                <Logo variant="full" height={80} />
             </motion.div>
 
             <motion.div
