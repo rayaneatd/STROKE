@@ -1,11 +1,47 @@
 import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, Variants } from 'framer-motion';
 import { ShieldCheck, Server, Lock } from 'lucide-react';
 import FortressCanvas from './FortressCanvas';
 
 const FortressSection: React.FC = () => {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+    const containerVariants: Variants = {
+        hidden: { opacity: 0, y: 50, skewY: 2 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            skewY: 0,
+            transition: {
+                duration: 1.2,
+                ease: [0.22, 1, 0.36, 1],
+                staggerChildren: 0.15
+            }
+        }
+    };
+
+    const itemVariants: Variants = {
+        hidden: { opacity: 0, y: 30, x: 20, filter: 'blur(12px)', scale: 0.95 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            x: 0,
+            filter: 'blur(0px)',
+            scale: 1,
+            transition: { duration: 0.8, ease: "easeOut" }
+        }
+    };
+
+    const cardVariants: Variants = {
+        hidden: { opacity: 0, scale: 0.8, rotate: -5, filter: 'blur(10px)' },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            rotate: 0,
+            filter: 'blur(0px)',
+            transition: { duration: 0.8, ease: "backOut" }
+        }
+    };
 
     return (
         <section
@@ -19,16 +55,18 @@ const FortressSection: React.FC = () => {
             <div className="container mx-auto px-6 lg:px-12 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
 
-                    {/* Left Side: Overlapping Governance Cards */}
+                    {/* Left Side: Text and Cards */}
                     <div className="lg:col-span-11 xl:col-span-10 lg:col-start-2 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-                        {/* Text Content Block (Asymmetrical Offset) */}
-                        <div className="relative z-20 order-2 lg:order-1 lg:pr-12">
-                            <motion.div
-                                initial={{ opacity: 0, x: -50 }}
-                                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-                                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                            >
+                        {/* Text Content Block */}
+                        <motion.div
+                            variants={containerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: false, amount: 0.3 }}
+                            className="relative z-20 order-2 lg:order-1 lg:pr-12"
+                        >
+                            <motion.div variants={itemVariants}>
                                 <motion.div
                                     animate={{
                                         opacity: [0.4, 1, 0.4],
@@ -46,15 +84,7 @@ const FortressSection: React.FC = () => {
                                 </motion.div>
 
                                 <motion.h2
-                                    animate={{
-                                        x: [0, -5, 5, 0],
-                                        skewY: [0, 0.5, -0.5, 0]
-                                    }}
-                                    transition={{
-                                        duration: 15,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
+                                    variants={itemVariants}
                                     className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic"
                                 >
                                     Enterprise <br />
@@ -62,16 +92,14 @@ const FortressSection: React.FC = () => {
                                 </motion.h2>
 
                                 <motion.p
-                                    animate={{
-                                        opacity: [0.8, 1, 0.8]
-                                    }}
-                                    transition={{ duration: 5, repeat: Infinity }}
+                                    variants={itemVariants}
                                     className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8"
                                 >
                                     We don't "trust" AI. We govern it. STROKE is a fortified processing engine engineered on Google Cloud's most secure <span className="text-slate-200">EU infrastructure</span>.
                                 </motion.p>
 
                                 <motion.button
+                                    variants={itemVariants}
                                     whileHover={{ scale: 1.05, x: 5 }}
                                     whileTap={{ scale: 0.95 }}
                                     className="flex items-center gap-3 text-blue-400 font-mono text-[10px] tracking-[0.3em] uppercase mb-12 hover:text-blue-300 transition-colors pl-8"
@@ -81,17 +109,9 @@ const FortressSection: React.FC = () => {
                                 </motion.button>
 
                                 <div className="grid grid-cols-1 gap-6 relative">
-                                    {/* Tactile Governance Cards */}
+                                    {/* Governance Card 1 */}
                                     <motion.div
-                                        animate={{
-                                            y: [0, -8, 0],
-                                            rotate: [0, 1, 0]
-                                        }}
-                                        transition={{
-                                            duration: 7,
-                                            repeat: Infinity,
-                                            ease: "easeInOut"
-                                        }}
+                                        variants={cardVariants}
                                         whileHover={{ x: 10, borderColor: 'rgba(59, 130, 246, 0.3)' }}
                                         className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
                                     >
@@ -104,17 +124,9 @@ const FortressSection: React.FC = () => {
                                         </div>
                                     </motion.div>
 
+                                    {/* Governance Card 2 */}
                                     <motion.div
-                                        animate={{
-                                            y: [0, 8, 0],
-                                            rotate: [0, -1, 0]
-                                        }}
-                                        transition={{
-                                            duration: 9,
-                                            repeat: Infinity,
-                                            ease: "easeInOut",
-                                            delay: 1
-                                        }}
+                                        variants={cardVariants}
                                         whileHover={{ x: 10, borderColor: 'rgba(16, 185, 129, 0.3)' }}
                                         className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
                                     >
@@ -128,24 +140,31 @@ const FortressSection: React.FC = () => {
                                     </motion.div>
                                 </div>
                             </motion.div>
-                        </div>
+                        </motion.div>
 
-                        {/* Right Side: 3D Scene (Overlap design) */}
+                        {/* Right Side: 3D Scene */}
                         <div className="relative z-10 order-1 lg:order-2 h-[400px] lg:h-[600px] flex items-center justify-center">
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
-                                animate={isInView ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0, scale: 0.9, rotateY: 20 }}
-                                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                                initial={{ opacity: 0, scale: 0.8, rotateY: 30, filter: 'blur(20px)' }}
+                                whileInView={{ opacity: 1, scale: 1, rotateY: 0, filter: 'blur(0px)' }}
+                                viewport={{ once: false, amount: 0.3 }}
+                                transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
                                 className="absolute inset-[-100px] lg:inset-[-150px] pointer-events-auto cursor-grab active:cursor-grabbing"
                             >
                                 <FortressCanvas />
                             </motion.div>
 
                             {/* Magazine detail overlay */}
-                            <div className="absolute top-0 right-0 p-8 flex flex-col items-end pointer-events-none opacity-40">
+                            <motion.div
+                                variants={itemVariants}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: false }}
+                                className="absolute top-0 right-0 p-8 flex flex-col items-end pointer-events-none opacity-40"
+                            >
                                 <div className="text-[10px] font-mono text-slate-600 tracking-[0.5em] uppercase mb-2">Structure.0x1FF</div>
                                 <div className="w-16 h-[1px] bg-slate-800" />
-                            </div>
+                            </motion.div>
                         </div>
 
                     </div>

@@ -1,20 +1,44 @@
 import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, Variants } from 'framer-motion';
 import { ScanSearch, ShieldCheck } from 'lucide-react';
 import TruthLensCanvas from './TruthLensCanvas';
 
 const TheGapSection: React.FC = () => {
     const ref = useRef(null);
-    const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+    const containerVariants: Variants = {
+        hidden: { opacity: 0, x: -150, skewX: 5 },
+        visible: {
+            opacity: 1,
+            x: 0,
+            skewX: 0,
+            transition: {
+                duration: 1.5,
+                ease: [0.22, 1, 0.36, 1],
+                staggerChildren: 0.15
+            }
+        }
+    };
+
+    const itemVariants: Variants = {
+        hidden: { opacity: 0, scale: 0.8, filter: 'blur(15px)', y: 50 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            filter: 'blur(0px)',
+            y: 0,
+            transition: { duration: 1, ease: [0.34, 1.56, 0.64, 1] }
+        }
+    };
 
     return (
         <section
             id="the-gap"
             ref={ref}
-            className="relative min-h-screen w-full py-24 z-30 overflow-hidden"
+            className="relative min-h-screen w-full py-24 z-30 overflow-hidden bg-[#0c0c0e]"
         >
             {/* Ambient Background Lighting */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0e0e10] via-blue-900/5 to-[#0e0e10] z-0"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-900/10 via-transparent to-transparent z-0 opacity-40"></div>
 
             <div className="container mx-auto px-6 lg:px-12 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
@@ -22,13 +46,15 @@ const TheGapSection: React.FC = () => {
                     {/* Left Side: Overlapping Governance Cards */}
                     <div className="lg:col-span-11 xl:col-span-10 lg:col-start-2 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-                        {/* Text Content Block (Asymmetrical Offset) */}
-                        <div className="relative z-20 order-2 lg:order-1 lg:pr-12">
-                            <motion.div
-                                initial={{ opacity: 0, x: -50 }}
-                                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-                                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                            >
+                        {/* Text Content Block */}
+                        <motion.div
+                            variants={containerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: false, amount: 0.3 }}
+                            className="relative z-20 order-2 lg:order-1 lg:pr-12"
+                        >
+                            <motion.div variants={itemVariants}>
                                 <motion.div
                                     animate={{
                                         opacity: [0.5, 1, 0.5],
@@ -46,97 +72,76 @@ const TheGapSection: React.FC = () => {
                                 </motion.div>
 
                                 <motion.h2
-                                    animate={{
-                                        rotateX: [0, 5, -5, 0],
-                                        y: [0, 4, 0]
-                                    }}
-                                    transition={{
-                                        duration: 18,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                    className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic"
+                                    variants={itemVariants}
+                                    className="text-4xl md:text-7xl font-black tracking-tighter leading-[0.85] text-slate-100 mb-8 italic"
                                 >
                                     Read the <br />
-                                    <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Matrix.</span>
+                                    <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 underline decoration-blue-500/20 underline-offset-8">Matrix.</span>
                                 </motion.h2>
 
                                 <motion.p
-                                    animate={{
-                                        x: [0, 3, -3, 0]
-                                    }}
-                                    transition={{ duration: 12, repeat: Infinity }}
-                                    className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8"
+                                    variants={itemVariants}
+                                    className="text-lg md:text-xl text-slate-400 max-w-lg mb-12 leading-relaxed font-light border-l-2 border-blue-500/20 pl-8 italic"
                                 >
-                                    See past the PDF formatting. STROKE extracts the underlying JSON data graph, instantly highlighting temporal gaps and pattern anomalies.
+                                    See past the PDF formatting. STROKE extracts the underlying <span className="text-slate-100 font-bold not-italic">JSON data graph</span>, instantly highlighting temporal gaps and pattern anomalies.
                                 </motion.p>
 
-                                <div className="grid grid-cols-1 gap-6 relative">
+                                <div className="grid grid-cols-1 gap-8 relative">
                                     {/* Tactile Governance Cards */}
                                     <motion.div
-                                        animate={{
-                                            x: [0, 5, 0],
-                                            rotateY: [0, 2, 0]
-                                        }}
-                                        transition={{
-                                            duration: 10,
-                                            repeat: Infinity,
-                                            ease: "easeInOut"
-                                        }}
-                                        whileHover={{ x: 10, borderColor: 'rgba(59, 130, 246, 0.3)' }}
-                                        className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
+                                        variants={itemVariants}
+                                        whileHover={{ x: 10, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                                        className="glass-card p-8 flex items-start gap-8 border-white/5 shadow-3xl transition-all duration-500 group cursor-default rounded-2xl"
                                     >
-                                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                            <ScanSearch size={22} className="text-blue-400" />
+                                        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:rotate-12 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                                            <ScanSearch size={28} className="text-blue-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">JSON Extraction</h4>
-                                            <p className="text-slate-500 text-sm leading-snug">Extracts the underlying data graph, instantly highlighting temporal gaps and pattern anomalies.</p>
+                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-base mb-3 uppercase">JSON Extraction</h4>
+                                            <p className="text-slate-500 text-sm leading-relaxed">Deconstructs legacy documents into clean, semantic primitive objects for deep AI analysis.</p>
                                         </div>
                                     </motion.div>
 
                                     <motion.div
-                                        animate={{
-                                            x: [0, -5, 0],
-                                            rotateY: [0, -2, 0]
-                                        }}
-                                        transition={{
-                                            duration: 12,
-                                            repeat: Infinity,
-                                            ease: "easeInOut",
-                                            delay: 0.5
-                                        }}
-                                        whileHover={{ x: 10, borderColor: 'rgba(16, 185, 129, 0.3)' }}
-                                        className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
+                                        variants={itemVariants}
+                                        whileHover={{ x: 10, backgroundColor: 'rgba(16, 185, 129, 0.1)' }}
+                                        className="glass-card p-8 flex items-start gap-8 border-white/5 shadow-3xl transition-all duration-500 group cursor-default rounded-2xl"
                                     >
-                                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                            <ShieldCheck size={22} className="text-emerald-400" />
+                                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:rotate-12 transition-transform shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                                            <ShieldCheck size={28} className="text-emerald-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">Temporal Auditing</h4>
-                                            <p className="text-slate-500 text-sm leading-snug">Automated auditing of temporal data. Zero data egress from the European Union.</p>
+                                            <h4 className="text-slate-100 font-black font-mono tracking-widest text-base mb-3 uppercase">Temporal Auditing</h4>
+                                            <p className="text-slate-500 text-sm leading-relaxed">Identifies career progression speed and identifies "hidden gems" by analyzing time-to-impact.</p>
                                         </div>
                                     </motion.div>
                                 </div>
                             </motion.div>
-                        </div>
+                        </motion.div>
 
-                        {/* Right Side: 3D Scene (Overlap design) */}
+                        {/* Right Side: 3D Scene */}
                         <div className="relative z-10 order-1 lg:order-2 h-[400px] lg:h-[600px] flex items-center justify-center">
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
-                                animate={isInView ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0, scale: 0.9, rotateY: 20 }}
-                                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                                initial={{ opacity: 0, scale: 0.7, x: 150, filter: 'blur(30px)', rotateY: -30 }}
+                                whileInView={{ opacity: 1, scale: 1, x: 0, filter: 'blur(0px)', rotateY: 0 }}
+                                viewport={{ once: false, amount: 0.3 }}
+                                transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
                                 className="absolute inset-[-100px] lg:inset-[-150px] pointer-events-auto cursor-grab active:cursor-grabbing"
                             >
                                 <TruthLensCanvas />
                             </motion.div>
 
-                            {/* Magazine detail overlay */}
-                            <div className="absolute top-0 right-0 p-8 flex flex-col items-end pointer-events-none opacity-40">
-                                <div className="text-[10px] font-mono text-slate-600 tracking-[0.5em] uppercase mb-2">Extraction.0x2FF</div>
-                                <div className="w-16 h-[1px] bg-slate-800" />
-                            </div>
+                            {/* Detail overlay */}
+                            <motion.div
+                                variants={itemVariants}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: false }}
+                                className="absolute top-10 right-10 p-8 flex flex-col items-end pointer-events-none opacity-40 border-r border-t border-white/10"
+                            >
+                                <div className="text-[10px] font-mono text-slate-600 tracking-[1em] uppercase mb-4">Extraction.0x2FF</div>
+                                <div className="w-24 h-[1px] bg-slate-800" />
+                            </motion.div>
                         </div>
 
                     </div>
