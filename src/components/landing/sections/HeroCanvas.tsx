@@ -94,13 +94,15 @@ const HeroCanvas = () => {
     return (
         <div className="absolute inset-0 z-0 pointer-events-none mix-blend-screen opacity-60 md:opacity-100">
             <Canvas dpr={[1, 2]}>
-                <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={35} />
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={1} color="#3b82f6" />
-                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#a855f7" />
-                <GraphScene />
-                <ContactShadows position={[0, -3.5, 0]} opacity={0.4} scale={10} blur={2} far={4} />
-                <Environment preset="city" />
+                <React.Suspense fallback={null}>
+                    <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={35} />
+                    <ambientLight intensity={0.5} />
+                    <pointLight position={[10, 10, 10]} intensity={1} color="#3b82f6" />
+                    <pointLight position={[-10, -10, -10]} intensity={0.5} color="#a855f7" />
+                    <GraphScene />
+                    <ContactShadows position={[0, -3.5, 0]} opacity={0.4} scale={10} blur={2} far={4} />
+                    <Environment preset="city" />
+                </React.Suspense>
             </Canvas>
         </div>
     );

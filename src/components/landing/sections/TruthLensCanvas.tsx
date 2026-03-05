@@ -145,12 +145,14 @@ const TruthLensCanvas = () => {
     return (
         <div className="w-full h-[600px] relative z-20 cursor-none"> {/* cursor-none to use the 3D lens as cursor */}
             <Canvas camera={{ position: [0, 0, 8], fov: 40 }}>
-                <ambientLight intensity={0.5} />
-                <spotLight position={[10, 10, 10]} intensity={1} penumbra={1} color="#3b82f6" />
-                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ef4444" />
+                <React.Suspense fallback={null}>
+                    <ambientLight intensity={0.5} />
+                    <spotLight position={[10, 10, 10]} intensity={1} penumbra={1} color="#3b82f6" />
+                    <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ef4444" />
 
-                <TruthScene />
-                <Environment preset="city" />
+                    <TruthScene />
+                    <Environment preset="city" />
+                </React.Suspense>
             </Canvas>
         </div>
     );

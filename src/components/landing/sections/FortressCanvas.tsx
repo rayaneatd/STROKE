@@ -178,24 +178,26 @@ const FortressCanvas = () => {
     return (
         <div className="w-full h-full min-h-[500px] relative">
             <Canvas camera={{ position: [0, 2, 12], fov: 45 }}>
-                <ambientLight intensity={0.4} />
-                <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
-                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
+                <React.Suspense fallback={null}>
+                    <ambientLight intensity={0.4} />
+                    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+                    <pointLight position={[-10, -10, -10]} intensity={0.5} color="#3b82f6" />
 
-                <SkylineScene />
+                    <SkylineScene />
 
-                <ContactShadows position={[0, -2.5, 0]} opacity={0.5} scale={20} blur={2.5} far={4} />
-                <Environment preset="city" />
+                    <ContactShadows position={[0, -2.5, 0]} opacity={0.5} scale={20} blur={2.5} far={4} />
+                    <Environment preset="city" />
 
-                {/* Limit rotation so user doesn't get lost, but allow inspection */}
-                <OrbitControls
-                    enableZoom={false}
-                    enablePan={false}
-                    minAzimuthAngle={-Math.PI / 4}
-                    maxAzimuthAngle={Math.PI / 4}
-                    minPolarAngle={Math.PI / 3}
-                    maxPolarAngle={Math.PI / 2}
-                />
+                    {/* Limit rotation so user doesn't get lost, but allow inspection */}
+                    <OrbitControls
+                        enableZoom={false}
+                        enablePan={false}
+                        minAzimuthAngle={-Math.PI / 4}
+                        maxAzimuthAngle={Math.PI / 4}
+                        minPolarAngle={Math.PI / 3}
+                        maxPolarAngle={Math.PI / 2}
+                    />
+                </React.Suspense>
             </Canvas>
         </div>
     );
