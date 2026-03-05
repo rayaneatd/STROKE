@@ -23,7 +23,7 @@ const LandingPage: React.FC = () => {
     };
 
     return (
-        <div className="relative min-h-screen bg-[#0e0e10] text-slate-200 overflow-x-hidden font-sans selection:bg-blue-500/30">
+        <div className="relative min-h-[125vh] w-[125vw] left-1/2 -translate-x-1/2 scale-[0.8] origin-top bg-[#0e0e10] text-slate-200 overflow-x-hidden font-sans selection:bg-blue-500/30">
             {/* Global Noise Overlay for magazine texture */}
             <div className="fixed inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-50 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
