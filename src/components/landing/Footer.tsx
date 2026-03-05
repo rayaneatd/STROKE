@@ -56,8 +56,8 @@ const Footer: React.FC = () => {
                             className="mt-8"
                         >
                             <p className="text-slate-100 text-3xl font-black leading-[0.9] uppercase tracking-tighter max-w-sm italic">
-                                F**k the ATS. <br />
-                                <span className="text-blue-500/80 font-mono tracking-widest text-lg lowercase block mt-2 not-italic bg-blue-500/5 px-3 py-1 rounded-sm border border-blue-500/10">Use STROKE instead.</span>
+                                Hiring is Vision. <br />
+                                <span className="text-blue-500/80 font-mono tracking-widest text-lg lowercase block mt-2 not-italic bg-blue-500/5 px-3 py-1 rounded-sm border border-blue-500/10">Context is the signal.</span>
                             </p>
                         </motion.div>
 

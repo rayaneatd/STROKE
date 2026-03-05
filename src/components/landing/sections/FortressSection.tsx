@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { motion, useInView, Variants } from 'framer-motion';
 import { ShieldCheck, Server, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import FortressCanvas from './FortressCanvas';
 
 const FortressSection: React.FC = () => {
@@ -98,15 +99,14 @@ const FortressSection: React.FC = () => {
                                     We don't "trust" AI. We govern it. STROKE is a fortified processing engine engineered on Google Cloud's most secure <span className="text-slate-200">EU infrastructure</span>.
                                 </motion.p>
 
-                                <motion.button
-                                    variants={itemVariants}
-                                    whileHover={{ scale: 1.05, x: 5 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="flex items-center gap-3 text-blue-400 font-mono text-[10px] tracking-[0.3em] uppercase mb-12 hover:text-blue-300 transition-colors pl-8"
-                                    onClick={() => window.location.href = '/privacy-policy'}
-                                >
-                                    [ Read Privacy Policy ]
-                                </motion.button>
+                                <motion.div variants={itemVariants}>
+                                    <Link
+                                        to="/privacy-policy"
+                                        className="flex items-center gap-3 text-blue-400 font-mono text-[10px] tracking-[0.3em] uppercase mb-12 hover:text-blue-300 transition-colors pl-8"
+                                    >
+                                        [ Read Privacy Policy ]
+                                    </Link>
+                                </motion.div>
 
                                 <div className="grid grid-cols-1 gap-6 relative">
                                     {/* Governance Card 1 */}
