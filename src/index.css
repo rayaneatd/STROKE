@@ -3,13 +3,14 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
+
+  html,
+  body {
     @apply antialiased font-sans bg-[#0e0e10];
     height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent double scrollbars on body */
   }
 
   #root {
@@ -21,7 +22,6 @@
     */
     width: 100%;
     height: 100%;
-    overflow: hidden;
   }
 }
 
@@ -29,7 +29,7 @@
   .animate-fade-in {
     animation: fadeIn 0.5s ease-out;
   }
-  
+
   .animate-slide-up {
     animation: slideUp 0.3s ease-out forwards;
   }
@@ -87,23 +87,54 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Speed Mode Animations */
 @keyframes lightning-flash {
-  0%, 100% { opacity: 0; }
-  92% { opacity: 0; }
-  93% { opacity: 0.6; }
-  94% { opacity: 0.2; }
-  96% { opacity: 1; } 
-  98% { opacity: 0.1; }
+
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  92% {
+    opacity: 0;
+  }
+
+  93% {
+    opacity: 0.6;
+  }
+
+  94% {
+    opacity: 0.2;
+  }
+
+  96% {
+    opacity: 1;
+  }
+
+  98% {
+    opacity: 0.1;
+  }
 }
 
 .animate-lightning {
@@ -111,10 +142,23 @@
 }
 
 @keyframes scan-line {
-  0% { top: 0%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
 }
 
 .scan-line-effect {
@@ -130,7 +174,7 @@
 }
 
 .speed-gradient {
-  background: linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(147,51,234,0.1) 100%);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
 }
 
 .item-enter {
@@ -138,18 +182,35 @@
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(-20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes scan-vertical {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(100%); }
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(100%);
+  }
 }
 
 @keyframes removal-progress {
-  from { scale: 0 1; }
-  to { scale: 1 1; }
+  from {
+    scale: 0 1;
+  }
+
+  to {
+    scale: 1 1;
+  }
 }
 
 /* Turbo Mode / Intense Processing */
@@ -158,10 +219,12 @@
     box-shadow: 0 0 10px var(--theme-color, #3b82f6), 0 0 20px var(--theme-color, #3b82f6), inset 0 0 5px var(--theme-color, #3b82f6);
     border-color: var(--theme-color, #3b82f6);
   }
+
   50% {
     box-shadow: 0 0 25px var(--theme-color, #3b82f6), 0 0 50px var(--theme-color, #3b82f6), inset 0 0 15px var(--theme-color, #3b82f6);
     border-color: #ffffff;
   }
+
   100% {
     box-shadow: 0 0 10px var(--theme-color, #3b82f6), 0 0 20px var(--theme-color, #3b82f6), inset 0 0 5px var(--theme-color, #3b82f6);
     border-color: var(--theme-color, #3b82f6);
@@ -169,17 +232,49 @@
 }
 
 @keyframes shake-violent {
-  0% { transform: translate(0, 0); }
-  10% { transform: translate(-1px, -1px); }
-  20% { transform: translate(1px, 1px); }
-  30% { transform: translate(-2px, 1px); }
-  40% { transform: translate(2px, -1px); }
-  50% { transform: translate(-1px, 2px); }
-  60% { transform: translate(1px, -2px); }
-  70% { transform: translate(0, 1px); }
-  80% { transform: translate(-1px, 0); }
-  90% { transform: translate(1px, 0); }
-  100% { transform: translate(0, 0); }
+  0% {
+    transform: translate(0, 0);
+  }
+
+  10% {
+    transform: translate(-1px, -1px);
+  }
+
+  20% {
+    transform: translate(1px, 1px);
+  }
+
+  30% {
+    transform: translate(-2px, 1px);
+  }
+
+  40% {
+    transform: translate(2px, -1px);
+  }
+
+  50% {
+    transform: translate(-1px, 2px);
+  }
+
+  60% {
+    transform: translate(1px, -2px);
+  }
+
+  70% {
+    transform: translate(0, 1px);
+  }
+
+  80% {
+    transform: translate(-1px, 0);
+  }
+
+  90% {
+    transform: translate(1px, 0);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
 .turbo-mode {
@@ -191,7 +286,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2), transparent 70%);
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2), transparent 70%);
   mix-blend-mode: overlay;
   animation: pulse 0.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   pointer-events: none;
@@ -204,9 +299,23 @@
 }
 
 @keyframes spark-flash {
-  0% { opacity: 0; transform: scale(0.8) rotate(0deg); filter: brightness(1); }
-  20% { opacity: 1; transform: scale(1.5) rotate(15deg); filter: brightness(2); }
-  100% { opacity: 0; transform: scale(2) rotate(30deg); filter: brightness(0); }
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(0deg);
+    filter: brightness(1);
+  }
+
+  20% {
+    opacity: 1;
+    transform: scale(1.5) rotate(15deg);
+    filter: brightness(2);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(2) rotate(30deg);
+    filter: brightness(0);
+  }
 }
 
 .animate-spark {
@@ -231,8 +340,11 @@
 .glass-button::before {
   content: '';
   position: absolute;
-  top: 0; left: -100%; width: 50%; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
   transform: skewX(-20deg);
   transition: all 0.5s ease;
 }
@@ -256,8 +368,19 @@
 }
 
 @keyframes morph {
-  0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-  34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
-  67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
-  100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  0% {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  }
+
+  34% {
+    border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%;
+  }
+
+  67% {
+    border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%;
+  }
+
+  100% {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  }
 }
