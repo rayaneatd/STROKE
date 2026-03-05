@@ -8,75 +8,91 @@ const FortressSection: React.FC = () => {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="relative min-h-[100svh] w-full py-24 overflow-hidden bg-[#0a0a0c]">
+        <section
+            id="fortress"
+            ref={ref}
+            className="relative min-h-screen w-full py-32 overflow-hidden bg-[#0a0a0c]"
+        >
             {/* Ambient Background Glow matching the 3D scene */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none"></div>
 
-            <div className="container mx-auto px-6 h-full flex flex-col justify-center">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center h-full">
+            <div className="container mx-auto px-6 lg:px-12 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
 
-                    {/* Left Typography Side */}
-                    <div className="relative z-10 order-2 lg:order-1">
-                        <motion.div
-                            initial={{ opacity: 0, x: -30 }}
-                            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 mb-6 backdrop-blur-md">
-                                <ShieldCheck size={14} className="text-blue-400" />
-                                <span className="text-xs font-mono font-bold uppercase tracking-widest text-blue-300">The Fortress</span>
-                            </div>
+                    {/* Left Side: Overlapping Governance Cards */}
+                    <div className="lg:col-span-11 xl:col-span-10 lg:col-start-2 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-                            <h2 className="text-5xl md:text-6xl font-black tracking-tight leading-tight text-slate-100 mb-6">
-                                Enterprise-Grade <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Governance.</span>
-                            </h2>
-
-                            <p className="text-lg text-slate-400 max-w-lg mb-10 leading-relaxed">
-                                Neutralize "AI Skepticism" instantly. STROKE is not a weekend GPT wrapper. It's a fortified data processing engine built on Google Cloud's most secure EU infrastructure.
-                            </p>
-
-                            <div className="space-y-4 mb-10">
-                                {/* Hover Badges */}
-                                <div className="glass-card p-4 flex items-start gap-4 hover:border-blue-500/30 transition-colors group cursor-default">
-                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                        <Server size={18} className="text-blue-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-slate-200 font-bold font-mono tracking-wide text-sm mb-1">Vertex AI europe-west9</h4>
-                                        <p className="text-slate-500 text-sm">100% Data Residency in Paris. Zero data leaves the European Union.</p>
-                                    </div>
+                        {/* Text Content Block (Asymmetrical Offset) */}
+                        <div className="relative z-20 order-2 lg:order-1 lg:pr-12">
+                            <motion.div
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
+                                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8 backdrop-blur-xl">
+                                    <ShieldCheck size={16} className="text-blue-400 animate-pulse" />
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Section 03 — Governance</span>
                                 </div>
 
-                                <div className="glass-card p-4 flex items-start gap-4 hover:border-emerald-500/30 transition-colors group cursor-default">
-                                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                        <Lock size={18} className="text-emerald-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-slate-200 font-bold font-mono tracking-wide text-sm mb-1">Strict RGPD Compliance</h4>
-                                        <p className="text-slate-500 text-sm">Automated PII detection and localized processing. Zero training on your proprietary candidate data.</p>
-                                    </div>
+                                <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-[0.9] text-slate-100 mb-10 italic">
+                                    Enterprise <br />
+                                    <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Fortification.</span>
+                                </h2>
+
+                                <p className="text-xl text-slate-400 max-w-lg mb-12 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
+                                    We don't "trust" AI. We govern it. STROKE is a fortified processing engine engineered on Google Cloud's most secure <span className="text-slate-200">EU infrastructure</span>.
+                                </p>
+
+                                <div className="grid grid-cols-1 gap-6 relative">
+                                    {/* Tactile Governance Cards */}
+                                    <motion.div
+                                        whileHover={{ x: 10, borderColor: 'rgba(59, 130, 246, 0.3)' }}
+                                        className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <Server size={22} className="text-blue-400" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">Vertex AI (europe-west9)</h4>
+                                            <p className="text-slate-500 text-sm leading-snug">Data residency locked in Paris. Zero data egress from the European Union.</p>
+                                        </div>
+                                    </motion.div>
+
+                                    <motion.div
+                                        whileHover={{ x: 10, borderColor: 'rgba(16, 185, 129, 0.3)' }}
+                                        className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <Lock size={22} className="text-emerald-400" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">RGPD-Native</h4>
+                                            <p className="text-slate-500 text-sm leading-snug">Automated PII anonymization. Zero model training on proprietary candidate intelligence.</p>
+                                        </div>
+                                    </motion.div>
                                 </div>
-                            </div>
-
-                            <button className="glass-button text-blue-400 text-sm tracking-wide group hover:text-blue-300">
-                                <span className="relative z-10 border-b border-transparent group-hover:border-blue-400 transition-colors pb-0.5">Review Privacy Protocol</span>
-                            </button>
-                        </motion.div>
-                    </div>
-
-                    {/* Right 3D Canvas Side */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 1, delay: 0.2 }}
-                        className="relative z-10 order-1 lg:order-2 h-full min-h-[400px] lg:min-h-full flex items-center justify-center"
-                    >
-                        <div className="absolute inset-x-0 bottom-0 top-10 lg:inset-[-100px] pointer-events-auto cursor-grab active:cursor-grabbing">
-                            <FortressCanvas />
+                            </motion.div>
                         </div>
-                    </motion.div>
 
+                        {/* Right Side: 3D Scene (Overlap design) */}
+                        <div className="relative z-10 order-1 lg:order-2 h-[500px] lg:h-[700px] flex items-center justify-center">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
+                                animate={isInView ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0, scale: 0.9, rotateY: 20 }}
+                                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                                className="absolute inset-[-100px] lg:inset-[-150px] pointer-events-auto cursor-grab active:cursor-grabbing"
+                            >
+                                <FortressCanvas />
+                            </motion.div>
+
+                            {/* Magazine detail overlay */}
+                            <div className="absolute top-0 right-0 p-8 flex flex-col items-end pointer-events-none opacity-40">
+                                <div className="text-[10px] font-mono text-slate-600 tracking-[0.5em] uppercase mb-2">Structure.0x1FF</div>
+                                <div className="w-16 h-[1px] bg-slate-800" />
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </section>

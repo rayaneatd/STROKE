@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ScanSearch } from 'lucide-react';
+import { ScanSearch, ShieldCheck } from 'lucide-react';
 import TruthLensCanvas from './TruthLensCanvas';
 
 const TheGapSection: React.FC = () => {
@@ -8,75 +8,92 @@ const TheGapSection: React.FC = () => {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className="relative min-h-[100svh] w-full py-24 z-30">
-            {/* Subtle Gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0e0e10] via-blue-900/10 to-[#0e0e10] z-0"></div>
+        <section
+            id="the-gap"
+            ref={ref}
+            className="relative min-h-screen w-full py-32 z-30 overflow-hidden"
+        >
+            {/* Ambient Background Lighting */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0e0e10] via-blue-900/5 to-[#0e0e10] z-0"></div>
 
-            <div className="container mx-auto px-6 relative z-10 flex flex-col items-center">
+            <div className="container mx-auto px-6 lg:px-12 relative z-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
 
-                {/* Section Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center max-w-4xl mx-auto mb-16"
-                >
-                    <div className="inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-full glass-panel mb-6 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.15)] mx-auto">
-                        <ScanSearch size={14} className="text-blue-400" />
-                        <span className="text-xs font-mono font-bold uppercase tracking-widest text-blue-300">Intelligent Extraction</span>
-                    </div>
+                    {/* Left Side: Overlapping Governance Cards */}
+                    <div className="lg:col-span-11 xl:col-span-10 lg:col-start-2 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-                    <h2 className="text-5xl md:text-6xl font-black mb-6 leading-tight">
-                        See past the PDF.<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Read the Matrix.</span>
-                    </h2>
-
-                    <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                        Hover over the document below. While humans see a well-formatted resume, STROKE extracts the underlying JSON data graph, instantly highlighting temporal gaps and pattern anomalies.
-                    </p>
-                </motion.div>
-
-                {/* Interactive 3D / 2D composite area */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
-                    transition={{ delay: 0.3, duration: 1 }}
-                    className="w-full max-w-5xl relative mx-auto rounded-3xl overflow-hidden glass-card border border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.4)]"
-                >
-                    {/* The "Flat CV" Background Graphic */}
-                    <div className="absolute inset-0 z-0 bg-slate-100 flex flex-col p-12 opacity-10 grayscale blur-[2px]">
-                        <div className="w-1/3 h-8 bg-slate-300 rounded mb-8"></div>
-                        <div className="w-full h-px bg-slate-300 mb-8"></div>
-                        <div className="space-y-6">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="flex gap-8">
-                                    <div className="w-1/4 h-4 bg-slate-300 rounded"></div>
-                                    <div className="w-3/4 space-y-3">
-                                        <div className="w-full h-4 bg-slate-300 rounded"></div>
-                                        <div className="w-5/6 h-4 bg-slate-300 rounded"></div>
-                                        <div className="w-4/6 h-4 bg-slate-300 rounded"></div>
-                                    </div>
+                        {/* Text Content Block (Asymmetrical Offset) */}
+                        <div className="relative z-20 order-2 lg:order-1 lg:pr-12">
+                            <motion.div
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
+                                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8 backdrop-blur-xl">
+                                    <ScanSearch size={16} className="text-blue-400 animate-pulse" />
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Section 04 — Extraction</span>
                                 </div>
-                            ))}
+
+                                <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-[0.9] text-slate-100 mb-10 italic">
+                                    Read the <br />
+                                    <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Matrix.</span>
+                                </h2>
+
+                                <p className="text-xl text-slate-400 max-w-lg mb-12 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
+                                    See past the PDF formatting. STROKE extracts the underlying JSON data graph, instantly highlighting temporal gaps and pattern anomalies.
+                                </p>
+
+                                <div className="grid grid-cols-1 gap-6 relative">
+                                    {/* Tactile Governance Cards */}
+                                    <motion.div
+                                        whileHover={{ x: 10, borderColor: 'rgba(59, 130, 246, 0.3)' }}
+                                        className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <ScanSearch size={22} className="text-blue-400" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">JSON Extraction</h4>
+                                            <p className="text-slate-500 text-sm leading-snug">Extracts the underlying data graph, instantly highlighting temporal gaps and pattern anomalies.</p>
+                                        </div>
+                                    </motion.div>
+
+                                    <motion.div
+                                        whileHover={{ x: 10, borderColor: 'rgba(16, 185, 129, 0.3)' }}
+                                        className="glass-card p-6 flex items-start gap-6 border-white/5 shadow-2xl transition-all duration-300 group cursor-default"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <ShieldCheck size={22} className="text-emerald-400" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">Temporal Auditing</h4>
+                                            <p className="text-slate-500 text-sm leading-snug">Automated auditing of temporal data. Zero data egress from the European Union.</p>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </motion.div>
                         </div>
+
+                        {/* Right Side: 3D Scene (Overlap design) */}
+                        <div className="relative z-10 order-1 lg:order-2 h-[500px] lg:h-[700px] flex items-center justify-center">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
+                                animate={isInView ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0, scale: 0.9, rotateY: 20 }}
+                                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                                className="absolute inset-[-100px] lg:inset-[-150px] pointer-events-auto cursor-grab active:cursor-grabbing"
+                            >
+                                <TruthLensCanvas />
+                            </motion.div>
+
+                            {/* Magazine detail overlay */}
+                            <div className="absolute top-0 right-0 p-8 flex flex-col items-end pointer-events-none opacity-40">
+                                <div className="text-[10px] font-mono text-slate-600 tracking-[0.5em] uppercase mb-2">Extraction.0x2FF</div>
+                                <div className="w-16 h-[1px] bg-slate-800" />
+                            </div>
+                        </div>
+
                     </div>
-
-                    {/* Dark overlay to make the neon pop */}
-                    <div className="absolute inset-0 z-10 bg-[#0e0e10]/60 mix-blend-multiply"></div>
-
-                    {/* The 3D Lens Canvas */}
-                    <TruthLensCanvas />
-
-                    <div className="absolute bottom-6 left-6 right-6 z-30 flex justify-between items-end pointer-events-none">
-                        <div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg border border-red-500/30 font-mono text-xs text-red-400">
-                            Anomaly Detected: Disguised 6mo gap (2023)
-                        </div>
-                        <div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg border border-blue-500/30 font-mono text-xs text-blue-400">
-                            Deep Logic Engine: Active
-                        </div>
-                    </div>
-                </motion.div>
-
+                </div>
             </div>
         </section>
     );
