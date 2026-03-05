@@ -12,12 +12,12 @@ const AgitationSection: React.FC = () => {
         <section
             id="agitation"
             ref={ref}
-            className="relative min-h-screen w-full flex flex-col items-center justify-center py-32 z-20 bg-[#0e0e10]"
+            className="relative min-h-screen w-full flex flex-col items-center justify-center py-24 z-20 bg-[#0e0e10]"
         >
             <div className="container mx-auto px-6 lg:px-12 relative z-10">
 
                 {/* Asymmetrical Intro Header */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -25,14 +25,14 @@ const AgitationSection: React.FC = () => {
                         className="lg:col-span-8 lg:col-start-3"
                     >
                         <span className="text-blue-500 font-mono text-[10px] tracking-[0.6em] uppercase mb-4 block">The invisible attrition</span>
-                        <h2 className="text-5xl md:text-8xl font-black mb-10 leading-[0.95] text-slate-100 italic">
+                        <h2 className="text-4xl md:text-7xl font-black mb-8 leading-[0.95] text-slate-100 italic">
                             The Hidden Cost of the <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 not-italic">Invisible Top 1%</span>.
                         </h2>
 
                         <div className="flex flex-col md:flex-row gap-8 items-start">
                             <div className="w-12 h-[1px] bg-slate-700 mt-4 shrink-0" />
-                            <p className="text-xl md:text-2xl text-slate-400 font-light leading-relaxed max-w-2xl">
+                            <p className="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl">
                                 Legacy ATS systems scan for characters, not context. They miss the trajectory.
                                 <span className="text-slate-200"> 68% of elite talent is discarded </span> by algorithms that can't read between the lines.
                             </p>
@@ -50,7 +50,7 @@ const AgitationSection: React.FC = () => {
                     >
                         <div
                             ref={constraintsRef}
-                            className="relative w-full aspect-[16/10] md:aspect-[21/9] glass-card rounded-[2rem] overflow-hidden cursor-ew-resize select-none border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] group"
+                            className="relative w-full aspect-[16/10] md:aspect-[21/7] glass-card rounded-[1.5rem] overflow-hidden cursor-ew-resize select-none border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.6)] group"
                         >
                             {/* STROKE Content (Right/Base) */}
                             <div className="absolute inset-0 bg-blue-900/5 flex flex-col justify-center px-10 md:px-24">

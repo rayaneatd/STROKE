@@ -11,7 +11,7 @@ const TheGapSection: React.FC = () => {
         <section
             id="the-gap"
             ref={ref}
-            className="relative min-h-screen w-full py-32 z-30 overflow-hidden"
+            className="relative min-h-screen w-full py-24 z-30 overflow-hidden"
         >
             {/* Ambient Background Lighting */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#0e0e10] via-blue-900/5 to-[#0e0e10] z-0"></div>
@@ -34,12 +34,12 @@ const TheGapSection: React.FC = () => {
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Section 04 — Extraction</span>
                                 </div>
 
-                                <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-[0.9] text-slate-100 mb-10 italic">
+                                <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic">
                                     Read the <br />
                                     <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Matrix.</span>
                                 </h2>
 
-                                <p className="text-xl text-slate-400 max-w-lg mb-12 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
+                                <p className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
                                     See past the PDF formatting. STROKE extracts the underlying JSON data graph, instantly highlighting temporal gaps and pattern anomalies.
                                 </p>
 
@@ -75,7 +75,7 @@ const TheGapSection: React.FC = () => {
                         </div>
 
                         {/* Right Side: 3D Scene (Overlap design) */}
-                        <div className="relative z-10 order-1 lg:order-2 h-[500px] lg:h-[700px] flex items-center justify-center">
+                        <div className="relative z-10 order-1 lg:order-2 h-[400px] lg:h-[600px] flex items-center justify-center">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
                                 animate={isInView ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0, scale: 0.9, rotateY: 20 }}

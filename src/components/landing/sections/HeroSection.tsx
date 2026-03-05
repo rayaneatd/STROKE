@@ -26,7 +26,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
         <section
             id="hero"
             aria-label="Introduction"
-            className="relative min-h-screen w-full flex items-center justify-start overflow-hidden pt-28 bg-[#0e0e10]"
+            className="relative min-h-screen w-full flex items-center justify-start overflow-hidden pt-16 bg-[#0e0e10]"
         >
             {/* Ambient Lighting for Depth */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
@@ -67,7 +67,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
                                 </span>
                             </motion.div>
 
-                            <h1 className="text-5xl md:text-8xl lg:text-[10rem] font-black tracking-tight leading-[0.85] text-slate-100 mb-8 select-none">
+                            <h1 className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.85] text-slate-100 mb-6 select-none">
                                 <span className="block opacity-95">Beyond</span>
                                 <span className="relative inline-block mt-4">
                                     Simple
@@ -104,7 +104,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
 
                             <div className="flex flex-col lg:flex-row items-end lg:items-center gap-8 lg:gap-16 mt-12">
                                 <motion.p
-                                    className="text-lg md:text-2xl text-slate-400 font-light max-w-xl leading-relaxed italic"
+                                    className="text-base md:text-xl text-slate-400 font-light max-w-lg leading-relaxed italic"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 1.5, duration: 1 }}
@@ -124,7 +124,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
                                     <button
                                         onClick={onCTA}
                                         aria-label="Start Free Scan"
-                                        className="relative z-10 glass-button px-12 py-6 text-xl font-bold tracking-tight text-white flex items-center gap-4 bg-white/5 border-white/20 hover:border-blue-400/50 shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(59,130,246,0.2)]"
+                                        className="relative z-10 glass-button px-8 py-4 text-lg font-bold tracking-tight text-white flex items-center gap-4 bg-white/5 border-white/20 hover:border-blue-400/50 shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(59,130,246,0.2)]"
                                     >
                                         Start Free Scan
                                         <motion.div

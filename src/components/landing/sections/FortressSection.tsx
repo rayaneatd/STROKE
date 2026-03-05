@@ -11,7 +11,7 @@ const FortressSection: React.FC = () => {
         <section
             id="fortress"
             ref={ref}
-            className="relative min-h-screen w-full py-32 overflow-hidden bg-[#0a0a0c]"
+            className="relative min-h-screen w-full py-24 overflow-hidden bg-[#0a0a0c]"
         >
             {/* Ambient Background Glow matching the 3D scene */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none"></div>
@@ -34,12 +34,12 @@ const FortressSection: React.FC = () => {
                                     <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Section 03 — Governance</span>
                                 </div>
 
-                                <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-[0.9] text-slate-100 mb-10 italic">
+                                <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic">
                                     Enterprise <br />
                                     <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Fortification.</span>
                                 </h2>
 
-                                <p className="text-xl text-slate-400 max-w-lg mb-12 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
+                                <p className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8">
                                     We don't "trust" AI. We govern it. STROKE is a fortified processing engine engineered on Google Cloud's most secure <span className="text-slate-200">EU infrastructure</span>.
                                 </p>
 
@@ -75,7 +75,7 @@ const FortressSection: React.FC = () => {
                         </div>
 
                         {/* Right Side: 3D Scene (Overlap design) */}
-                        <div className="relative z-10 order-1 lg:order-2 h-[500px] lg:h-[700px] flex items-center justify-center">
+                        <div className="relative z-10 order-1 lg:order-2 h-[400px] lg:h-[600px] flex items-center justify-center">
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9, rotateY: 20 }}
                                 animate={isInView ? { opacity: 1, scale: 1, rotateY: 0 } : { opacity: 0, scale: 0.9, rotateY: 20 }}
