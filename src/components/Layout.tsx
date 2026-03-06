@@ -23,43 +23,44 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
   useAvatarSync(user);
 
   const getAmbientGlow = () => {
-      // In Light mode, we use broader, more diffuse pastel gradients
-      const glowColor = uiConfig.ambientGlow;
-      if (glowColor) {
-          switch (glowColor) {
-              case 'amber': return isLight ? 'bg-amber-400/20' : 'bg-amber-600/10';
-              case 'rose': return isLight ? 'bg-rose-400/20' : 'bg-rose-600/10';
-              case 'violet': return isLight ? 'bg-violet-400/20' : 'bg-violet-600/10'; 
-              case 'emerald': return isLight ? 'bg-emerald-400/20' : 'bg-emerald-600/10';
-              case 'cyan': return isLight ? 'bg-cyan-400/20' : 'bg-cyan-600/10';
-              case 'blue': return isLight ? 'bg-blue-400/20' : 'bg-blue-600/10';
-              case 'slate': return isLight ? 'bg-slate-300/30' : 'bg-zinc-600/10';
-              default: return isLight ? 'bg-slate-200/30' : 'bg-white/5';
-          }
+    // In Light mode, we use broader, more diffuse pastel gradients
+    const glowColor = uiConfig.ambientGlow;
+    if (glowColor) {
+      switch (glowColor) {
+        case 'amber': return isLight ? 'bg-amber-400/20' : 'bg-amber-600/10';
+        case 'rose': return isLight ? 'bg-rose-400/20' : 'bg-rose-600/10';
+        case 'violet': return isLight ? 'bg-violet-400/20' : 'bg-violet-600/10';
+        case 'emerald': return isLight ? 'bg-emerald-400/20' : 'bg-emerald-600/10';
+        case 'cyan': return isLight ? 'bg-cyan-400/20' : 'bg-cyan-600/10';
+        case 'blue': return isLight ? 'bg-blue-400/20' : 'bg-blue-600/10';
+        case 'slate': return isLight ? 'bg-slate-300/30' : 'bg-zinc-600/10';
+        default: return isLight ? 'bg-slate-200/30' : 'bg-white/5';
       }
-      return isLight ? 'bg-slate-200/30' : 'bg-white/5';
+    }
+    return isLight ? 'bg-slate-200/30' : 'bg-white/5';
   };
 
   // Helper to get hex for selection color injection from Tailwind tokens
   // Note: ideally we map this from the token object, but a switch is safe for now
   const getSelectionColor = (color: string) => {
-      switch(color) {
-          case 'amber': return '#f59e0b';
-          case 'rose': return '#f43f5e';
-          case 'violet': return '#8b5cf6';
-          case 'emerald': return '#10b981';
-          case 'cyan': return '#06b6d4';
-          case 'blue': return '#0ea5e9';
-          case 'slate': return '#64748b';
-          default: return '#64748b';
-      }
+    switch (color) {
+      case 'amber': return '#f59e0b';
+      case 'rose': return '#f43f5e';
+      case 'violet': return '#8b5cf6';
+      case 'emerald': return '#10b981';
+      case 'cyan': return '#06b6d4';
+      case 'blue': return '#0ea5e9';
+      case 'slate': return '#64748b';
+      default: return '#64748b';
+    }
   };
 
   return (
-    <div 
-      className={`h-[125vh] w-[125vw] origin-top-left transform scale-[0.8] ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white overflow-hidden`}
+    <div
+      className={`h-screen w-screen ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white overflow-hidden`}
+      style={{ zoom: 0.8 }}
     >
-      
+
       {/* Dynamic Style Injection for selection color & scrollbars */}
       <style>{`
         ::selection {
@@ -119,32 +120,32 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
 
       {/* Dynamic Atmospheric Glow */}
       <div className={`fixed top-[-20%] left-1/2 -translate-x-1/2 w-[1000px] h-[800px] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${getAmbientGlow()} ${isLight ? 'opacity-60 mix-blend-multiply' : 'opacity-100'}`} />
-      
+
       {/* Secondary darker bottom glow for depth */}
       <div className={`fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] pointer-events-none ${isLight ? 'bg-white/0' : 'bg-zinc-900/20'}`} />
 
-      <Header 
-        user={user} 
-        onBuyScans={onBuyScans} 
-        onUpgradePlan={() => onNavigate('upgrade-plan')} 
+      <Header
+        user={user}
+        onBuyScans={onBuyScans}
+        onUpgradePlan={() => onNavigate('upgrade-plan')}
         uiConfig={uiConfig}
       />
-      
+
       <div className="flex flex-1 pt-16 relative z-10">
-        <Sidebar 
-          currentUser={user} 
-          onLogout={onLogout} 
+        <Sidebar
+          currentUser={user}
+          onLogout={onLogout}
           currentPage={currentPage}
           onNavigate={onNavigate}
           uiConfig={uiConfig}
         />
-        
+
         <main className="flex-1 ml-64 relative overflow-hidden transition-all duration-300">
-            <div className="absolute inset-0 overflow-auto no-scrollbar">
-                <div className="p-8 md:p-12 max-w-screen-2xl mx-auto min-h-full animate-fade-in pb-24">
-                    {children}
-                </div>
+          <div className="absolute inset-0 overflow-auto no-scrollbar">
+            <div className="p-8 md:p-12 max-w-screen-2xl mx-auto min-h-full animate-fade-in pb-24">
+              {children}
             </div>
+          </div>
         </main>
       </div>
     </div>

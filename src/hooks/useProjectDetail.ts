@@ -36,9 +36,9 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         queryKey: ['project', projectId],
         queryFn: async () => {
             const { data, error } = await supabase
-                .rpc('get_user_project' as any, { 
-                    target_user_id: currentUser.id, 
-                    target_project_id: projectId 
+                .rpc('get_user_project' as any, {
+                    target_user_id: currentUser.id,
+                    target_project_id: projectId
                 })
                 .single();
 
@@ -145,24 +145,24 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
     const isCompleted = project?.status === 'COMPLETED';
 
     const canManageTeam = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
-    
+
     // Check if user can actually invite based on invitation policy
     const canInviteMembers = useMemo(() => {
         if (!project || !currentMemberRecord) return false;
-        
+
         const perm = project.settings.employeeAddPermission;
-        
+
         if (currentMemberRecord.role === ProjectRole.OWNER) {
             return true; // Owner can always invite
         }
-        
+
         if (currentMemberRecord.role === ProjectRole.ADMIN) {
             return perm === EmployeeAddPermission.ALL || perm === EmployeeAddPermission.OWN_CONNECTIONS || perm === EmployeeAddPermission.OWNER_CONNECTIONS;
         }
-        
+
         return false;
     }, [project, currentMemberRecord]);
-    
+
     const canChat = !isCompleted && (isActive || (isArchived && (isProjectOwner || isAdmin)));
     const canScan = isActive;
     const canEditProject = isProjectOwner || isAdmin;
@@ -182,10 +182,10 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
     // Tab Management with URL Persistence
     const [searchParams, setSearchParams] = useSearchParams();
-    
+
     const activeTab = useMemo(() => {
         const tab = searchParams.get('tab');
-        
+
         // Optimistic handling: if project is loading, preserve the tab from URL if it's a known valid tab
         // This prevents the tab from flickering to 'overview' during initial load
         if (!project) {
@@ -201,7 +201,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         if (tab === 'team') return 'team';
         if (tab === 'discussions' && canChat) return 'discussions';
         if (tab === 'activity' && canViewActivityTab) return 'activity';
-        
+
         // Fallback logic
         const me = currentMemberRecord;
         if (!me) return 'overview';
@@ -278,6 +278,10 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
             if (payload.emailDraft !== undefined) {
                 payload.email_draft = payload.emailDraft;
                 delete payload.emailDraft;
+            }
+            if (payload.isFavorite !== undefined) {
+                payload.is_favorite = payload.isFavorite;
+                delete payload.isFavorite;
             }
 
             const { error } = await supabase.from('candidates').update(payload).eq('id', id);
@@ -435,7 +439,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
         const cost = pendingFiles.length;
 
         // Check Member Quota FIRST
-        if (currentMemberRecord?.scanQuota !== 'UNLIMITED' && 
+        if (currentMemberRecord?.scanQuota !== 'UNLIMITED' &&
             (currentMemberRecord?.scansUsed || 0) + cost > (currentMemberRecord?.scanQuota || 0)) {
             setIsQuotaExceededModalOpen(true);
             return;
@@ -461,7 +465,7 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
 
             // Delegate real processing to useFileProcessing or an edge function
             queueFilesForProcessing(pendingFiles);
-            
+
             // Refresh Data
             queryClient.invalidateQueries({ queryKey: ['project', projectId] });
             queryClient.invalidateQueries({ queryKey: ['profile'] }); // Update user balance if OWNER_WALLET
