@@ -23,23 +23,21 @@ const LandingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0e0e10] text-slate-200 overflow-x-hidden font-sans selection:bg-blue-500/30">
-            <div className="relative origin-top w-full" style={{ zoom: 0.8 }}>
-                {/* Global Noise Overlay for magazine texture */}
-                <div className="fixed inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-50 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+        <div className="relative min-h-screen bg-[#0e0e10] text-slate-200 overflow-x-hidden font-sans selection:bg-blue-500/30">
+            {/* Global Noise Overlay for magazine texture */}
+            <div className="fixed inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-50 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
-                <LandingHeader onCTA={handleCTA} isAuthenticated={isAuthenticated} />
+            <LandingHeader onCTA={handleCTA} isAuthenticated={isAuthenticated} />
 
-                <main className="relative z-10 w-full flex flex-col items-center">
-                    <HeroSection onCTA={handleCTA} />
-                    <AgitationSection />
-                    <FortressSection />
-                    <TheGapSection />
-                    <CinematicProofSection onCTA={handleCTA} />
-                </main>
+            <main className="relative z-10 w-full flex flex-col items-center">
+                <HeroSection onCTA={handleCTA} />
+                <AgitationSection />
+                <FortressSection />
+                <TheGapSection />
+                <CinematicProofSection onCTA={handleCTA} />
+            </main>
 
-                <Footer />
-            </div>
+            <Footer />
         </div>
     );
 };

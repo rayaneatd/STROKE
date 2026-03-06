@@ -6,14 +6,17 @@
   html {
     background-color: #0e0e10;
     scroll-behavior: smooth;
+    scroll-padding-top: 100px;
     overflow-x: hidden;
+    zoom: 0.8;
   }
 
   body {
     @apply antialiased font-sans text-slate-200;
     margin: 0;
     padding: 0;
-    min-height: 100vh;
+    min-height: 125vh;
+    /* 100vh / 0.8 ensures it fills the viewport vertically */
     overflow-x: hidden;
     overflow-y: auto !important;
     /* Force natural scrolling */

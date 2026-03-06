@@ -58,7 +58,6 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
   return (
     <div
       className={`h-screen w-screen ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white overflow-hidden`}
-      style={{ zoom: 0.8 }}
     >
 
       {/* Dynamic Style Injection for selection color & scrollbars */}

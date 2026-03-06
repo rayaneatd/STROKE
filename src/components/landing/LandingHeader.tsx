@@ -49,7 +49,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                 }}
                 className="flex items-center gap-3 origin-left"
             >
-                <Logo variant="full" height={80} />
+                <Logo variant="full" height={56} />
             </motion.div>
 
             <motion.div
