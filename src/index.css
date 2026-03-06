@@ -45,7 +45,8 @@
   /* Target everything EXCEPT landing page for the 80% zoom fix */
   /* This prevents the "black space" by making the zoomed container 125% of the viewport */
   .app-zoom-container {
-    zoom: 0.8;
+    transform: scale(0.8);
+    transform-origin: 0 0;
     width: 125%;
     height: 125%;
     min-width: 125vw;
