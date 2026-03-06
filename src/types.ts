@@ -108,6 +108,7 @@ export interface UserPreferences {
   defaultInvestmentBudget: number;
   autoArchiveProjects: boolean;
   compactMode: boolean;
+  language?: string;
   notifications: {
     email: boolean;
     push: boolean;

@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 const LanguageSwitcher: React.FC = () => {
     const { i18n, t } = useTranslation();
     const { isLight, accent } = useTheme();
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
 
     const languages = [
         { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -18,20 +18,22 @@ const LanguageSwitcher: React.FC = () => {
     const changeLanguage = async (lng: string) => {
         // 1. Change i18n state
         await i18n.changeLanguage(lng);
-        
-        // 2. Persist to Supabase if logged in
+
+        // 2. Persist to Supabase via AuthContext
         if (user) {
-            await supabase
-                .from('profiles')
-                .update({ language: lng })
-                .eq('id', user.id);
+            updateUser({
+                preferences: {
+                    ...(user.preferences || {}),
+                    language: lng
+                }
+            } as any, true);
         }
     };
 
-    const cardClass = isLight 
-        ? 'bg-white border-slate-200' 
+    const cardClass = isLight
+        ? 'bg-white border-slate-200'
         : 'bg-[#18181b] border-white/5';
-        
+
     const textPrimary = isLight ? 'text-slate-900' : 'text-white';
     const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
 
@@ -41,7 +43,7 @@ const LanguageSwitcher: React.FC = () => {
                 <Globe size={18} className={isLight ? 'text-slate-400' : 'text-zinc-500'} />
                 <h3 className={`text-sm font-bold ${textPrimary}`}>{t('settings.language')}</h3>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {languages.map((lang) => {
                     const isActive = i18n.language === lang.code;
@@ -49,13 +51,12 @@ const LanguageSwitcher: React.FC = () => {
                         <button
                             key={lang.code}
                             onClick={() => changeLanguage(lang.code)}
-                            className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                                isActive
+                            className={`flex items-center justify-between p-4 rounded-xl border transition-all ${isActive
                                     ? `bg-${accent}-500/10 border-${accent}-500 ring-1 ring-${accent}-500/50`
-                                    : isLight 
-                                        ? 'bg-white border-slate-200 hover:bg-slate-50' 
+                                    : isLight
+                                        ? 'bg-white border-slate-200 hover:bg-slate-50'
                                         : 'bg-white/5 border-white/5 hover:bg-white/10'
-                            }`}
+                                }`}
                         >
                             <div className="flex items-center gap-3">
                                 <span className="text-xl">{lang.flag}</span>

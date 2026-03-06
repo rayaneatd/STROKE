@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, Variants } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import Logo from '../ui/Logo';
 
 const Footer: React.FC = () => {
@@ -57,7 +58,7 @@ const Footer: React.FC = () => {
                         >
                             <p className="text-slate-100 text-3xl font-black leading-[0.9] uppercase tracking-tighter max-w-sm italic">
                                 Hiring is Vision. <br />
-                                <span className="text-blue-500/80 font-mono tracking-widest text-lg lowercase block mt-2 not-italic bg-blue-500/5 px-3 py-1 rounded-sm border border-blue-500/10">Context is the signal.</span>
+                                <span className="text-blue-500/80 font-mono tracking-widest text-lg lowercase block mt-2 not-italic bg-blue-500/5 px-3 py-1 rounded-sm border border-blue-500/10">truth over string.</span>
                             </p>
                         </motion.div>
 
@@ -85,9 +86,12 @@ const Footer: React.FC = () => {
                     >
                         <h4 className="text-white font-bold mb-8 font-mono tracking-[0.3em] text-[10px] uppercase opacity-40">The Platform</h4>
                         <ul className="space-y-6 text-sm text-slate-400 font-medium">
-                            {['Governance Engine', 'API Integrations', 'Archive Search'].map((item) => (
-                                <motion.li key={item} whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-                                    <a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 inline-block">{item}</a>
+                            {[
+                                { name: 'Deep Logic Analysis', path: '/deep-logic' },
+                                { name: 'Pricing & Plans', path: '/pricing' }
+                            ].map((item) => (
+                                <motion.li key={item.name} whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+                                    <Link to={item.path} className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 inline-block">{item.name}</Link>
                                 </motion.li>
                             ))}
                         </ul>
@@ -99,9 +103,31 @@ const Footer: React.FC = () => {
                     >
                         <h4 className="text-white font-bold mb-8 font-mono tracking-[0.3em] text-[10px] uppercase opacity-40">Governance</h4>
                         <ul className="space-y-6 text-sm text-slate-400 font-medium">
-                            {['GDPR Compliance', 'Vertex AI Protocol', 'Data Residency'].map((item) => (
-                                <motion.li key={item} whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
-                                    <a href="#" className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 inline-block">{item}</a>
+                            {[
+                                { name: 'Security Whitepaper', path: '/security' },
+                                { name: 'RGPD & Data Residency', path: '/privacy-policy' }
+                            ].map((item) => (
+                                <motion.li key={item.name} whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+                                    <Link to={item.path} className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 inline-block">{item.name}</Link>
+                                </motion.li>
+                            ))}
+                        </ul>
+                    </motion.div>
+
+                    <motion.div
+                        variants={itemVariants}
+                        className="lg:col-span-2"
+                    >
+                        <h4 className="text-white font-bold mb-8 font-mono tracking-[0.3em] text-[10px] uppercase opacity-40">Resources</h4>
+                        <ul className="space-y-6 text-sm text-slate-400 font-medium">
+                            {[
+                                { name: 'The Manifesto', path: '/manifesto' },
+                                { name: 'Documentation', path: '/docs' },
+                                { name: 'Contact Support', path: '/support' },
+                                { name: 'About Us', path: '/about' }
+                            ].map((item) => (
+                                <motion.li key={item.name} whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+                                    <Link to={item.path} className="hover:text-blue-400 transition-all border-b border-transparent hover:border-blue-400/30 pb-1 inline-block">{item.name}</Link>
                                 </motion.li>
                             ))}
                         </ul>

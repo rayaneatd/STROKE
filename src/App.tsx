@@ -30,6 +30,13 @@ const BuyScans = React.lazy(() => import('./pages/BuyScans'));
 const UpgradePlan = React.lazy(() => import('./pages/UpgradePlan'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+const DeepLogic = React.lazy(() => import('./pages/DeepLogic'));
+const Pricing = React.lazy(() => import('./pages/Pricing'));
+const SecurityWhitepaper = React.lazy(() => import('./pages/SecurityWhitepaper'));
+const Manifesto = React.lazy(() => import('./pages/Manifesto'));
+const Documentation = React.lazy(() => import('./pages/Documentation'));
+const ContactSupport = React.lazy(() => import('./pages/ContactSupport'));
+const AboutUs = React.lazy(() => import('./pages/AboutUs'));
 
 // Wrapper to extract route params for ProjectDetail
 import { useParams } from 'react-router-dom';
@@ -91,20 +98,28 @@ const AppContent: React.FC = () => {
 
         // 1. Sync i18n with user profile language on load
         const syncLanguage = async () => {
-            // Get latest profile data including language
+            // Get latest profile preferences
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('language')
+                .select('preferences')
                 .eq('id', user.id)
                 .single();
 
-            if (profile?.language && profile.language !== i18n.language) {
-                i18n.changeLanguage(profile.language);
-            } else if (!profile?.language) {
+            const prefs = profile?.preferences as any;
+            const storedLanguage = prefs?.language;
+
+            if (storedLanguage && storedLanguage !== i18n.language) {
+                i18n.changeLanguage(storedLanguage);
+            } else if (!storedLanguage) {
                 // If no language in DB, update DB with current detected language
                 await supabase
                     .from('profiles')
-                    .update({ language: i18n.language })
+                    .update({
+                        preferences: {
+                            ...(prefs || {}),
+                            language: i18n.language
+                        }
+                    })
                     .eq('id', user.id);
             }
         };
@@ -195,6 +210,13 @@ const AppContent: React.FC = () => {
                         <Route path="/login" element={<Login />} />
                         <Route path="/terms-of-service" element={<TermsOfService />} />
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                        <Route path="/deep-logic" element={<DeepLogic />} />
+                        <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/security" element={<SecurityWhitepaper />} />
+                        <Route path="/manifesto" element={<Manifesto />} />
+                        <Route path="/docs" element={<Documentation />} />
+                        <Route path="/support" element={<ContactSupport />} />
+                        <Route path="/about" element={<AboutUs />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </Suspense>
