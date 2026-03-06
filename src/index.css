@@ -8,15 +8,13 @@
     scroll-behavior: smooth;
     scroll-padding-top: 100px;
     overflow-x: hidden;
-    zoom: 0.8;
   }
 
   body {
     @apply antialiased font-sans text-slate-200;
     margin: 0;
     padding: 0;
-    min-height: 125vh;
-    /* 100vh / 0.8 ensures it fills the viewport vertically */
+    min-height: 100vh;
     overflow-x: hidden;
     overflow-y: auto !important;
     /* Force natural scrolling */
@@ -42,6 +40,16 @@
   h3 {
     @apply tracking-tighter;
     text-wrap: balance;
+  }
+
+  /* Target everything EXCEPT landing page for the 80% zoom fix */
+  /* This prevents the "black space" by making the zoomed container 125% of the viewport */
+  .app-zoom-container {
+    zoom: 0.8;
+    width: 125%;
+    height: 125%;
+    min-width: 125vw;
+    min-height: 125vh;
   }
 }
 

@@ -56,12 +56,12 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
   };
 
   return (
-    <div
-      className={`h-screen w-screen ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white overflow-hidden`}
-    >
+    <div className="h-screen w-screen overflow-hidden">
+      <div className={`app-zoom-container ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white`}>
 
-      {/* Dynamic Style Injection for selection color & scrollbars */}
-      <style>{`
+
+        {/* Dynamic Style Injection for selection color & scrollbars */}
+        <style>{`
         ::selection {
             background-color: ${getSelectionColor(accent)}${isLight ? 'cc' : '40'}; 
             color: ${isLight ? 'white' : 'inherit'};
@@ -117,35 +117,36 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
         ` : ''}
       `}</style>
 
-      {/* Dynamic Atmospheric Glow */}
-      <div className={`fixed top-[-20%] left-1/2 -translate-x-1/2 w-[1000px] h-[800px] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${getAmbientGlow()} ${isLight ? 'opacity-60 mix-blend-multiply' : 'opacity-100'}`} />
+        {/* Dynamic Atmospheric Glow */}
+        <div className={`fixed top-[-20%] left-1/2 -translate-x-1/2 w-[1000px] h-[800px] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 ${getAmbientGlow()} ${isLight ? 'opacity-60 mix-blend-multiply' : 'opacity-100'}`} />
 
-      {/* Secondary darker bottom glow for depth */}
-      <div className={`fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] pointer-events-none ${isLight ? 'bg-white/0' : 'bg-zinc-900/20'}`} />
+        {/* Secondary darker bottom glow for depth */}
+        <div className={`fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[100px] pointer-events-none ${isLight ? 'bg-white/0' : 'bg-zinc-900/20'}`} />
 
-      <Header
-        user={user}
-        onBuyScans={onBuyScans}
-        onUpgradePlan={() => onNavigate('upgrade-plan')}
-        uiConfig={uiConfig}
-      />
-
-      <div className="flex flex-1 pt-16 relative z-10">
-        <Sidebar
-          currentUser={user}
-          onLogout={onLogout}
-          currentPage={currentPage}
-          onNavigate={onNavigate}
+        <Header
+          user={user}
+          onBuyScans={onBuyScans}
+          onUpgradePlan={() => onNavigate('upgrade-plan')}
           uiConfig={uiConfig}
         />
 
-        <main className="flex-1 ml-64 relative overflow-hidden transition-all duration-300">
-          <div className="absolute inset-0 overflow-auto no-scrollbar">
-            <div className="p-8 md:p-12 max-w-screen-2xl mx-auto min-h-full animate-fade-in pb-24">
-              {children}
+        <div className="flex flex-1 pt-16 relative z-10">
+          <Sidebar
+            currentUser={user}
+            onLogout={onLogout}
+            currentPage={currentPage}
+            onNavigate={onNavigate}
+            uiConfig={uiConfig}
+          />
+
+          <main className="flex-1 ml-64 relative overflow-hidden transition-all duration-300">
+            <div className="absolute inset-0 overflow-auto no-scrollbar">
+              <div className="p-8 md:p-12 max-w-screen-2xl mx-auto min-h-full animate-fade-in pb-24">
+                {children}
+              </div>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </div>
   );
