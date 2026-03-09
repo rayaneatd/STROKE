@@ -91,10 +91,12 @@ const getThemeForPlan = (plan: SubscriptionPlan) => {
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
+    // Show loader ONLY for app routes — never block landing pages
     if (loading) return <PageLoader />;
     if (!isAuthenticated) return <Navigate to="/login" replace />;
     return <>{children}</>;
 };
+
 
 // --- MAIN APP CONTENT ---
 const AppContent: React.FC = () => {
@@ -197,9 +199,9 @@ const AppContent: React.FC = () => {
         updateUser(updatedUser);
     }, [updateUser]);
 
-    if (loading) {
-        return <PageLoader />;
-    }
+    // NOTE: We do NOT block rendering here on `loading`.
+    // Landing pages must render immediately and never wait for auth.
+    // Only the ProtectedRoute handles the auth loading state.
 
     const commonLayoutProps = user ? {
         user,
