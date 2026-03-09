@@ -1,7 +1,30 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, Component, ReactNode } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Environment, PerspectiveCamera, MeshTransmissionMaterial } from '@react-three/drei';
 import * as THREE from 'three';
+
+// Local ErrorBoundary for isolating WebGL crashes
+class CanvasErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+    constructor(props: any) {
+        super(props);
+        this.state = { hasError: false };
+    }
+    static getDerivedStateFromError() { return { hasError: true }; }
+    componentDidCatch(err: Error) { console.warn('3D Canvas failed, falling back to CSS:', err.message); }
+    render() {
+        if (this.state.hasError) {
+            // Static CSS-only gradient fallback — no visible impact
+            return (
+                <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                    <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-blue-600/10 blur-[150px] rounded-full" />
+                    <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/5 blur-[120px] rounded-full" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-500/5 blur-[100px] rounded-full" />
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 const GlassShard = ({ position, rotation, scale, color }: { position: [number, number, number], rotation: [number, number, number], scale: number, color: string }) => {
     const meshRef = useRef<THREE.Mesh>(null);
@@ -112,21 +135,24 @@ const HeroScene = () => {
 
 const HeroCanvas = () => {
     return (
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden h-[120vh]">
-            <Canvas dpr={[1, 2]}>
-                <React.Suspense fallback={null}>
-                    <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={40} />
-                    <ambientLight intensity={0.5} />
-                    <pointLight position={[10, 10, 10]} intensity={2} color="#3b82f6" />
-                    <pointLight position={[-10, -10, -10]} intensity={1} color="#6366f1" />
-                    <HeroScene />
-                    <Environment preset="city" />
-                </React.Suspense>
-            </Canvas>
-            {/* Gradient Mask to transition to lower section */}
-            <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-[#0e0e10] to-transparent z-10" />
-        </div>
+        <CanvasErrorBoundary>
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden h-[120vh]">
+                <Canvas dpr={[1, 2]} gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}>
+                    <React.Suspense fallback={null}>
+                        <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={40} />
+                        <ambientLight intensity={0.5} />
+                        <pointLight position={[10, 10, 10]} intensity={2} color="#3b82f6" />
+                        <pointLight position={[-10, -10, -10]} intensity={1} color="#6366f1" />
+                        <HeroScene />
+                        <Environment preset="city" />
+                    </React.Suspense>
+                </Canvas>
+                {/* Gradient Mask to transition to lower section */}
+                <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-[#0e0e10] to-transparent z-10" />
+            </div>
+        </CanvasErrorBoundary>
     );
 };
 
 export default HeroCanvas;
+

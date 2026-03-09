@@ -26,14 +26,19 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
     const headerBorderOpacity = useTransform(scrollY, [0, 100], [0, 0.05]);
     const logoScale = useTransform(scrollY, [0, 200], [1, 0.7]);
 
+    // Compose MotionValues into CSS strings – Framer Motion handles live updates
+    const bgColor = useTransform(headerBgOpacity, (v) => `rgba(10, 10, 12, ${v})`);
+    const borderColor = useTransform(headerBorderOpacity, (v) => `1px solid rgba(255, 255, 255, ${v})`);
+    const blur = useTransform(headerBlur, (v) => `blur(${v}px)`);
+
     return (
         <motion.header
-            className="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 py-3 flex items-center justify-between transition-all duration-300"
+            className="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 py-3 flex items-center justify-between"
             style={{
-                backgroundColor: `rgba(10, 10, 12, ${headerBgOpacity.get()})`,
-                borderBottom: `1px solid rgba(255, 255, 255, ${headerBorderOpacity.get()})`,
-                backdropFilter: `blur(${headerBlur.get()}px)`,
-                WebkitBackdropFilter: `blur(${headerBlur.get()}px)`,
+                backgroundColor: bgColor,
+                borderBottom: borderColor,
+                backdropFilter: blur,
+                WebkitBackdropFilter: blur,
             }}
         >
             <motion.div
