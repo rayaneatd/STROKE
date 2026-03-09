@@ -1,7 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence, Variants, useInView } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import HeroCanvas from './HeroCanvas';
+
+// Lazy-load the 3D canvas — Three.js (~800KB) loads after first paint
+const HeroCanvas = lazy(() => import('./HeroCanvas'));
+
+// CSS-only ambient background shown while 3D loads
+const HeroCanvasFallback = () => (
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-blue-600/10 blur-[150px] rounded-full" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/5 blur-[120px] rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-500/5 blur-[100px] rounded-full animate-pulse" />
+    </div>
+);
 
 interface HeroSectionProps {
     onCTA: () => void;
