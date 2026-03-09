@@ -1,6 +1,6 @@
 
 import React from 'react';
-import InfoPageWrapper from '../components/InfoPageWrapper';
+import InfoPageWrapper from '../../components/InfoPageWrapper';
 import { Mail, MessageSquare, Phone } from 'lucide-react';
 
 const ContactSupport: React.FC = () => {

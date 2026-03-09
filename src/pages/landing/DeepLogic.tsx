@@ -1,4 +1,4 @@
-import InfoPageWrapper from '../components/InfoPageWrapper';
+import InfoPageWrapper from '../../components/InfoPageWrapper';
 import { Brain, Cpu, Database, Network } from 'lucide-react';
 
 const DeepLogic: React.FC = () => {

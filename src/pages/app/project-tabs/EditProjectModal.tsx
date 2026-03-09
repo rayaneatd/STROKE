@@ -3,7 +3,7 @@ import {
   X, Edit2, Type, Sparkles, CheckCircle, Archive, ChevronDown, Users, ShieldOff, Save, Loader2 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Project, User, ProjectRole, EmployeeAddPermission, DemoteTarget } from '../../types';
+import { Project, User, ProjectRole, EmployeeAddPermission, DemoteTarget } from '../../../types';
 
 interface EditProjectModalProps {
   isOpen: boolean;

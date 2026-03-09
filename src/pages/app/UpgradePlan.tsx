@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, ShieldCheck, Zap } from 'lucide-react';
-import SubscriptionPlanCard from '../components/cards/SubscriptionPlanCard';
-import { SubscriptionPlan, User } from '../types';
-import { useUpgradePlan } from '../hooks/useUpgradePlan';
+import SubscriptionPlanCard from '../../components/cards/SubscriptionPlanCard';
+import { SubscriptionPlan, User } from '../../types';
+import { useUpgradePlan } from '../../hooks/useUpgradePlan';
 
 interface UpgradePlanProps {
     onBack: () => void;

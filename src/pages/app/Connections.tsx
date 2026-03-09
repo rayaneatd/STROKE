@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { User, ConnectionItem } from '../types';
-import { useConnections } from '../hooks/useConnections';
-import { getOrgNamesFromEmails } from '../utils/emailDomains';
+import { User, ConnectionItem } from '../../types';
+import { useConnections } from '../../hooks/useConnections';
+import { getOrgNamesFromEmails } from '../../utils/emailDomains';
 import { UserPlus, Search, UserCheck, X, Check, Trash2, Clock, Mail, ChevronDown, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 

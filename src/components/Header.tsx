@@ -57,9 +57,16 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
     >
 
       {/* Left: Logo */}
-      <div className="flex items-center gap-3 z-10 w-fit group cursor-pointer">
+      <div
+        onClick={() => {
+          // Add return to website logic
+          window.location.href = '/';
+        }}
+        className="flex items-center gap-3 z-10 w-fit group cursor-pointer hover:scale-105 transition-all"
+      >
         <Logo variant="full" height={64} />
       </div>
+
 
       {/* Center: Premium Plan Indicator */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">

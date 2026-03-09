@@ -1,20 +1,20 @@
 
 import React from 'react';
-import { MOCK_USERS } from '../services/mockData';
+import { MOCK_USERS } from '../../services/mockData';
 import {
     Plus, Search, MoreHorizontal, Users, FileText, X, Filter,
     Calendar, Archive, CheckCircle, LayoutGrid, List, Crown,
     Edit2, Trash2, LogOut, Rocket, RotateCcw, Power, ChevronDown
 } from 'lucide-react';
-import { useProjects } from '../hooks/useProjects';
-import { Project, User, ProjectRole } from '../types';
-import LowCreditsBanner from '../components/LowCreditsBanner';
+import { useProjects } from '../../hooks/useProjects';
+import { Project, User, ProjectRole } from '../../types';
+import LowCreditsBanner from '../../components/LowCreditsBanner';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Modals
-import ProjectModal from '../components/modals/EditProjectModal'; // Unified modal for Edit/Create
-import LeaveProjectModal from '../components/modals/LeaveProjectModal';
-import DeleteProjectModal from '../components/modals/DeleteProjectModal';
+import ProjectModal from '../../components/modals/EditProjectModal'; // Unified modal for Edit/Create
+import LeaveProjectModal from '../../components/modals/LeaveProjectModal';
+import DeleteProjectModal from '../../components/modals/DeleteProjectModal';
 
 // --- MEMOIZED COMPONENTS ---
 

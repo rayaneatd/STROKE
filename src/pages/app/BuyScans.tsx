@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ShieldCheck, Zap, CreditCard, HelpCircle } from 'lucide-react';
-import ScanPackageCard from '../components/cards/ScanPackageCard';
-import { useBuyScans } from '../hooks/useBuyScans';
+import ScanPackageCard from '../../components/cards/ScanPackageCard';
+import { useBuyScans } from '../../hooks/useBuyScans';
 
 interface BuyScansProps {
     onBack: () => void;

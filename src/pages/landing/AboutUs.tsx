@@ -1,6 +1,6 @@
 
 import React from 'react';
-import InfoPageWrapper from '../components/InfoPageWrapper';
+import InfoPageWrapper from '../../components/InfoPageWrapper';
 
 const AboutUs: React.FC = () => {
     return (

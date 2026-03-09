@@ -1,9 +1,9 @@
 import React from 'react';
-import { useLogin } from '../hooks/useLogin';
+import { useLogin } from '../../hooks/useLogin';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { Loader2, Mail, Check, ArrowRight, X, Linkedin, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Logo from '../components/ui/Logo';
+import Logo from '../../components/ui/Logo';
 import { useTranslation, Trans } from 'react-i18next';
 
 const Login: React.FC = () => {
@@ -38,7 +38,8 @@ const Login: React.FC = () => {
                 <div className="w-full max-w-md bg-[#0A0A0A] border border-white/5 rounded-2xl px-8 pb-8 pt-0 shadow-2xl relative z-10">
                     {/* Header / Branding */}
                     <div className="text-center mb-8 flex flex-col items-center">
-                        <Logo variant="full" height={120} className="mb-4" />
+                        <Logo variant="full" height={80} className="mb-4" glow={false} />
+
                         <p className="text-zinc-400">{t('auth.welcomeBack')}</p>
                     </div>
 

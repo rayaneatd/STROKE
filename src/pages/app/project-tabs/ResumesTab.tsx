@@ -10,13 +10,13 @@ import {
     Linkedin, Github, Briefcase, TrendingUp, AlertOctagon, HelpCircle, MessageSquare, Code
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ProjectFile, User, ProjectMember } from '../../types';
-import { useCandidates } from '../../hooks/useCandidates';
-import { debounce } from '../../utils/performance';
-import { generateReport, generateAIEmailDraft } from '../../services/mockData';
-import { useVirtualizer } from '../../hooks/useVirtualizer';
-import CandidateDrawer from '../../components/CandidateDrawer';
-import CandidateList from '../../components/CandidateList';
+import { ProjectFile, User, ProjectMember } from '../../../types';
+import { useCandidates } from '../../../hooks/useCandidates';
+import { debounce } from '../../../utils/performance';
+import { generateReport, generateAIEmailDraft } from '../../../services/mockData';
+import { useVirtualizer } from '../../../hooks/useVirtualizer';
+import CandidateDrawer from '../../../components/CandidateDrawer';
+import CandidateList from '../../../components/CandidateList';
 
 interface ResumesTabProps {
     projectId: string; // Added projectId

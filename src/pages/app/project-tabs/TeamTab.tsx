@@ -5,10 +5,10 @@ import {
     ShieldOff, ShieldCheck, Trash2, X, CheckSquare, Square, MinusSquare, BarChart2, CheckCircle, Loader2, ArrowDown, Edit2, Calculator, Infinity, Zap
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Project, User as UserType, ProjectRole, EmployeeAddPermission, DemoteTarget, ProjectPermission, SubscriptionPlan } from '../../types';
-import BulkAccessModal from '../../components/modals/BulkAccessModal';
-import BulkDemoteModal from '../../components/modals/BulkDemoteModal';
-import BulkRemoveMemberModal from '../../components/modals/BulkRemoveMemberModal';
+import { Project, User as UserType, ProjectRole, EmployeeAddPermission, DemoteTarget, ProjectPermission, SubscriptionPlan } from '../../../types';
+import BulkAccessModal from '../../../components/modals/BulkAccessModal';
+import BulkDemoteModal from '../../../components/modals/BulkDemoteModal';
+import BulkRemoveMemberModal from '../../../components/modals/BulkRemoveMemberModal';
 
 // Theme helper
 const useTheme = (user: UserType) => {

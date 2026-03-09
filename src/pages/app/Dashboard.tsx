@@ -8,9 +8,9 @@ import {
     Users, TrendingUp, TrendingDown, Target, Activity,
     Download, RefreshCw, ChevronDown, Calendar, Filter, Star, Info, Crown, CheckCircle, AlertOctagon, FileStack, Briefcase, Search, BarChart2, Shield
 } from 'lucide-react';
-import { useDashboard } from '../hooks/useDashboard';
-import { User, Role } from '../types';
-import LowCreditsBanner from '../components/LowCreditsBanner';
+import { useDashboard } from '../../hooks/useDashboard';
+import { User, Role } from '../../types';
+import LowCreditsBanner from '../../components/LowCreditsBanner';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 interface DashboardProps {

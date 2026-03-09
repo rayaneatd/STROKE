@@ -8,8 +8,8 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, Cell, PieChart, Pie, Legend, Line
 } from 'recharts';
-import { Project, ProjectFile, User } from '../../types';
-import { useProjectAnalytics, TimeRange } from '../../hooks/useProjectAnalytics';
+import { Project, ProjectFile, User } from '../../../types';
+import { useProjectAnalytics, TimeRange } from '../../../hooks/useProjectAnalytics';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 

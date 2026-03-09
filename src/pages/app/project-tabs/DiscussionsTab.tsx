@@ -4,8 +4,8 @@ import {
     Shield, Loader2, MessageSquare, Send
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ProjectMessage, ChannelType, User, Project } from '../../types';
-import { useChat } from '../../hooks/useChat';
+import { ProjectMessage, ChannelType, User, Project } from '../../../types';
+import { useChat } from '../../../hooks/useChat';
 
 // URL Regex for basic detection
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;

@@ -1,24 +1,24 @@
 
 import React from 'react';
-import { User, SubscriptionPlan } from '../types';
+import { User, SubscriptionPlan } from '../../types';
 import {
     Bell, Shield, Save, Check, Loader2,
     Layout, AlertCircle, BrainCircuit, Wallet, Palette, Globe
 } from 'lucide-react';
-import DeleteAccountModal from '../components/modals/DeleteAccountModal';
-import ThemedCard from '../components/ui/ThemedCard';
-import ThemedButton from '../components/ui/ThemedButton';
-import { useSettings } from '../hooks/useSettings';
-import LanguageSwitcher from '../components/LanguageSwitcher'; // Import LanguageSwitcher
+import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
+import ThemedCard from '../../components/ui/ThemedCard';
+import ThemedButton from '../../components/ui/ThemedButton';
+import { useSettings } from '../../hooks/useSettings';
+import LanguageSwitcher from '../../components/LanguageSwitcher'; // Import LanguageSwitcher
 import { useTranslation } from 'react-i18next';
 
 // Sub-Components
-import WorkflowSettings from '../components/settings/WorkflowSettings';
-import AppearanceSettings from '../components/settings/AppearanceSettings';
-import NotificationSettings from '../components/settings/NotificationSettings';
-import AISettings from '../components/settings/AISettings';
-import BillingSettings from '../components/settings/BillingSettings';
-import SecuritySettings from '../components/settings/SecuritySettings';
+import WorkflowSettings from '../../components/settings/WorkflowSettings';
+import AppearanceSettings from '../../components/settings/AppearanceSettings';
+import NotificationSettings from '../../components/settings/NotificationSettings';
+import AISettings from '../../components/settings/AISettings';
+import BillingSettings from '../../components/settings/BillingSettings';
+import SecuritySettings from '../../components/settings/SecuritySettings';
 
 interface SettingsProps {
     user: User;

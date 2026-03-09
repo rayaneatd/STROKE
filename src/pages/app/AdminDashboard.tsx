@@ -3,14 +3,14 @@ import React from 'react';
 import {
     RefreshCw, Download
 } from 'lucide-react';
-import { User } from '../types';
-import { useAdminDashboard } from '../hooks/useAdminDashboard';
+import { User } from '../../types';
+import { useAdminDashboard } from '../../hooks/useAdminDashboard';
 
 // Import Tab Components
-import AdminOverview from '../components/admin/AdminOverview';
-import AdminUsers from '../components/admin/AdminUsers';
-import AdminSystem from '../components/admin/AdminSystem';
-import AdminPricing from '../components/admin/AdminPricing';
+import AdminOverview from '../../components/admin/AdminOverview';
+import AdminUsers from '../../components/admin/AdminUsers';
+import AdminSystem from '../../components/admin/AdminSystem';
+import AdminPricing from '../../components/admin/AdminPricing';
 
 interface AdminDashboardProps {
     currentUser: User;

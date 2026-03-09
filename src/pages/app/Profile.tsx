@@ -1,16 +1,16 @@
 
 import React from 'react';
-import { User, Role, SubscriptionPlan } from '../types';
+import { User, Role, SubscriptionPlan } from '../../types';
 import {
     Camera, Save, Mail, User as UserIcon, Shield, CreditCard, Check,
     AlertCircle, Loader2, Building2, Server, Link, Plus, Trash2,
     Briefcase, Calendar, Edit2, X, AlertTriangle
 } from 'lucide-react';
-import { INDUSTRIES } from '../constants';
-import SearchableSelect from '../components/ui/SearchableSelect';
-import { useProfile } from '../hooks/useProfile';
-import { useTheme } from '../context/ThemeContext';
-import ThemedButton from '../components/ui/ThemedButton';
+import { INDUSTRIES } from '../../constants';
+import SearchableSelect from '../../components/ui/SearchableSelect';
+import { useProfile } from '../../hooks/useProfile';
+import { useTheme } from '../../context/ThemeContext';
+import ThemedButton from '../../components/ui/ThemedButton';
 import { useTranslation } from 'react-i18next';
 
 interface ProfileProps {

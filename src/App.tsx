@@ -1,6 +1,6 @@
 
 import React, { Suspense, useCallback, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext'; // Import ThemeProvider
@@ -17,26 +17,29 @@ import { supabase } from './lib/supabase';
 
 
 // --- LAZY LOADED ROUTES (Code Splitting) ---
-const Login = React.lazy(() => import('./pages/Login'));
-const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
-const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
-const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const Projects = React.lazy(() => import('./pages/Projects'));
-const ProjectDetail = React.lazy(() => import('./pages/ProjectDetail'));
-const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
-const Settings = React.lazy(() => import('./pages/Settings'));
-const Connections = React.lazy(() => import('./pages/Connections'));
-const BuyScans = React.lazy(() => import('./pages/BuyScans'));
-const UpgradePlan = React.lazy(() => import('./pages/UpgradePlan'));
-const Profile = React.lazy(() => import('./pages/Profile'));
-const LandingPage = React.lazy(() => import('./pages/LandingPage'));
-const DeepLogic = React.lazy(() => import('./pages/DeepLogic'));
-const Pricing = React.lazy(() => import('./pages/Pricing'));
-const SecurityWhitepaper = React.lazy(() => import('./pages/SecurityWhitepaper'));
-const Manifesto = React.lazy(() => import('./pages/Manifesto'));
-const Documentation = React.lazy(() => import('./pages/Documentation'));
-const ContactSupport = React.lazy(() => import('./pages/ContactSupport'));
-const AboutUs = React.lazy(() => import('./pages/AboutUs'));
+// Landing Pages
+const LandingPage = React.lazy(() => import('./pages/landing/LandingPage'));
+const Login = React.lazy(() => import('./pages/landing/Login'));
+const TermsOfService = React.lazy(() => import('./pages/landing/TermsOfService'));
+const PrivacyPolicy = React.lazy(() => import('./pages/landing/PrivacyPolicy'));
+const DeepLogic = React.lazy(() => import('./pages/landing/DeepLogic'));
+const Pricing = React.lazy(() => import('./pages/landing/Pricing'));
+const SecurityWhitepaper = React.lazy(() => import('./pages/landing/SecurityWhitepaper'));
+const Manifesto = React.lazy(() => import('./pages/landing/Manifesto'));
+const Documentation = React.lazy(() => import('./pages/landing/Documentation'));
+const ContactSupport = React.lazy(() => import('./pages/landing/ContactSupport'));
+const AboutUs = React.lazy(() => import('./pages/landing/AboutUs'));
+
+// App Pages
+const Dashboard = React.lazy(() => import('./pages/app/Dashboard'));
+const Projects = React.lazy(() => import('./pages/app/Projects'));
+const ProjectDetail = React.lazy(() => import('./pages/app/ProjectDetail'));
+const AdminDashboard = React.lazy(() => import('./pages/app/AdminDashboard'));
+const Settings = React.lazy(() => import('./pages/app/Settings'));
+const Connections = React.lazy(() => import('./pages/app/Connections'));
+const BuyScans = React.lazy(() => import('./pages/app/BuyScans'));
+const UpgradePlan = React.lazy(() => import('./pages/app/UpgradePlan'));
+const Profile = React.lazy(() => import('./pages/app/Profile'));
 
 // Wrapper to extract route params for ProjectDetail
 import { useParams } from 'react-router-dom';
@@ -45,12 +48,12 @@ const ProjectDetailWrapper = ({ user, onNavigate, onUpdateUser }: { user: User, 
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    if (!id) return <Navigate to="/projects" replace />;
+    if (!id) return <Navigate to="/app/projects" replace />;
 
     return (
         <ProjectDetail
             projectId={id}
-            onBack={() => navigate('/projects')}
+            onBack={() => navigate('/app/projects')}
             deductScans={() => true} // Logic handled internally via services
             currentUser={user}
             onNavigate={onNavigate}
@@ -85,6 +88,14 @@ const getThemeForPlan = (plan: SubscriptionPlan) => {
     }
 }
 
+// Protected Route Wrapper
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isAuthenticated, loading } = useAuth();
+    if (loading) return <PageLoader />;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    return <>{children}</>;
+};
+
 // --- MAIN APP CONTENT ---
 const AppContent: React.FC = () => {
     const { user, logout, updateUser, isAuthenticated, loading } = useAuth();
@@ -98,7 +109,6 @@ const AppContent: React.FC = () => {
 
         // 1. Sync i18n with user profile language on load
         const syncLanguage = async () => {
-            // Get latest profile preferences
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('preferences')
@@ -111,7 +121,6 @@ const AppContent: React.FC = () => {
             if (storedLanguage && storedLanguage !== i18n.language) {
                 i18n.changeLanguage(storedLanguage);
             } else if (!storedLanguage) {
-                // If no language in DB, update DB with current detected language
                 await supabase
                     .from('profiles')
                     .update({
@@ -125,25 +134,20 @@ const AppContent: React.FC = () => {
         };
 
         syncLanguage();
-    }, [user?.id]); // Run when user ID changes (login)
+    }, [user?.id]);
 
     // --- REAL-TIME BAN ENFORCEMENT ---
     useEffect(() => {
         if (!user) return;
 
-        // Poll every 2 seconds to check status from "backend"
         const banCheckInterval = setInterval(() => {
             if (!user?.id) return;
             const freshUserRecord = getUser(user.id);
 
             if (freshUserRecord) {
-                // If backend says banned but local state says active, SYNC IT.
-                // This triggers the GlobalBanModal to render.
                 if (freshUserRecord.isBanned && !user.isBanned) {
                     updateUser(freshUserRecord);
                 }
-
-                // Optional: Auto-unban logic (if backend unbans, sync it back)
                 if (!freshUserRecord.isBanned && user.isBanned) {
                     updateUser(freshUserRecord);
                 }
@@ -153,43 +157,40 @@ const AppContent: React.FC = () => {
         return () => clearInterval(banCheckInterval);
     }, [user, updateUser]);
 
-    // Handle Theme Updates from anywhere
     const handleThemeChange = (newConfig: UIPreferences) => {
         if (user) {
             updateUser({ preferences: { ...user.preferences, uiConfig: newConfig } as any }, true);
         }
     };
 
-    // Mapping for Sidebar Highlighting
     const getCurrentPageId = () => {
         const path = location.pathname;
-        if (path === '/' || path === '/dashboard') return 'dashboard';
-        if (path.startsWith('/projects')) return 'projects';
-        if (path.startsWith('/connections')) return 'connections';
-        if (path.startsWith('/settings')) return 'settings';
-        if (path.startsWith('/admin')) return 'admin';
-        if (path.startsWith('/profile')) return 'profile';
-        if (path.startsWith('/buy-scans')) return 'buy-scans';
+        if (path === '/app' || path === '/app/dashboard') return 'dashboard';
+        if (path.startsWith('/app/projects')) return 'projects';
+        if (path.startsWith('/app/connections')) return 'connections';
+        if (path.startsWith('/app/settings')) return 'settings';
+        if (path.startsWith('/app/admin')) return 'admin';
+        if (path.startsWith('/app/profile')) return 'profile';
+        if (path.startsWith('/app/buy-scans')) return 'buy-scans';
         return 'dashboard';
     };
 
-    // Centralized Navigation Handler
     const handleNavigate = useCallback((pageId: string) => {
         switch (pageId) {
-            case 'dashboard': navigate('/'); break;
-            case 'projects': navigate('/projects'); break;
-            case 'connections': navigate('/connections'); break;
-            case 'settings': navigate('/settings'); break;
-            case 'admin': navigate('/admin'); break;
-            case 'profile': navigate('/profile'); break;
-            case 'buy-scans': navigate('/buy-scans'); break;
-            case 'upgrade-plan': navigate('/upgrade-plan'); break;
-            default: navigate('/');
+            case 'dashboard': navigate('/app'); break;
+            case 'projects': navigate('/app/projects'); break;
+            case 'connections': navigate('/app/connections'); break;
+            case 'settings': navigate('/app/settings'); break;
+            case 'admin': navigate('/app/admin'); break;
+            case 'profile': navigate('/app/profile'); break;
+            case 'buy-scans': navigate('/app/buy-scans'); break;
+            case 'upgrade-plan': navigate('/app/upgrade-plan'); break;
+            default: navigate('/app');
         }
     }, [navigate]);
 
     const handleProjectClick = useCallback((projectId: string) => {
-        navigate(`/projects/${projectId}`);
+        navigate(`/app/projects/${projectId}`);
     }, [navigate]);
 
     const handleUpdateUser = useCallback((updatedUser: User) => {
@@ -200,141 +201,121 @@ const AppContent: React.FC = () => {
         return <PageLoader />;
     }
 
-    // 1. Unauthenticated State
-    if (!isAuthenticated || !user) {
-        return (
-            <ThemeProvider>
-                <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                        <Route path="/" element={<LandingPage />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/terms-of-service" element={<TermsOfService />} />
-                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                        <Route path="/deep-logic" element={<DeepLogic />} />
-                        <Route path="/pricing" element={<Pricing />} />
-                        <Route path="/security" element={<SecurityWhitepaper />} />
-                        <Route path="/manifesto" element={<Manifesto />} />
-                        <Route path="/docs" element={<Documentation />} />
-                        <Route path="/support" element={<ContactSupport />} />
-                        <Route path="/about" element={<AboutUs />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </Suspense>
-            </ThemeProvider>
-        );
-    }
-
-    // 2. Authenticated State
-    const commonLayoutProps = {
+    const commonLayoutProps = user ? {
         user,
         onLogout: logout,
         currentPage: getCurrentPageId(),
         onNavigate: handleNavigate,
-        onBuyScans: () => navigate('/buy-scans')
-    };
+        onBuyScans: () => navigate('/app/buy-scans')
+    } : null;
 
     return (
-        <ThemeProvider initialConfig={user.preferences?.uiConfig} onConfigChange={handleThemeChange}>
-            {/* GLOBAL BAN MODAL INTERCEPTOR */}
-            {user.isBanned && (
+        <ThemeProvider initialConfig={user?.preferences?.uiConfig} onConfigChange={handleThemeChange}>
+            {user?.isBanned && (
                 <GlobalBanModal user={user} onLogout={logout} />
             )}
 
-            {/* Onboarding disabled for migration phase
-            {user && !user.hasCompletedOnboarding && !user.isBanned && (
-                <OnboardingWizard user={user} onComplete={handleUpdateUser} />
-            )}
-            */}
+            <Suspense fallback={<PageLoader />}>
+                <Routes>
+                    {/* Public/Landing Routes - Accessible always */}
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/login" element={isAuthenticated ? <Navigate to="/app" replace /> : <Login />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/deep-logic" element={<DeepLogic />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/security" element={<SecurityWhitepaper />} />
+                    <Route path="/manifesto" element={<Manifesto />} />
+                    <Route path="/docs" element={<Documentation />} />
+                    <Route path="/support" element={<ContactSupport />} />
+                    <Route path="/about" element={<AboutUs />} />
 
-            <Layout {...commonLayoutProps}>
-                <Suspense fallback={<ContentLoader />}>
-                    <Routes>
-                        <Route path="/" element={<Dashboard currentUser={user} onNavigate={handleNavigate} />} />
+                    {/* App Routes - Protected */}
+                    <Route path="/app/*" element={
+                        <ProtectedRoute>
+                            <Layout {...commonLayoutProps!}>
+                                <Suspense fallback={<ContentLoader />}>
+                                    <Routes>
+                                        <Route index element={<Dashboard currentUser={user!} onNavigate={handleNavigate} />} />
+                                        <Route path="projects" element={
+                                            <ErrorBoundary className="m-8">
+                                                <Projects
+                                                    currentUser={user!}
+                                                    onProjectClick={handleProjectClick}
+                                                    onNavigate={handleNavigate}
+                                                    onUpdateUser={handleUpdateUser}
+                                                />
+                                            </ErrorBoundary>
+                                        } />
+                                        <Route path="projects/:id" element={
+                                            <ErrorBoundary className="m-8">
+                                                <ProjectDetailWrapper
+                                                    user={user!}
+                                                    onNavigate={handleNavigate}
+                                                    onUpdateUser={handleUpdateUser}
+                                                />
+                                            </ErrorBoundary>
+                                        } />
+                                        <Route path="settings" element={
+                                            <Settings
+                                                user={user!}
+                                                onUpdateUser={handleUpdateUser}
+                                                onLogout={logout}
+                                            />
+                                        } />
+                                        <Route path="admin" element={
+                                            <AdminDashboard
+                                                currentUser={user!}
+                                                onNavigate={handleNavigate}
+                                            />
+                                        } />
+                                        <Route path="connections" element={<Connections currentUser={user!} />} />
+                                        <Route path="profile" element={
+                                            <Profile
+                                                user={user!}
+                                                onUpdateUser={handleUpdateUser}
+                                                onNavigate={handleNavigate}
+                                            />
+                                        } />
+                                        <Route path="buy-scans" element={
+                                            <BuyScans
+                                                onBack={() => navigate(-1)}
+                                                onBuy={(amount) => {
+                                                    updateUser({ scansBalance: (user!.scansBalance || 0) + amount });
+                                                }}
+                                                currentBalance={user!.scansBalance}
+                                            />
+                                        } />
+                                        <Route path="upgrade-plan" element={
+                                            <UpgradePlan
+                                                onBack={() => navigate(-1)}
+                                                onUpgrade={(plan) => {
+                                                    const theme = getThemeForPlan(plan);
+                                                    updateUser({
+                                                        subscriptionPlan: plan,
+                                                        preferences: {
+                                                            ...user!.preferences,
+                                                            uiConfig: {
+                                                                ...user!.preferences?.uiConfig,
+                                                                accentColor: theme.accent as any,
+                                                                ambientGlow: theme.glow as any
+                                                            }
+                                                        } as any
+                                                    }, true);
+                                                }}
+                                                currentUser={user!}
+                                            />
+                                        } />
+                                        <Route path="*" element={<Navigate to="/app" replace />} />
+                                    </Routes>
+                                </Suspense>
+                            </Layout>
+                        </ProtectedRoute>
+                    } />
 
-                        <Route path="/projects" element={
-                            <ErrorBoundary className="m-8">
-                                <Projects
-                                    currentUser={user}
-                                    onProjectClick={handleProjectClick}
-                                    onNavigate={handleNavigate}
-                                    onUpdateUser={handleUpdateUser}
-                                />
-                            </ErrorBoundary>
-                        } />
-
-                        <Route path="/projects/:id" element={
-                            <ErrorBoundary className="m-8">
-                                <ProjectDetailWrapper
-                                    user={user}
-                                    onNavigate={handleNavigate}
-                                    onUpdateUser={handleUpdateUser}
-                                />
-                            </ErrorBoundary>
-                        } />
-
-                        <Route path="/settings" element={
-                            <Settings
-                                user={user}
-                                onUpdateUser={handleUpdateUser}
-                                onLogout={logout}
-                            />
-                        } />
-
-                        <Route path="/admin" element={
-                            <AdminDashboard
-                                currentUser={user}
-                                onNavigate={handleNavigate}
-                            />
-                        } />
-
-                        <Route path="/connections" element={
-                            <Connections currentUser={user} />
-                        } />
-
-                        <Route path="/profile" element={
-                            <Profile
-                                user={user}
-                                onUpdateUser={handleUpdateUser}
-                                onNavigate={handleNavigate}
-                            />
-                        } />
-
-                        <Route path="/buy-scans" element={
-                            <BuyScans
-                                onBack={() => navigate(-1)}
-                                onBuy={(amount) => {
-                                    // Local update only, backend handled by RPC in useBuyScans
-                                    updateUser({ scansBalance: (user.scansBalance || 0) + amount });
-                                }}
-                                currentBalance={user.scansBalance}
-                            />
-                        } />
-
-                        <Route path="/upgrade-plan" element={
-                            <UpgradePlan
-                                onBack={() => navigate(-1)}
-                                onUpgrade={(plan) => {
-                                    const theme = getThemeForPlan(plan);
-                                    updateUser({
-                                        subscriptionPlan: plan,
-                                        preferences: {
-                                            ...user.preferences,
-                                            uiConfig: {
-                                                ...user.preferences?.uiConfig,
-                                                accentColor: theme.accent as any,
-                                                ambientGlow: theme.glow as any
-                                            }
-                                        } as any
-                                    }, true);
-                                }}
-                                currentUser={user}
-                            />
-                        } />
-
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </Suspense>
-            </Layout>
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Suspense>
         </ThemeProvider>
     );
 };
@@ -353,14 +334,15 @@ const queryClient = new QueryClient({
 const App: React.FC = () => {
     return (
         <QueryClientProvider client={queryClient}>
-            <HashRouter>
+            <BrowserRouter>
                 <AuthProvider>
                     <AppContent />
                 </AuthProvider>
-            </HashRouter>
+            </BrowserRouter>
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     );
 };
 
 export default App;
+

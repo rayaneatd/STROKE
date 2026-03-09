@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, X, Briefcase, Search, BarChart2, Check, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Project, User as UserType, ProjectRole, EmployeeAddPermission, ProjectPermission, UserId, Role, SubscriptionPlan, BillingType } from '../../types';
-import { supabase } from '../../lib/supabase';
+import { Project, User as UserType, ProjectRole, EmployeeAddPermission, ProjectPermission, UserId, Role, SubscriptionPlan, BillingType } from '../../../types';
+import { supabase } from '../../../lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 
 interface AddMemberModalProps {

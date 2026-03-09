@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ProjectFile, User, Project } from '../../types';
-import { debounce } from '../../utils/performance';
-import { useCandidates } from '../../hooks/useCandidates';
+import { ProjectFile, User, Project } from '../../../types';
+import { debounce } from '../../../utils/performance';
+import { useCandidates } from '../../../hooks/useCandidates';
 import {
     Activity, Ghost,
     User as UserIcon, Search, Filter, SortAsc, SortDesc, Download, Loader2, Check, X,
@@ -10,9 +10,9 @@ import {
     Star, ThumbsDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import CandidateList from '../../components/CandidateList';
-import CandidateDrawer from '../../components/CandidateDrawer';
-import { supabase } from '../../lib/supabase';
+import CandidateList from '../../../components/CandidateList';
+import CandidateDrawer from '../../../components/CandidateDrawer';
+import { supabase } from '../../../lib/supabase';
 
 interface ActivityTabProps {
     project: Project;

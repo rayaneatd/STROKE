@@ -43,7 +43,8 @@ const Footer: React.FC = () => {
                         variants={itemVariants}
                         className="lg:col-span-5 xl:col-span-4"
                     >
-                        <Logo variant="full" height={80} />
+                        <Logo variant="full" height={80} glow={false} />
+
                         <motion.div
                             animate={{
                                 skewX: [0, 1, -1, 0],
