@@ -98,7 +98,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
                 <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/5 blur-[120px] rounded-full" />
             </div>
 
-            <HeroCanvas />
+            <Suspense fallback={<HeroCanvasFallback />}>
+                <HeroCanvas />
+            </Suspense>
 
             <motion.div
                 className="container mx-auto px-6 lg:px-12 relative z-10 w-full text-center lg:text-left"
