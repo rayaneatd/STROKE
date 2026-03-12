@@ -26,10 +26,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            // Isolate Three.js ecosystem into its own async chunk
-            if (id.includes('three') || id.includes('@react-three')) {
-              return 'three-vendor';
-            }
             // Core React vendor chunk
             if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
               return 'react-vendor';
