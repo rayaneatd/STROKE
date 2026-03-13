@@ -80,7 +80,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                             className="glass-button flex items-center gap-2 group px-6 py-3 rounded-full border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-colors shadow-lg"
                         >
                             <ShieldCheck size={16} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
-                            <span className="text-sm font-black tracking-widest uppercase text-slate-200">Console</span>
+                            <span className="text-sm font-black tracking-widest uppercase text-slate-200">Browse App</span>
                         </motion.button>
                     ) : (
                         <motion.button

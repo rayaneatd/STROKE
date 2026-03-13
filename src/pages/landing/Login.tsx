@@ -1,13 +1,15 @@
 import React from 'react';
 import { useLogin } from '../../hooks/useLogin';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { Loader2, Mail, Check, ArrowRight, X, Linkedin, Shield } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Loader2, Mail, Check, ArrowRight, X, Linkedin, Shield, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../../components/ui/Logo';
 import { useTranslation, Trans } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const {
         email,
         setEmail,
@@ -28,9 +30,29 @@ const Login: React.FC = () => {
 
     const turnstileSiteKey = (import.meta as any).env.VITE_TURNSTILE_SITE_KEY;
 
+    const handleBack = () => {
+        if (window.history.length > 2) {
+            navigate(-1);
+        } else {
+            navigate('/');
+        }
+    };
+
     return (
         <div className="h-screen w-screen bg-[#050505] overflow-hidden">
-            <div className="app-zoom-container flex items-center justify-center p-4 relative">
+            <div className="app-zoom-container flex flex-col items-center justify-center min-h-screen p-4 relative">
+                {/* Back Button */}
+                <div className="w-full max-w-md mb-4 flex justify-start">
+                    <motion.button
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        onClick={handleBack}
+                        className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-sm font-medium text-zinc-400 hover:text-white"
+                    >
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        <span>{t('common.back', 'Go Back')}</span>
+                    </motion.button>
+                </div>
                 {/* Ambient Background Effects */}
                 <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
