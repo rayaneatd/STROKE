@@ -89,7 +89,7 @@ export const useLogin = () => {
                 });
 
                 if (signInError) throw signInError;
-                navigate('/');
+                navigate('/app');
             }
         } catch (err: any) {
             setError(err.message || t('auth.errors.unexpected'));
@@ -112,7 +112,7 @@ export const useLogin = () => {
         setSocialLoading(provider);
         try {
             const options: any = {
-                redirectTo: `${window.location.origin}/`,
+                redirectTo: `${window.location.origin}/app`,
             };
 
             if (provider === 'google') {
@@ -155,10 +155,10 @@ export const useLogin = () => {
         setMagicLinkLoading(true);
         try {
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            let redirectTo = isLocalhost 
+            let redirectTo = isLocalhost
                 ? ((import.meta as any).env.VITE_LOCALHOST_URL || window.location.origin)
                 : window.location.origin;
-            
+
             // Ensure no double slashes if env var has trailing slash
             redirectTo = redirectTo.replace(/\/$/, '');
 
@@ -166,7 +166,7 @@ export const useLogin = () => {
                 email,
                 options: {
                     shouldCreateUser: true,
-                    emailRedirectTo: `${redirectTo}/`,
+                    emailRedirectTo: `${redirectTo}/app`,
                     captchaToken,
                 }
             });
