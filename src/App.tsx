@@ -235,83 +235,97 @@ const AppContent: React.FC = () => {
                     {/* App Routes - Protected */}
                     <Route path="/app/*" element={
                         <ProtectedRoute>
-                            <Layout {...commonLayoutProps!}>
-                                <Suspense fallback={<ContentLoader />}>
-                                    <Routes>
-                                        <Route index element={<Dashboard currentUser={user!} onNavigate={handleNavigate} />} />
-                                        <Route path="projects" element={
-                                            <ErrorBoundary className="m-8">
-                                                <Projects
-                                                    currentUser={user!}
-                                                    onProjectClick={handleProjectClick}
-                                                    onNavigate={handleNavigate}
-                                                    onUpdateUser={handleUpdateUser}
+                            {user ? (
+                                <Layout {...commonLayoutProps!}>
+                                    <Suspense fallback={<ContentLoader />}>
+                                        <Routes>
+                                            <Route index element={<Dashboard currentUser={user} onNavigate={handleNavigate} />} />
+                                            <Route path="projects" element={
+                                                <ErrorBoundary className="m-8">
+                                                    <Projects
+                                                        currentUser={user!}
+                                                        onProjectClick={handleProjectClick}
+                                                        onNavigate={handleNavigate}
+                                                        onUpdateUser={handleUpdateUser}
+                                                    />
+                                                </ErrorBoundary>
+                                            } />
+                                            <Route path="projects/:id" element={
+                                                <ErrorBoundary className="m-8">
+                                                    {user ? (
+                                                        <ProjectDetailWrapper
+                                                            user={user}
+                                                            onNavigate={handleNavigate}
+                                                            onUpdateUser={handleUpdateUser}
+                                                        />
+                                                    ) : <Navigate to="/login" replace />}
+                                                </ErrorBoundary>
+                                            } />
+                                            <Route path="settings" element={
+                                                user ? (
+                                                    <Settings
+                                                        user={user}
+                                                        onUpdateUser={handleUpdateUser}
+                                                        onLogout={logout}
+                                                    />
+                                                ) : <Navigate to="/login" replace />
+                                            } />
+                                            <Route path="admin" element={
+                                                user ? (
+                                                    <AdminDashboard
+                                                        currentUser={user}
+                                                        onNavigate={handleNavigate}
+                                                    />
+                                                ) : <Navigate to="/login" replace />
+                                            } />
+                                            <Route path="connections" element={user ? <Connections currentUser={user} /> : <Navigate to="/login" replace />} />
+                                            <Route path="profile" element={
+                                                user ? (
+                                                    <Profile
+                                                        user={user}
+                                                        onUpdateUser={handleUpdateUser}
+                                                        onNavigate={handleNavigate}
+                                                    />
+                                                ) : <Navigate to="/login" replace />
+                                            } />
+                                            <Route path="buy-scans" element={
+                                                <BuyScans
+                                                    onBack={() => navigate(-1)}
+                                                    onBuy={(amount) => {
+                                                        if (user) {
+                                                            updateUser({ scansBalance: (user.scansBalance || 0) + amount });
+                                                        }
+                                                    }}
+                                                    currentBalance={user?.scansBalance || 0}
                                                 />
-                                            </ErrorBoundary>
-                                        } />
-                                        <Route path="projects/:id" element={
-                                            <ErrorBoundary className="m-8">
-                                                <ProjectDetailWrapper
-                                                    user={user!}
-                                                    onNavigate={handleNavigate}
-                                                    onUpdateUser={handleUpdateUser}
-                                                />
-                                            </ErrorBoundary>
-                                        } />
-                                        <Route path="settings" element={
-                                            <Settings
-                                                user={user!}
-                                                onUpdateUser={handleUpdateUser}
-                                                onLogout={logout}
-                                            />
-                                        } />
-                                        <Route path="admin" element={
-                                            <AdminDashboard
-                                                currentUser={user!}
-                                                onNavigate={handleNavigate}
-                                            />
-                                        } />
-                                        <Route path="connections" element={<Connections currentUser={user!} />} />
-                                        <Route path="profile" element={
-                                            <Profile
-                                                user={user!}
-                                                onUpdateUser={handleUpdateUser}
-                                                onNavigate={handleNavigate}
-                                            />
-                                        } />
-                                        <Route path="buy-scans" element={
-                                            <BuyScans
-                                                onBack={() => navigate(-1)}
-                                                onBuy={(amount) => {
-                                                    updateUser({ scansBalance: (user!.scansBalance || 0) + amount });
-                                                }}
-                                                currentBalance={user!.scansBalance}
-                                            />
-                                        } />
-                                        <Route path="upgrade-plan" element={
-                                            <UpgradePlan
-                                                onBack={() => navigate(-1)}
-                                                onUpgrade={(plan) => {
-                                                    const theme = getThemeForPlan(plan);
-                                                    updateUser({
-                                                        subscriptionPlan: plan,
-                                                        preferences: {
-                                                            ...user!.preferences,
-                                                            uiConfig: {
-                                                                ...user!.preferences?.uiConfig,
-                                                                accentColor: theme.accent as any,
-                                                                ambientGlow: theme.glow as any
-                                                            }
-                                                        } as any
-                                                    }, true);
-                                                }}
-                                                currentUser={user!}
-                                            />
-                                        } />
-                                        <Route path="*" element={<Navigate to="/app" replace />} />
-                                    </Routes>
-                                </Suspense>
-                            </Layout>
+                                            } />
+                                            <Route path="upgrade-plan" element={
+                                                user ? (
+                                                    <UpgradePlan
+                                                        onBack={() => navigate(-1)}
+                                                        onUpgrade={(plan) => {
+                                                            const theme = getThemeForPlan(plan);
+                                                            updateUser({
+                                                                subscriptionPlan: plan,
+                                                                preferences: {
+                                                                    ...user.preferences,
+                                                                    uiConfig: {
+                                                                        ...user.preferences?.uiConfig,
+                                                                        accentColor: theme.accent as any,
+                                                                        ambientGlow: theme.glow as any
+                                                                    }
+                                                                } as any
+                                                            }, true);
+                                                        }}
+                                                        currentUser={user}
+                                                    />
+                                                ) : <Navigate to="/login" replace />
+                                            } />
+                                            <Route path="*" element={<Navigate to="/app" replace />} />
+                                        </Routes>
+                                    </Suspense>
+                                </Layout>
+                            ) : <PageLoader />}
                         </ProtectedRoute>
                     } />
 
