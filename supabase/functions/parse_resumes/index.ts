@@ -84,36 +84,46 @@ Deno.serve(async (req: Request) => {
             console.log(`🚀 Burst processing chunk: ${i / CONCURRENCY_LIMIT + 1} (${chunk.length} files)`);
 
             const chunkResults = await Promise.all(chunk.map(async (file: any) => {
-                let fullText = "";
+                let cleanText = "";
                 let arrayBuffer: ArrayBuffer | null = null;
+                let parseStatus: 'PENDING' | 'FAILED' = 'FAILED';
 
                 try {
-                    // Téléchargement depuis le bucket
+                    // 1. Download file
                     const { data: blob, error: dlError } = await supabase.storage
                         .from('resumes')
                         .download(file.path);
-                    if (dlError) throw dlError;
 
-                    // Conversion Buffer + parsing PDF avec pdfjs-dist
-                    arrayBuffer = await blob.arrayBuffer();
-                    if (!arrayBuffer) throw new Error("ArrayBuffer is null");
-                    const pdfData = new Uint8Array(arrayBuffer);
-
-                    const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-                    const pdfDocument = await loadingTask.promise;
-
-                    for (let p = 1; p <= pdfDocument.numPages; p++) {
-                        const page = await pdfDocument.getPage(p);
-                        const textContent = await page.getTextContent();
-                        const pageText = textContent.items.map((item: any) => item.str).join(" ");
-                        fullText += pageText + "\n";
+                    if (dlError) {
+                        console.error(`❌ [DL ERROR] ${file.name}:`, dlError.message);
+                        throw dlError;
                     }
 
-                    let cleanText = fullText.replace(/\0/g, '').trim();
+                    arrayBuffer = await blob.arrayBuffer();
+                    if (!arrayBuffer || arrayBuffer.byteLength === 0) throw new Error("Empty file");
 
-                    // --- FALLBACK MINDEE OCR (si < 200 chars) ---
+                    // 2. Try PDF.js Extraction
+                    try {
+                        const pdfData = new Uint8Array(arrayBuffer);
+                        const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                        const pdfDocument = await loadingTask.promise;
+
+                        let fullText = "";
+                        for (let p = 1; p <= pdfDocument.numPages; p++) {
+                            const page = await pdfDocument.getPage(p);
+                            const textContent = await page.getTextContent();
+                            const pageText = textContent.items.map((item: any) => (item as any).str).join(" ");
+                            fullText += pageText + "\n";
+                        }
+                        cleanText = fullText.replace(/\0/g, '').trim();
+                        console.log(`📄 [PDF.js] ${file.name}: Extracted ${cleanText.length} chars`);
+                    } catch (pdfErr: any) {
+                        console.warn(`⚠️ [PDF.js Warning] ${file.name} extraction failed: ${pdfErr.message}. Fallback to OCR?`);
+                    }
+
+                    // 3. Fallback to Mindee OCR if text is poor or missing
                     if (cleanText.length < 200 && mindeeKey && arrayBuffer) {
-                        console.log(`🕵️ [OCR] ${file.name} is low text (${cleanText.length} chars). Calling Mindee...`);
+                        console.log(`🕵️ [OCR START] ${file.name} (Text len: ${cleanText.length}). Calling Mindee...`);
                         try {
                             const formData = new FormData();
                             const pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
@@ -141,29 +151,33 @@ Deno.serve(async (req: Request) => {
                                 if (ocrText.trim()) {
                                     console.log(`✅ [OCR SUCCESS] ${file.name}: Added ${ocrText.length} chars from Mindee`);
                                     cleanText = (cleanText + "\n" + ocrText).trim();
+                                } else {
+                                    console.warn(`⚠️ [OCR EMPTY] Mindee returned no text for ${file.name}`);
                                 }
                             } else {
-                                console.error(`❌ [OCR ERROR] Mindee status ${mindeeResp.status} for ${file.name}`);
+                                const errBody = await mindeeResp.text();
+                                console.error(`❌ [OCR ERROR] Mindee Code ${mindeeResp.status} for ${file.name}: ${errBody}`);
                             }
                         } catch (ocrErr: any) {
-                            console.error(`❌ [OCR ERROR] ${file.name}:`, ocrErr.message);
+                            console.error(`❌ [OCR EXCEPTION] ${file.name}:`, ocrErr.message);
                         }
                     }
 
-                    return {
-                        file_hash: file.hash,
-                        raw_text: cleanText || null,
-                        status: cleanText ? 'PENDING' : 'FAILED'
-                    };
+                    // Final Check
+                    if (cleanText.trim().length > 10) {
+                        parseStatus = 'PENDING';
+                    }
 
-                } catch (err: any) {
-                    console.error(`❌ Échec parsing ${file.name}:`, err.message);
-                    return {
-                        file_hash: file.hash,
-                        raw_text: null,
-                        status: 'FAILED'
-                    };
+                } catch (globalErr: any) {
+                    console.error(`❌ [GLOBAL ERROR] ${file.name}:`, globalErr.message);
+                    parseStatus = 'FAILED';
                 }
+
+                return {
+                    file_hash: file.hash,
+                    raw_text: cleanText || null,
+                    status: parseStatus
+                };
             }));
 
             results.push(...chunkResults);
