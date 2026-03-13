@@ -37,13 +37,13 @@ const LandingPage: React.FC = () => {
             <LandingHeader onCTA={handleCTA} isAuthenticated={isAuthenticated} />
 
             <main className="relative z-10 w-full flex flex-col items-center">
-                <HeroSection onCTA={handleCTA} />
+                <HeroSection onCTA={handleCTA} isAuthenticated={isAuthenticated} />
 
                 <Suspense fallback={<SectionLoader />}>
                     <AgitationSection />
                     <FortressSection />
                     <TheGapSection />
-                    <CinematicProofSection onCTA={handleCTA} />
+                    <CinematicProofSection onCTA={handleCTA} isAuthenticated={isAuthenticated} />
                 </Suspense>
             </main>
 

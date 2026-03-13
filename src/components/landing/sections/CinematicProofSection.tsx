@@ -4,9 +4,10 @@ import { Play, ArrowRight } from 'lucide-react';
 
 interface CinematicProofSectionProps {
     onCTA: () => void;
+    isAuthenticated?: boolean;
 }
 
-const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA }) => {
+const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA, isAuthenticated }) => {
     const ref = useRef(null);
 
     const containerVariants: Variants = {
@@ -123,7 +124,9 @@ const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA }) 
                                         onClick={onCTA}
                                         className="relative z-10 glass-button px-12 py-6 text-xl font-black tracking-tighter text-white flex items-center gap-6 bg-orange-500/10 border-orange-500/20 hover:border-orange-500/60 transition-all rounded-full group"
                                     >
-                                        <span className="relative z-10">Launch Workbench</span>
+                                        <span className="relative z-10">
+                                            {isAuthenticated ? 'Return to App' : 'Launch Workbench'}
+                                        </span>
                                         <motion.div
                                             animate={{ x: [0, 8, 0] }}
                                             transition={{ repeat: Infinity, duration: 2 }}

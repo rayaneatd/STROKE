@@ -4,11 +4,12 @@ import { ArrowRight } from 'lucide-react';
 
 interface HeroSectionProps {
     onCTA: () => void;
+    isAuthenticated?: boolean;
 }
 
 const WORDS = ["Keywords", "Buzzwords", "Formatting", "Trajectory"];
 
-const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
+const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => {
     const [wordIndex, setWordIndex] = useState(0);
     const ref = useRef(null);
 
@@ -175,7 +176,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA }) => {
                                         aria-label="Start Free Scan"
                                         className="relative z-10 px-10 py-5 text-lg font-bold tracking-tight text-white flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/20 hover:border-blue-400/50 hover:bg-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(59,130,246,0.2)] overflow-hidden rounded-full transition-all"
                                     >
-                                        <span className="relative z-10">Start Free Scan</span>
+                                        <span className="relative z-10">
+                                            {isAuthenticated ? 'Go to Workspace' : 'Start Free Scan'}
+                                        </span>
                                         <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="relative z-10">
                                             <ArrowRight />
                                         </motion.div>
