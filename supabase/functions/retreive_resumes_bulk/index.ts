@@ -6,7 +6,7 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const BATCH_SIZE = 30;
+const BATCH_SIZE = 5;
 const PAGE_SIZE = 1000;
 
 Deno.serve(async (req: Request) => {
@@ -23,7 +23,15 @@ Deno.serve(async (req: Request) => {
         );
 
         const body = await req.json();
-        const { project_id, files: filesProvided } = body;
+        const { project_id, files: filesProvided, warm_up } = body;
+
+        if (warm_up) {
+            console.log("[retreive_resumes_bulk] Warm-up signal received.");
+            return new Response(JSON.stringify({ success: true, message: "Warmed up" }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
 
         if (!project_id) {
             return new Response(JSON.stringify({ error: "project_id manquant" }), {
@@ -132,9 +140,9 @@ Deno.serve(async (req: Request) => {
 
         // waitUntil permet aux invocations de se terminer APRÈS que la réponse HTTP est envoyée
         const dispatchAll = async () => {
-            for (const batch of batches) {
+            console.log(`🚀 Parallel dispatch of ${batches.length} batches...`);
+            await Promise.all(batches.map(async (batch) => {
                 try {
-                    // Forward the Authorization header to the next Edge Function
                     const invokeHeaders: Record<string, string> = {};
                     if (authHeader) invokeHeaders['Authorization'] = authHeader;
                     if (anonKey) invokeHeaders['apikey'] = anonKey;
@@ -149,7 +157,7 @@ Deno.serve(async (req: Request) => {
                 } catch (e: any) {
                     console.error(`Exception dispatch batch:`, e.message);
                 }
-            }
+            }));
             console.log(`✅ Tous les ${batches.length} batches dispatched.`);
         };
 

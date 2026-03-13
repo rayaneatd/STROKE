@@ -2,14 +2,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import * as pdfjsLib from "https://esm.sh/pdfjs-dist@4.0.379/build/pdf.mjs";
 import "https://esm.sh/pdfjs-dist@4.0.379/build/pdf.worker.mjs";
 
-
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const CONCURRENCY_LIMIT = 3; // Reduced from 30 to 3 to prevent memory exhaustion (503 error) with pdf-parse
+const CONCURRENCY_LIMIT = 3; // Burst size for parallel processing
 
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
@@ -23,7 +22,15 @@ Deno.serve(async (req: Request) => {
         );
 
         const payload = await req.json();
-        const { files, project_id } = payload;
+        const { files, project_id, warm_up } = payload;
+
+        if (warm_up) {
+            console.log("[parse_resumes] Warm-up signal received.");
+            return new Response(JSON.stringify({ success: true, message: "Warmed up" }), {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
 
         if (!files || files.length === 0) {
             return new Response(JSON.stringify({ message: "Aucun fichier reçu" }), {
@@ -67,53 +74,99 @@ Deno.serve(async (req: Request) => {
             });
         }
 
-        // --- ÉTAPE 2 : Parsing PDF avec concurrence ---
+        // --- ÉTAPE 2 : Parsing PDF avec concurrence par burst (Promise.all) ---
         const results: any[] = [];
-        // Lancement des workers en parallèle via p-limit or manual chunks
-        // But since Deno edge functions have strict CPU/Memory limits (e.g. 150MB, small CPU slice),
-        // we process the files sequentially in smaller chunks.
+        const mindeeKey = Deno.env.get("MINDEE_KEY");
 
-        for (const file of filesToParse) {
-            try {
-                // Téléchargement depuis le bucket
-                const { data: blob, error: dlError } = await supabase.storage
-                    .from('resumes')
-                    .download(file.path);
-                if (dlError) throw dlError;
+        // Processing in chunks of 3 to avoid timeouts and resource exhaustion
+        for (let i = 0; i < filesToParse.length; i += CONCURRENCY_LIMIT) {
+            const chunk = filesToParse.slice(i, i + CONCURRENCY_LIMIT);
+            console.log(`🚀 Burst processing chunk: ${i / CONCURRENCY_LIMIT + 1} (${chunk.length} files)`);
 
-                // Conversion Buffer + parsing PDF avec pdfjs-dist
-                const arrayBuffer = await blob.arrayBuffer();
-                const pdfData = new Uint8Array(arrayBuffer);
-
-                const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-                const pdfDocument = await loadingTask.promise;
-
+            const chunkResults = await Promise.all(chunk.map(async (file: any) => {
                 let fullText = "";
-                for (let i = 1; i <= pdfDocument.numPages; i++) {
-                    const page = await pdfDocument.getPage(i);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map((item: any) => item.str).join(" ");
-                    fullText += pageText + "\n";
+                let arrayBuffer: ArrayBuffer | null = null;
+
+                try {
+                    // Téléchargement depuis le bucket
+                    const { data: blob, error: dlError } = await supabase.storage
+                        .from('resumes')
+                        .download(file.path);
+                    if (dlError) throw dlError;
+
+                    // Conversion Buffer + parsing PDF avec pdfjs-dist
+                    arrayBuffer = await blob.arrayBuffer();
+                    if (!arrayBuffer) throw new Error("ArrayBuffer is null");
+                    const pdfData = new Uint8Array(arrayBuffer);
+
+                    const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+                    const pdfDocument = await loadingTask.promise;
+
+                    for (let p = 1; p <= pdfDocument.numPages; p++) {
+                        const page = await pdfDocument.getPage(p);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map((item: any) => item.str).join(" ");
+                        fullText += pageText + "\n";
+                    }
+
+                    let cleanText = fullText.replace(/\0/g, '').trim();
+
+                    // --- FALLBACK MINDEE OCR (si < 200 chars) ---
+                    if (cleanText.length < 200 && mindeeKey && arrayBuffer) {
+                        console.log(`🕵️ [OCR] ${file.name} is low text (${cleanText.length} chars). Calling Mindee...`);
+                        try {
+                            const formData = new FormData();
+                            const pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
+                            formData.append('document', pdfBlob, file.name || 'resume.pdf');
+
+                            const mindeeResp = await fetch('https://api.mindee.net/v1/products/mindee/resume/v1/predict', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Token ${mindeeKey}`,
+                                    'X-Mindee-Features': JSON.stringify({ "full_text_ocr": { "active": true } })
+                                },
+                                body: formData
+                            });
+
+                            if (mindeeResp.ok) {
+                                const mindeeJson = await mindeeResp.json();
+                                let ocrText = "";
+                                const pages = mindeeJson.document?.inference?.pages || [];
+                                for (const page of pages) {
+                                    if (page.extras?.full_text_ocr?.content) {
+                                        ocrText += page.extras.full_text_ocr.content + "\n";
+                                    }
+                                }
+
+                                if (ocrText.trim()) {
+                                    console.log(`✅ [OCR SUCCESS] ${file.name}: Added ${ocrText.length} chars from Mindee`);
+                                    cleanText = (cleanText + "\n" + ocrText).trim();
+                                }
+                            } else {
+                                console.error(`❌ [OCR ERROR] Mindee status ${mindeeResp.status} for ${file.name}`);
+                            }
+                        } catch (ocrErr: any) {
+                            console.error(`❌ [OCR ERROR] ${file.name}:`, ocrErr.message);
+                        }
+                    }
+
+                    return {
+                        file_hash: file.hash,
+                        raw_text: cleanText || null,
+                        status: cleanText ? 'PENDING' : 'FAILED'
+                    };
+
+                } catch (err: any) {
+                    console.error(`❌ Échec parsing ${file.name}:`, err.message);
+                    return {
+                        file_hash: file.hash,
+                        raw_text: null,
+                        status: 'FAILED'
+                    };
                 }
+            }));
 
-                const cleanText = fullText.replace(/\0/g, '').trim();
-
-                results.push({
-                    file_hash: file.hash,
-                    raw_text: cleanText || null,
-                    status: cleanText ? 'PENDING' : 'FAILED'
-                });
-
-                console.log(`✅ Parsé: ${file.name} (${cleanText.length} chars)`);
-
-            } catch (err: any) {
-                console.error(`❌ Échec parsing ${file.name}:`, err.message);
-                results.push({
-                    file_hash: file.hash,
-                    raw_text: null,
-                    status: 'FAILED'
-                });
-            }
+            results.push(...chunkResults);
         }
 
         // --- ÉTAPE 3 : Upsert dans resume_texts ---
@@ -124,20 +177,17 @@ Deno.serve(async (req: Request) => {
 
             if (insertError) {
                 console.error("Erreur insertion resume_texts:", insertError.message);
-                // Ne pas throw, continuer quand même vers scan_resumes
             } else {
                 console.log(`💾 ${results.length} textes insérés dans resume_texts`);
             }
         }
 
-        // --- ÉTAPE 4 : Dispatch vers scan_resumes avec tous les fichiers du batch ---
+        // --- ÉTAPE 4 : Dispatch vers scan_resumes ---
         console.log("Dispatch vers scan_resumes...");
         const { error: scanErr } = await supabase.functions.invoke('scan_resumes', {
             body: { project_id, files }
         });
-        if (scanErr) {
-            console.error("Erreur invocation scan_resumes:", scanErr.message);
-        }
+        if (scanErr) console.error("Erreur invocation scan_resumes:", scanErr.message);
 
         return new Response(JSON.stringify({
             success: true,

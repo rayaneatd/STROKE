@@ -25,6 +25,7 @@ interface CandidateListProps {
     onToggleSelect?: (id: string) => void;
     onToggleFavorite?: (id: string, current: boolean) => void;
     onUpdateStatus?: (id: string, status: string) => void;
+    isProcessing?: boolean;
 }
 
 const CandidateList: React.FC<CandidateListProps> = ({
@@ -44,7 +45,8 @@ const CandidateList: React.FC<CandidateListProps> = ({
     selectedIds,
     onToggleSelect,
     onToggleFavorite,
-    onUpdateStatus
+    onUpdateStatus,
+    isProcessing = false
 }) => {
     const { t } = useTranslation();
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
@@ -90,7 +92,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
         onScroll(e);
     };
 
-    if (candidates.length === 0) {
+    if (candidates.length === 0 && !isProcessing) {
         return (
             <div className={`flex flex-col items-center justify-center h-full min-h-[256px] ${textSecondary}`}>
                 <FileText size={48} className="opacity-20 mb-3" />
@@ -106,10 +108,41 @@ const CandidateList: React.FC<CandidateListProps> = ({
             onScroll={handleScroll}
             style={{ height: containerHeight ?? '100%', position: 'relative' }}
         >
-            <div style={{ height: totalHeight, position: 'relative' }}>
+            <div style={{ height: totalHeight + (isProcessing ? itemHeight * 2 : 0), position: 'relative' }}>
+                {/* Real-time Skeleton for new arrivals */}
+                {isProcessing && (
+                    <>
+                        {[0, 1].map(i => (
+                            <div
+                                key={`skeleton-${i}`}
+                                style={{
+                                    position: 'absolute',
+                                    top: i * itemHeight,
+                                    left: 0,
+                                    width: '100%',
+                                    height: itemHeight
+                                }}
+                                className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center animate-pulse opacity-50`}
+                            >
+                                <div className="col-span-1 flex justify-center">
+                                    <div className={`w-6 h-6 rounded-full ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
+                                </div>
+                                <div className="col-span-11 flex items-center gap-4">
+                                    <div className="flex-1">
+                                        <div className={`h-4 w-1/3 rounded mb-2 ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
+                                        <div className={`h-3 w-1/4 rounded ${isLight ? 'bg-slate-50' : 'bg-white/5'}`}></div>
+                                    </div>
+                                    <div className={`h-8 w-24 rounded-lg ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}></div>
+                                </div>
+                            </div>
+                        ))}
+                    </>
+                )}
+
                 {visibleItems.map(({ index, offsetTop }) => {
                     const file = candidates[index];
                     if (!file) return null;
+                    const topShift = isProcessing ? itemHeight * 2 : 0;
 
                     const hasScore = file.matchScore !== null && file.matchScore !== undefined;
                     const score = hasScore ? file.matchScore : 0;
@@ -168,7 +201,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             key={file.id}
                             style={{
                                 position: 'absolute',
-                                top: offsetTop,
+                                top: offsetTop + topShift,
                                 left: 0,
                                 width: '100%',
                                 height: itemHeight
@@ -291,8 +324,8 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                                 onToggleFavorite(file.id, file.isFavorite || false);
                                             }}
                                             className={`p-1.5 rounded-lg transition-colors ${file.isFavorite
-                                                    ? 'text-yellow-500 bg-yellow-500/10'
-                                                    : `text-slate-400 hover:text-yellow-500 hover:bg-yellow-500/10`
+                                                ? 'text-yellow-500 bg-yellow-500/10'
+                                                : `text-slate-400 hover:text-yellow-500 hover:bg-yellow-500/10`
                                                 }`}
                                             title={file.isFavorite ? "Remove from favorites" : "Add to favorites"}
                                         >

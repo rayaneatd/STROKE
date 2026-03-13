@@ -942,6 +942,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                         accentColor={accentColor}
                         onScroll={handleScroll}
                         itemHeight={ITEM_HEIGHT}
+                        isProcessing={isProcessingActive}
                     />
                 </div>
 

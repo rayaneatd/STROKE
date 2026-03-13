@@ -57,6 +57,8 @@ export const useFileProcessing = (
 
     const addFiles = useCallback(async (rawFiles: File[]) => {
         setIsUploading(true);
+        // Warm up edge functions to avoid cold starts during processing
+        warmUpFunctions();
         let shouldInvalidate = false;
 
         // Helper for concurrency
@@ -296,6 +298,20 @@ export const useFileProcessing = (
         }
     }, [projectId]);
 
+    const warmUpFunctions = useCallback(async () => {
+        try {
+            // Ping functions with an empty request to trigger cold starts early
+            console.log('[Warm-up] Warming up edge functions...');
+            Promise.all([
+                supabase.functions.invoke('parse_resumes', { body: { warm_up: true } }),
+                supabase.functions.invoke('scan_resumes', { body: { warm_up: true } }),
+                supabase.functions.invoke('retreive_resumes_bulk', { body: { warm_up: true } })
+            ]).catch(err => console.debug('Warm-up failed (ignore if OPTIONS fails):', err));
+        } catch (e) {
+            // Silently fail warm-up
+        }
+    }, []);
+
     const uploadPendingFiles = useCallback(async () => {
         const pendingFiles = [...pendingUploadsRef.current];
         if (pendingFiles.length === 0) return;
@@ -348,15 +364,15 @@ export const useFileProcessing = (
                 // This gives the "illusion of speed" requested by USER
                 setFiles(prev => prev.filter(f => f.id !== fileInfo.id));
 
-                // Trigger dispatcher every 1000 files to avoid overlapping discovery issues
-                if (successCounter % 1000 === 0) {
+                // Trigger dispatcher every 5 files to parallelize processing ASAP
+                if (successCounter % 5 === 0) {
                     triggerBulkProcessing([...currentBatch]);
                     currentBatch = [];
                 }
             }
         );
 
-        // 3. Final trigger for any remaining files (remainder of 1000)
+        // 3. Final trigger for any remaining files
         if (currentBatch.length > 0) {
             triggerBulkProcessing(currentBatch);
         }
