@@ -8,7 +8,17 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const CONCURRENCY_LIMIT = 3; // Burst size for parallel processing
+const CONCURRENCY_LIMIT = 5;
+
+// Helper to convert ArrayBuffer to Base64 safely in Deno
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
 
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
@@ -54,14 +64,13 @@ Deno.serve(async (req: Request) => {
             if (dbCheckError) {
                 console.warn("Impossible de vérifier les hashes:", dbCheckError.message);
             } else {
-                existingHashesSet = new Set(existingTexts?.map(t => t.file_hash) ?? []);
+                existingHashesSet = new Set(existingTexts?.map(t => (t as any).file_hash) ?? []);
             }
         }
 
         const filesToParse = files.filter((f: any) => f.hash && !existingHashesSet.has(f.hash));
         console.log(`Déjà parsés: ${existingHashesSet.size} | À parser: ${filesToParse.length}`);
 
-        // Passer directement à scan_resumes si tout est déjà parsé
         if (filesToParse.length === 0) {
             console.log("Tout déjà parsé → dispatch direct vers scan_resumes");
             const { error: scanErr } = await supabase.functions.invoke('scan_resumes', {
@@ -74,14 +83,12 @@ Deno.serve(async (req: Request) => {
             });
         }
 
-        // --- ÉTAPE 2 : Parsing PDF avec concurrence par burst (Promise.all) ---
+        // --- ÉTAPE 2 : Parsing PDF avec fallback Mistral OCR (Promise.all) ---
         const results: any[] = [];
-        const mindeeKey = Deno.env.get("MINDEE_KEY");
+        const mistralKey = Deno.env.get("MISTRAL_API_KEY");
 
-        // Processing in chunks of 3 to avoid timeouts and resource exhaustion
         for (let i = 0; i < filesToParse.length; i += CONCURRENCY_LIMIT) {
             const chunk = filesToParse.slice(i, i + CONCURRENCY_LIMIT);
-            console.log(`🚀 Burst processing chunk: ${i / CONCURRENCY_LIMIT + 1} (${chunk.length} files)`);
 
             const chunkResults = await Promise.all(chunk.map(async (file: any) => {
                 let cleanText = "";
@@ -94,10 +101,7 @@ Deno.serve(async (req: Request) => {
                         .from('resumes')
                         .download(file.path);
 
-                    if (dlError) {
-                        console.error(`❌ [DL ERROR] ${file.name}:`, dlError.message);
-                        throw dlError;
-                    }
+                    if (dlError) throw dlError;
 
                     arrayBuffer = await blob.arrayBuffer();
                     if (!arrayBuffer || arrayBuffer.byteLength === 0) throw new Error("Empty file");
@@ -116,61 +120,60 @@ Deno.serve(async (req: Request) => {
                             fullText += pageText + "\n";
                         }
                         cleanText = fullText.replace(/\0/g, '').trim();
-                        console.log(`📄 [PDF.js] ${file.name}: Extracted ${cleanText.length} chars`);
                     } catch (pdfErr: any) {
-                        console.warn(`⚠️ [PDF.js Warning] ${file.name} extraction failed: ${pdfErr.message}. Fallback to OCR?`);
+                        console.warn(`[PDF.js] ${file.name} failed: ${pdfErr.message}`);
                     }
 
-                    // 3. Fallback to Mindee OCR if text is poor or missing
-                    if (cleanText.length < 200 && mindeeKey && arrayBuffer) {
-                        console.log(`🕵️ [OCR START] ${file.name} (Text len: ${cleanText.length}). Calling Mindee...`);
-                        try {
-                            const formData = new FormData();
-                            const pdfBlob = new Blob([arrayBuffer], { type: 'application/pdf' });
-                            formData.append('document', pdfBlob, file.name || 'resume.pdf');
+                    // 3. Fallback: Mistral OCR
+                    if (cleanText.length < 100 && mistralKey && arrayBuffer) {
+                        console.log(`🌀 [MISTRAL OCR] ${file.name} - Processing scanné...`);
 
-                            const mindeeResp = await fetch('https://api.mindee.net/v1/products/mindee/resume/v1/predict', {
+                        try {
+                            const base64 = arrayBufferToBase64(arrayBuffer);
+
+                            const mistralResp = await fetch("https://api.mistral.ai/v1/ocr", {
                                 method: 'POST',
                                 headers: {
-                                    'Authorization': `Token ${mindeeKey}`,
-                                    'X-Mindee-Features': JSON.stringify({ "full_text_ocr": { "active": true } })
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${mistralKey}`
                                 },
-                                body: formData
+                                body: JSON.stringify({
+                                    model: "mistral-ocr-latest",
+                                    document: {
+                                        type: "document_url",
+                                        document_url: `data:application/pdf;base64,${base64}`
+                                    }
+                                })
                             });
 
-                            if (mindeeResp.ok) {
-                                const mindeeJson = await mindeeResp.json();
-                                let ocrText = "";
-                                const pages = mindeeJson.document?.inference?.pages || [];
-                                for (const page of pages) {
-                                    if (page.extras?.full_text_ocr?.content) {
-                                        ocrText += page.extras.full_text_ocr.content + "\n";
-                                    }
-                                }
+                            if (!mistralResp.ok) {
+                                const errBody = await mistralResp.text();
+                                throw new Error(`Mistral API error ${mistralResp.status}: ${errBody}`);
+                            }
 
-                                if (ocrText.trim()) {
-                                    console.log(`✅ [OCR SUCCESS] ${file.name}: Added ${ocrText.length} chars from Mindee`);
-                                    cleanText = (cleanText + "\n" + ocrText).trim();
-                                } else {
-                                    console.warn(`⚠️ [OCR EMPTY] Mindee returned no text for ${file.name}`);
-                                }
+                            const mistralData = await mistralResp.json();
+                            // Handle Mistral OCR response structure (pages -> markdown content)
+                            const fullOcrText = mistralData.pages?.map((p: any) => p.markdown || "").join("\n");
+
+                            if (fullOcrText) {
+                                console.log(`✅ [OCR SUCCESS] ${file.name}: ${fullOcrText.length} characters`);
+                                cleanText = fullOcrText.trim();
                             } else {
-                                const errBody = await mindeeResp.text();
-                                console.error(`❌ [OCR ERROR] Mindee Code ${mindeeResp.status} for ${file.name}: ${errBody}`);
+                                console.warn(`⚠️ [OCR EMPTY] Mistral returned no text for ${file.name}`);
                             }
                         } catch (ocrErr: any) {
-                            console.error(`❌ [OCR EXCEPTION] ${file.name}:`, ocrErr.message);
+                            console.error(`❌ [MISTRAL ERROR] ${file.name}:`, ocrErr.message);
                         }
                     }
 
-                    // Final Check
-                    if (cleanText.trim().length > 10) {
+                    if (cleanText.trim().length > 20) {
                         parseStatus = 'PENDING';
+                    } else {
+                        console.warn(`⚠️ [PARSE FAILED] ${file.name}: Text too short.`);
                     }
 
-                } catch (globalErr: any) {
-                    console.error(`❌ [GLOBAL ERROR] ${file.name}:`, globalErr.message);
-                    parseStatus = 'FAILED';
+                } catch (err: any) {
+                    console.error(`❌ [GLOBAL ERROR] ${file.name}:`, err.message);
                 }
 
                 return {
@@ -183,38 +186,51 @@ Deno.serve(async (req: Request) => {
             results.push(...chunkResults);
         }
 
-        // --- ÉTAPE 3 : Upsert dans resume_texts ---
+        // --- ÉTAPE 3 : Upsert ---
         if (results.length > 0) {
-            const { error: insertError } = await supabase
-                .from('resume_texts')
-                .upsert(results, { onConflict: 'file_hash' });
-
-            if (insertError) {
-                console.error("Erreur insertion resume_texts:", insertError.message);
-            } else {
-                console.log(`💾 ${results.length} textes insérés dans resume_texts`);
-            }
+            await supabase.from('resume_texts').upsert(results, { onConflict: 'file_hash' });
+            console.log(`💾 ${results.length} textes synchronisés.`);
         }
 
-        // --- ÉTAPE 4 : Dispatch vers scan_resumes ---
-        console.log("Dispatch vers scan_resumes...");
-        const { error: scanErr } = await supabase.functions.invoke('scan_resumes', {
-            body: { project_id, files }
-        });
-        if (scanErr) console.error("Erreur invocation scan_resumes:", scanErr.message);
+        // --- ÉTAPE 4 : Dispatch Parallèle vers scan_resumes (1 instance par 3 CV) ---
+        // On découpe la liste totale des fichiers reçus (même ceux déjà parsés) par paquets de 3
+        // pour forcer Supabase à ouvrir plusieurs instances de scanneur en parallèle.
+        const scanBatches: any[][] = [];
+        const SCAN_BATCH_SIZE = 3;
+        for (let i = 0; i < files.length; i += SCAN_BATCH_SIZE) {
+            scanBatches.push(files.slice(i, i + SCAN_BATCH_SIZE));
+        }
 
-        return new Response(JSON.stringify({
-            success: true,
-            parsed: results.length,
-            skipped: existingHashesSet.size,
-            failed: results.filter(r => r.status === 'FAILED').length
-        }), {
+        console.log(`🚀 Dispatching ${scanBatches.length} parallel scan instances (3 CVs each)...`);
+
+        const triggerScans = async () => {
+            await Promise.all(scanBatches.map(async (batch) => {
+                try {
+                    const { error: scanErr } = await supabase.functions.invoke('scan_resumes', {
+                        body: { project_id, files: batch }
+                    });
+                    if (scanErr) console.error(`[parse_resumes] Error triggering scan batch:`, scanErr.message);
+                } catch (e: any) {
+                    console.error(`[parse_resumes] Exception triggering scan batch:`, e.message);
+                }
+            }));
+        };
+
+        // @ts-ignore
+        if (typeof EdgeRuntime !== 'undefined') {
+            // @ts-ignore
+            EdgeRuntime.waitUntil(triggerScans());
+        } else {
+            // Fallback for local dev or environments without EdgeRuntime
+            triggerScans();
+        }
+
+        return new Response(JSON.stringify({ success: true, parsed: results.length }), {
             status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
 
     } catch (error: any) {
-        console.error("Erreur critique parse_resumes:", error.message);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }

@@ -7,9 +7,10 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const BATCH_SIZE = 5;
-const MAX_RETRIES = 3;
-const INITIAL_RETRY_DELAY_MS = 2000;
+const BATCH_SIZE = 1; // Un seul candidat à la fois pour éviter les dépassements de limite de tokens Mercury
+const MAX_RETRIES = 5;
+const INITIAL_RETRY_DELAY_MS = 1000;
+const MAX_RETRY_DELAY_MS = 15000;
 
 // Mercury 2 (Inception) Configuration
 const MERCURY_API_KEY = Deno.env.get("MERCURY_API_KEY");
@@ -60,7 +61,7 @@ const candidateSchema = {
                         missing_points: { type: "array", items: { type: "string" } },
                         soft_skills: { type: "string" },
                         summary: { type: "string" },
-                        career_trajectory: { type: "string" },
+                        career_trajectory: { type: "string", description: "Ultra-court avec emoji (max 4-5 mots), ex: 🧭 Transition vers Data" },
                         social_links: {
                             type: "object",
                             properties: {
@@ -109,11 +110,11 @@ const getLanguageInstruction = (language: string) => `Réponds IMPÉRATIVEMENT e
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const fetchMercuryWithRetry = async (promptContent: string, systemInstruction: string, retries = 0): Promise<any> => {
+const fetchMercuryWithRetry = async (promptContent: string, systemInstruction: string, identifier: string = "CV", retries = 0): Promise<{ candidates: any[], usage: any }> => {
     try {
         const client = initMercuryClient();
 
-        console.log(`[scan_resumes] Calling Mercury 2 (mercury-2)...`);
+        console.log(`[scan_resumes] Calling Mercury 2 for ${identifier}...`);
         const response = await client.chat.completions.create({
             model: "mercury-2",
             messages: [
@@ -124,22 +125,34 @@ const fetchMercuryWithRetry = async (promptContent: string, systemInstruction: s
                 type: "json_schema",
                 json_schema: candidateSchema
             },
+            max_completion_tokens: 4000,
             temperature: 0.2
         });
 
         const text = response.choices[0]?.message?.content;
+        const usage = response.usage;
+
+        if (usage) {
+            console.log(`[scan_resumes] Usage for ${identifier}: ${usage.prompt_tokens} prompt, ${usage.completion_tokens} completion (${usage.total_tokens} total tokens)`);
+        }
+
         if (!text) throw new Error("Empty response from Mercury 2");
 
         const parsed = JSON.parse(text);
-        return parsed.candidates; // Return the array of candidates directly to match existing logic
+        return {
+            candidates: parsed.candidates || [],
+            usage: usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+        };
     } catch (error: any) {
-        console.error(`[scan_resumes] Mercury Error (Attempt ${retries + 1}):`, error.message);
-
         // Handle rate limits or temporary errors
-        if ((error.status === 429 || error.status === 500 || error.status === 503) && retries < MAX_RETRIES) {
-            const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, retries) + Math.floor(Math.random() * 500);
+        if ((error.status === 429 || error.status === 422 || error.status === 500 || error.status === 503) && retries < MAX_RETRIES) {
+            // Full Jitter: wait = random_between(0, min(cap, base * 2^attempt))
+            const base = INITIAL_RETRY_DELAY_MS * Math.pow(2, retries);
+            const delay = Math.floor(Math.random() * Math.min(MAX_RETRY_DELAY_MS, base));
+
+            console.log(`[scan_resumes] Mercury error ${error.status} for ${identifier}. Retrying in ${delay}ms... (Attempt ${retries + 1}/${MAX_RETRIES})`);
             await sleep(delay);
-            return fetchMercuryWithRetry(promptContent, systemInstruction, retries + 1);
+            return fetchMercuryWithRetry(promptContent, systemInstruction, identifier, retries + 1);
         }
         throw error;
     }
@@ -156,22 +169,14 @@ Deno.serve(async (req: Request) => {
 
         const { files, project_id, warm_up } = await req.json();
 
-        if (warm_up) {
-            console.log("[scan_resumes] Warm-up signal received.");
-            return new Response(JSON.stringify({ success: true, message: "Warmed up" }), {
-                status: 200,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
-        }
+        if (warm_up) return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-        if (!files?.length) {
-            return new Response(JSON.stringify({ success: true, scan_completed: 0 }), {
-                status: 200,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
-        }
+        if (!files?.length) return new Response(JSON.stringify({ success: true, scan_completed: 0 }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
         console.log(`[scan_resumes] Processing ${files.length} files (Project: ${project_id})`);
+        if (files.length > 5) {
+            console.log(`[scan_resumes] ADVICE: For true horizontal scaling, split large batches into multiple HTTP requests.`);
+        }
 
         // Fetch project and config
         const { data: project } = await supabase.from('projects').select('description, owner_id').eq('id', project_id).single();
@@ -184,11 +189,14 @@ Deno.serve(async (req: Request) => {
         const systemPrompt = `
 ### ROLE: Expert en recrutement technique.
 ### INSTRUCTIONS: Extraire des données structurées et comparer à la fiche de poste.
-1. Match Score (0-100). 
-2. Format JSON uniquement.
-3. Langue: ${getLanguageInstruction(targetLanguage)}
+1. Match Score (0-100).
+2. Format JSON uniquement. Soyez concis dans les champs texte (max 2-3 phrases par champ).
+3. career_trajectory: DOIT être ultra-court (max 4-5 mots) avec un emoji au début (ex: "🧭 Transition vers Data").
+4. RÈGLE CRITIQUE: NE PAS RECOPIER le texte brut du CV. Résumer intelligemment.
+5. Langue: ${getLanguageInstruction(targetLanguage)}
 ${getToneInstruction(aiConfig.tone || 'PROFESSIONAL', targetLanguage)}
 ${getStrictnessInstruction(aiConfig.strictness || 'MEDIUM', targetLanguage)}
+### CONTRINTE: Ne pas dépasser 4000 tokens de sortie.
 `;
 
         const jobDescriptionText = `\n--- JOB DESCRIPTION ---\n${project.description}\n\n`;
@@ -198,84 +206,98 @@ ${getStrictnessInstruction(aiConfig.strictness || 'MEDIUM', targetLanguage)}
         const { data: resumeTexts } = await supabase.from('resume_texts').select('file_hash, raw_text').in('file_hash', hashes);
         const textMap = new Map(resumeTexts?.map(r => [r.file_hash, r.raw_text]) || []);
 
-        const batches = [];
-        for (let i = 0; i < files.length; i += BATCH_SIZE) batches.push(files.slice(i, i + BATCH_SIZE));
+        const batches = files.map((f: any) => [f]); // BATCH_SIZE = 1 internally
 
+
+        const CONCURRENCY_LIMIT = 3;
+        const finalFailedHashes: string[] = [];
         let totalInserted = 0;
-        let failedHashes: string[] = [];
+        let totalUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
 
-        for (const batch of batches) {
-            let cvBlocksText = "";
-            const currentHashes: string[] = [];
-            for (const file of batch) {
+        // Real sliding window concurrency worker pool
+        let currentIndex = 0;
+        const worker = async () => {
+            while (currentIndex < batches.length) {
+                const myIndex = currentIndex++;
+                if (myIndex >= batches.length) break; // Ensure we don't go out of bounds if currentIndex increments too fast
+
+                const batch = batches[myIndex];
+                const file = batch[0];
+                const identifier = file.original_name || file.hash;
+
                 const text = textMap.get(file.hash);
-                if (text?.trim().length > 50) {
-                    cvBlocksText += `\n[CV HASH=${file.hash}]\n${text.substring(0, 15000)}\n`;
-                    currentHashes.push(file.hash);
-                } else failedHashes.push(file.hash);
-            }
+                if (!text || text.trim().length <= 50) {
+                    finalFailedHashes.push(file.hash);
+                    continue;
+                }
 
-            if (cvBlocksText) {
+                const sanitizedText = (text as string)
+                    .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+                    .replace(/\u0000/g, "")
+                    .substring(0, 8000)
+                    .trim();
+
+                const cvBlocksText = `\n[CV HASH=${file.hash}]\n${sanitizedText}\n`;
+
                 try {
-                    const parsedCandidates = await fetchMercuryWithRetry(`${jobDescriptionText}CVs:\n${cvBlocksText}`, systemPrompt);
+                    const result = await fetchMercuryWithRetry(`${jobDescriptionText}CVs:\n${cvBlocksText}`, systemPrompt, identifier);
+                    const aiData = result.candidates[0];
+                    const usage = result.usage;
 
-                    if (Array.isArray(parsedCandidates) && parsedCandidates.length > 0) {
-                        const parsedMap = new Map(parsedCandidates.map(c => [c.hash, c]));
-                        const candidatesToInsert = [];
+                    if (aiData) {
+                        const { error: insErr } = await supabase.from('candidates').insert({
+                            id: crypto.randomUUID(),
+                            project_id,
+                            candidate_name: aiData.name || file.original_name || 'Unknown',
+                            email: aiData.email,
+                            phone: aiData.phone,
+                            location: aiData.location,
+                            current_position: aiData.current_position,
+                            years_of_experience: aiData.years_of_experience,
+                            match_score: aiData.score,
+                            red_flags: aiData.red_flags || [],
+                            key_skills: aiData.matching_points || [],
+                            missing_skills: aiData.missing_points || [],
+                            soft_skills_analysis: aiData.soft_skills,
+                            executive_summary: aiData.summary,
+                            career_trajectory: aiData.career_trajectory,
+                            social_links: aiData.social_links || {},
+                            file_hash: file.hash,
+                            size: file.size ? `${Math.round(file.size / 1024)} KB` : null,
+                            resume_path: file.path,
+                            original_resume_name: file.original_name,
+                            uploaded_by: String(file.scanned_by || project.owner_id),
+                            status: 'new'
+                        });
 
-                        for (const file of batch) {
-                            const aiData = parsedMap.get(file.hash);
-                            if (aiData) {
-                                candidatesToInsert.push({
-                                    id: crypto.randomUUID(),
-                                    project_id,
-                                    candidate_name: aiData.name || file.original_name || 'Unknown',
-                                    email: aiData.email,
-                                    phone: aiData.phone,
-                                    location: aiData.location,
-                                    current_position: aiData.current_position,
-                                    years_of_experience: aiData.years_of_experience,
-                                    match_score: aiData.score,
-                                    red_flags: aiData.red_flags || [],
-                                    key_skills: aiData.matching_points || [],
-                                    missing_skills: aiData.missing_points || [],
-                                    soft_skills_analysis: aiData.soft_skills,
-                                    executive_summary: aiData.summary,
-                                    career_trajectory: aiData.career_trajectory,
-                                    social_links: aiData.social_links || {},
-                                    file_hash: file.hash,
-                                    size: file.size ? `${Math.round(file.size / 1024)} KB` : null,
-                                    resume_path: file.path,
-                                    original_resume_name: file.original_name,
-                                    uploaded_by: String(file.scanned_by || project.owner_id),
-                                    status: 'new'
-                                });
-                            } else if (textMap.has(file.hash)) {
-                                failedHashes.push(file.hash);
-                            }
-                        }
-
-                        if (candidatesToInsert.length > 0) {
-                            console.log(`[scan_resumes] Progress: Inserting batch of ${candidatesToInsert.length} candidates...`);
-                            const { error: insErr } = await supabase.from('candidates').insert(candidatesToInsert);
-                            if (insErr) {
-                                console.error("[scan_resumes] Progressive Insert Error:", insErr.message);
-                            } else {
-                                totalInserted += candidatesToInsert.length;
-                            }
-                        }
+                        if (!insErr) totalInserted++;
+                        else console.error("[scan_resumes] Insert Error:", insErr.message);
+                    } else {
+                        finalFailedHashes.push(file.hash);
                     }
-                } catch (e) {
-                    console.error("[scan_resumes] Batch failed:", e.message);
-                    failedHashes.push(...currentHashes);
+
+                    if (usage) {
+                        totalUsage.prompt_tokens += usage.prompt_tokens;
+                        totalUsage.completion_tokens += usage.completion_tokens;
+                        totalUsage.total_tokens += usage.total_tokens;
+                    }
+                } catch (e: any) {
+                    console.error(`[scan_resumes] Worker failure for ${identifier}:`, e.message);
+                    finalFailedHashes.push(file.hash);
                 }
             }
-        }
+        };
+
+        // Start workers
+        const workers = Array.from({ length: Math.min(CONCURRENCY_LIMIT, batches.length) }, () => worker());
+        await Promise.all(workers);
+
+        console.log(`[scan_resumes] TOTAL Request Usage: ${totalUsage.prompt_tokens} prompt, ${totalUsage.completion_tokens} completion (${totalUsage.total_tokens} total tokens)`);
 
         return new Response(JSON.stringify({
             success: true,
             scan_completed: totalInserted,
-            failed_count: [...new Set(failedHashes)].length
+            failed_count: [...new Set(finalFailedHashes)].length
         }), {
             status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }

@@ -364,8 +364,9 @@ export const useFileProcessing = (
                 // This gives the "illusion of speed" requested by USER
                 setFiles(prev => prev.filter(f => f.id !== fileInfo.id));
 
-                // Trigger dispatcher every 5 files to parallelize processing ASAP
-                if (successCounter % 5 === 0) {
+                // Trigger dispatcher every 9 files to align with 3x3 parallel scanning ratio
+                // This avoids spawning "near-empty" instances (prevents the 3+3+3+1 problem)
+                if (successCounter % 9 === 0) {
                     triggerBulkProcessing([...currentBatch]);
                     currentBatch = [];
                 }

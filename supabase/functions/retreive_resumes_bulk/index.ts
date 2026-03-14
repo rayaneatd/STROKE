@@ -6,7 +6,7 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 9;
 const PAGE_SIZE = 1000;
 
 Deno.serve(async (req: Request) => {
