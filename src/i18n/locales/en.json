@@ -236,6 +236,19 @@
             }
         },
         "ai": {
+            "model": {
+                "title": "AI Model",
+                "description": "Choose the AI model used to scan and analyse your candidates.",
+                "sectionTitle": "Model Selection",
+                "mercury2": {
+                    "name": "Mercury 2",
+                    "tagline": "Diffusion LLM · Ultra-fast parallel generation"
+                },
+                "mistral": {
+                    "name": "Mistral",
+                    "tagline": "Frontier open-weight · Multilingual expertise"
+                }
+            },
             "calibration": {
                 "title": "Calibration Engine",
                 "description": "Configure how our engine analyzes and matches candidates.",
@@ -1144,14 +1157,14 @@
             "accept": "Accept"
         },
         "errors": {
-             "userNotFound": "No user found with this email address.",
-             "selfInvite": "You cannot invite yourself.",
-             "alreadyExists": "A connection or invite already exists with this user.",
-             "sendFailed": "Failed to send invitation: {{error}}",
-             "actionFailed": "Action failed: {{error}}"
+            "userNotFound": "No user found with this email address.",
+            "selfInvite": "You cannot invite yourself.",
+            "alreadyExists": "A connection or invite already exists with this user.",
+            "sendFailed": "Failed to send invitation: {{error}}",
+            "actionFailed": "Action failed: {{error}}"
         },
         "success": {
-             "inviteSent": "Invitation sent successfully!"
+            "inviteSent": "Invitation sent successfully!"
         },
         "since": "Since",
         "date": "Date"

@@ -236,6 +236,19 @@
             }
         },
         "ai": {
+            "model": {
+                "title": "Modèle IA",
+                "description": "Choisissez le modèle IA utilisé pour analyser vos candidats.",
+                "sectionTitle": "Sélection du Modèle",
+                "mercury2": {
+                    "name": "Mercury 2",
+                    "tagline": "LLM par Diffusion · Génération parallèle ultra-rapide"
+                },
+                "mistral": {
+                    "name": "Mistral",
+                    "tagline": "Open-weight de pointe · Expertise multilingue"
+                }
+            },
             "calibration": {
                 "title": "Moteur de calibrage",
                 "description": "Configurez comment notre moteur analyse et fait correspondre les candidats.",
@@ -873,38 +886,38 @@
             "analystQuota": "Quota Analyste"
         },
         "createProject": {
-          "title": "Créer un Nouveau Projet",
-          "subtitle": "Configurez votre nouvelle mission de recrutement",
-          "projectTitle": "Titre du Projet",
-          "placeholderTitle": "ex. Ingénieur Frontend Senior",
-          "jobDescription": "Description du Poste",
-          "aiContext": "Contexte IA Actif",
-          "placeholderDesc": "Collez la description complète du poste ici...",
-          "optimizedForAI": "Optimisé pour l'analyse IA",
-          "chars": "caractères",
-          "outreachIdentity": "Identité de Contact",
-          "centralized": "Centralisé (Propriétaire)",
-          "centralizedDesc": "E-mails envoyés via votre compte.",
-          "decentralized": "Décentralisé (Utilisateur)",
-          "decentralizedDesc": "Les membres utilisent leur propre e-mail.",
-          "selectSender": "Sélectionner l'adresse d'envoi centralisée",
-          "noEmails": "Aucun e-mail connecté trouvé.",
-          "connectProfile": "Connecter dans le Profil",
-          "emailNote": "Cet e-mail sera utilisé pour tous les contacts du projet.",
-          "initialStatus": "Statut Initial",
-          "billingStrategy": "Stratégie de Facturation",
-          "sharedWallet": "Portefeuille Partagé (Propriétaire)",
-          "dedicatedBudget": "Budget Dédié",
-           "create": "Créer le Projet",
-           "cancel": "Annuler",
-           "initialBudget": "Budget Initial du Projet",
-           "budgetNote": "Les scans seront déduits de votre solde principal ({{balance}}) et alloués à ce projet.",
-           "memberQuota": "Quota par Membre par Défaut",
-           "unlimited": "Illimité",
-           "customLimit": "Limite Personnalisée",
-           "enterLimit": "Entrer le max de scans par membre",
-           "scans": "SCANS"
-         },
+            "title": "Créer un Nouveau Projet",
+            "subtitle": "Configurez votre nouvelle mission de recrutement",
+            "projectTitle": "Titre du Projet",
+            "placeholderTitle": "ex. Ingénieur Frontend Senior",
+            "jobDescription": "Description du Poste",
+            "aiContext": "Contexte IA Actif",
+            "placeholderDesc": "Collez la description complète du poste ici...",
+            "optimizedForAI": "Optimisé pour l'analyse IA",
+            "chars": "caractères",
+            "outreachIdentity": "Identité de Contact",
+            "centralized": "Centralisé (Propriétaire)",
+            "centralizedDesc": "E-mails envoyés via votre compte.",
+            "decentralized": "Décentralisé (Utilisateur)",
+            "decentralizedDesc": "Les membres utilisent leur propre e-mail.",
+            "selectSender": "Sélectionner l'adresse d'envoi centralisée",
+            "noEmails": "Aucun e-mail connecté trouvé.",
+            "connectProfile": "Connecter dans le Profil",
+            "emailNote": "Cet e-mail sera utilisé pour tous les contacts du projet.",
+            "initialStatus": "Statut Initial",
+            "billingStrategy": "Stratégie de Facturation",
+            "sharedWallet": "Portefeuille Partagé (Propriétaire)",
+            "dedicatedBudget": "Budget Dédié",
+            "create": "Créer le Projet",
+            "cancel": "Annuler",
+            "initialBudget": "Budget Initial du Projet",
+            "budgetNote": "Les scans seront déduits de votre solde principal ({{balance}}) et alloués à ce projet.",
+            "memberQuota": "Quota par Membre par Défaut",
+            "unlimited": "Illimité",
+            "customLimit": "Limite Personnalisée",
+            "enterLimit": "Entrer le max de scans par membre",
+            "scans": "SCANS"
+        },
         "addMember": {
             "titleAdmin": "Ajouter Admin",
             "titleEmployee": "Ajouter Membre d'Équipe",
@@ -983,23 +996,23 @@
             }
         },
         "globalBan": {
-             "title": "Compte Suspendu",
-             "description": "Votre compte a été suspendu par un administrateur. Vous n'avez plus accès à la plateforme <1>logo</1> ni à vos projets.",
-             "reason": "Raison",
-             "expiration": "Expiration",
-             "signOut": "Se déconnecter en toute sécurité",
-             "contactSupport": "Si vous pensez qu'il s'agit d'une erreur, veuillez contacter le support."
-         },
+            "title": "Compte Suspendu",
+            "description": "Votre compte a été suspendu par un administrateur. Vous n'avez plus accès à la plateforme <1>logo</1> ni à vos projets.",
+            "reason": "Raison",
+            "expiration": "Expiration",
+            "signOut": "Se déconnecter en toute sécurité",
+            "contactSupport": "Si vous pensez qu'il s'agit d'une erreur, veuillez contacter le support."
+        },
         "upgrade": {
-          "title": "Débloquez un Potentiel Illimité",
-          "description": "Vous n'avez plus de scans ! Passez à <1>Pro</1> pour supprimer les limites et recruter plus vite.",
-          "features": {
-            "unlimited": "Scans de CV Illimités",
-            "advancedAI": "Analyse IA Avancée",
-            "priority": "File de Traitement Prioritaire"
-          },
-          "cta": "Mettre à Niveau",
-          "later": "Peut-être Plus Tard"
+            "title": "Débloquez un Potentiel Illimité",
+            "description": "Vous n'avez plus de scans ! Passez à <1>Pro</1> pour supprimer les limites et recruter plus vite.",
+            "features": {
+                "unlimited": "Scans de CV Illimités",
+                "advancedAI": "Analyse IA Avancée",
+                "priority": "File de Traitement Prioritaire"
+            },
+            "cta": "Mettre à Niveau",
+            "later": "Peut-être Plus Tard"
         },
         "ai": {
             "title": "Moteur de Calibrage IA",
@@ -1138,14 +1151,14 @@
             "accept": "Accepter"
         },
         "errors": {
-             "userNotFound": "Aucun utilisateur trouvé avec cette adresse e-mail.",
-             "selfInvite": "Vous ne pouvez pas vous inviter vous-même.",
-             "alreadyExists": "Une connexion ou une invitation existe déjà avec cet utilisateur.",
-             "sendFailed": "Échec de l'envoi de l'invitation : {{error}}",
-             "actionFailed": "Action échouée : {{error}}"
+            "userNotFound": "Aucun utilisateur trouvé avec cette adresse e-mail.",
+            "selfInvite": "Vous ne pouvez pas vous inviter vous-même.",
+            "alreadyExists": "Une connexion ou une invitation existe déjà avec cet utilisateur.",
+            "sendFailed": "Échec de l'envoi de l'invitation : {{error}}",
+            "actionFailed": "Action échouée : {{error}}"
         },
         "success": {
-             "inviteSent": "Invitation envoyée avec succès !"
+            "inviteSent": "Invitation envoyée avec succès !"
         },
         "since": "Depuis",
         "date": "Date"

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrainCircuit, Sparkles, Quote, Sliders, Target, Cpu } from 'lucide-react';
+import { Quote, Sliders, Target, Cpu } from 'lucide-react';
 import { UserPreferences, AIPreferences } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,6 @@ interface AISettingsProps {
 // --- Inline Brand Icons ---
 const MercuryIcon = ({ size = 20 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Stylized Mercury / dLLM icon - parallel wave diffusion motif */}
         <circle cx="50" cy="50" r="48" fill="#0F1B2D" stroke="#1E3A5F" strokeWidth="2" />
         <path d="M18 50 Q32 30 50 50 Q68 70 82 50" stroke="#38BDF8" strokeWidth="5" strokeLinecap="round" fill="none" />
         <path d="M18 38 Q32 18 50 38 Q68 58 82 38" stroke="#7DD3FC" strokeWidth="3.5" strokeLinecap="round" fill="none" opacity="0.6" />
@@ -24,9 +23,7 @@ const MercuryIcon = ({ size = 20 }: { size?: number }) => (
 
 const MistralIcon = ({ size = 20 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Mistral "M" - modular block style matching their 2025 rebrand */}
         <rect width="100" height="100" rx="12" fill="#FF7000" />
-        {/* Block-style "M" made of rectangles */}
         <rect x="14" y="20" width="18" height="60" rx="2" fill="white" />
         <rect x="14" y="20" width="54" height="18" rx="2" fill="white" />
         <rect x="41" y="20" width="18" height="42" rx="2" fill="white" />
@@ -34,29 +31,6 @@ const MistralIcon = ({ size = 20 }: { size?: number }) => (
         <rect x="68" y="20" width="18" height="60" rx="2" fill="white" />
     </svg>
 );
-
-const AI_MODELS = [
-    {
-        id: 'MERCURY_2' as const,
-        name: 'Mercury 2',
-        tagline: 'Diffusion LLM · Ultra-fast parallel generation',
-        badge: 'DEFAULT',
-        badgeColor: 'sky',
-        Icon: MercuryIcon,
-        borderColor: '#38BDF8',
-        glowColor: 'rgba(56,189,248,0.15)',
-    },
-    {
-        id: 'MISTRAL' as const,
-        name: 'Mistral',
-        tagline: 'Frontier open-weight · Multilingual expertise',
-        badge: 'OPEN SOURCE',
-        badgeColor: 'orange',
-        Icon: MistralIcon,
-        borderColor: '#FF7000',
-        glowColor: 'rgba(255,112,0,0.15)',
-    },
-];
 
 const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
     const { t } = useTranslation();
@@ -73,21 +47,40 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
 
     const selectedModel = aiConfig.aiModel || 'MERCURY_2';
 
+    const AI_MODELS = [
+        {
+            id: 'MERCURY_2' as const,
+            nameKey: 'settings.ai.model.mercury2.name',
+            taglineKey: 'settings.ai.model.mercury2.tagline',
+            Icon: MercuryIcon,
+            borderColor: '#38BDF8',
+            glowColor: 'rgba(56,189,248,0.15)',
+        },
+        {
+            id: 'MISTRAL' as const,
+            nameKey: 'settings.ai.model.mistral.name',
+            taglineKey: 'settings.ai.model.mistral.tagline',
+            Icon: MistralIcon,
+            borderColor: '#FF7000',
+            glowColor: 'rgba(255,112,0,0.15)',
+        },
+    ];
+
     return (
         <div className="space-y-8 animate-fade-in">
 
             {/* ── AI Model Selection ── */}
             <div>
                 <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>
-                    AI Model
+                    {t('settings.ai.model.title')}
                 </h2>
                 <p className={`text-sm mb-6 ${styles.text.secondary}`}>
-                    Choose the AI model used to scan and analyse your candidates.
+                    {t('settings.ai.model.description')}
                 </p>
 
                 <div className={`p-6 rounded-2xl border ${styles.bg.surface} ${styles.border.base}`}>
                     <h3 className={`font-bold text-sm mb-4 flex items-center gap-2 ${styles.text.primary}`}>
-                        <Cpu size={16} /> Model Selection
+                        <Cpu size={16} /> {t('settings.ai.model.sectionTitle')}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {AI_MODELS.map((model) => {
@@ -103,7 +96,7 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
                                         boxShadow: isSelected ? `0 0 0 1px ${model.borderColor}` : undefined,
                                     }}
                                 >
-                                    {/* Selection ring */}
+                                    {/* Unselected background */}
                                     {!isSelected && (
                                         <span className={`absolute inset-0 rounded-xl border ${styles.border.base} ${isLight ? 'bg-white' : 'bg-white/3'} group-hover:border-opacity-70 transition-all`} />
                                     )}
@@ -117,21 +110,12 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
                                         {/* Content */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-0.5">
-                                                <span className={`font-black text-sm ${isSelected ? styles.text.primary : styles.text.primary}`}>
-                                                    {model.name}
-                                                </span>
-                                                <span
-                                                    className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded"
-                                                    style={{
-                                                        background: isSelected ? model.glowColor : (isLight ? '#f1f5f9' : 'rgba(255,255,255,0.07)'),
-                                                        color: isSelected ? model.borderColor : undefined,
-                                                    }}
-                                                >
-                                                    {model.badge}
+                                                <span className={`font-black text-sm ${styles.text.primary}`}>
+                                                    {t(model.nameKey)}
                                                 </span>
                                             </div>
                                             <p className={`text-[11px] leading-relaxed ${styles.text.tertiary}`}>
-                                                {model.tagline}
+                                                {t(model.taglineKey)}
                                             </p>
                                         </div>
 
@@ -159,7 +143,6 @@ const AISettings: React.FC<AISettingsProps> = ({ prefs, onAIConfigChange }) => {
                 <h2 className={`text-xl font-bold mb-2 ${styles.text.primary}`}>{t('settings.ai.calibration.title')}</h2>
                 <p className={`text-sm mb-6 ${styles.text.secondary}`}>{t('settings.ai.calibration.description')}</p>
 
-                {/* Strictness Settings */}
                 <div className={`p-6 rounded-2xl border ${styles.bg.surface} ${styles.border.base}`}>
                     <h3 className={`font-bold text-sm mb-4 flex items-center gap-2 ${styles.text.primary}`}>
                         <Target size={16} /> {t('settings.ai.calibration.strictness.title')}

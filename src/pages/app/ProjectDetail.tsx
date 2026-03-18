@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { notifyOwner } from '../../services/mockData';
 import {
     ArrowLeft, Edit2, Clock, BarChart2, FileText, Briefcase, MessageSquare, ChevronUp, ChevronDown, Zap, AlertTriangle, Coins, Activity, AtSign, Check, Link, Mail, Shield, Cpu
@@ -7,7 +7,7 @@ import {
 import { User as UserType } from '../../types';
 import { useProjectDetail } from '../../hooks/useProjectDetail';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 
 // Tab Components
@@ -133,6 +133,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
     const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'blue';
 
     // Fetch AI model used for this project (based on owner's preferences)
+    const aiModelQueryClient = useQueryClient();
     const { data: aiModel } = useQuery({
         queryKey: ['project-ai-model', projectId],
         queryFn: async () => {
@@ -143,12 +144,28 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
             return (data as string) || 'MERCURY_2';
         },
         enabled: !!projectId,
-        staleTime: 1000 * 60 * 5,
     });
+
+    // Real-time: re-fetch when the owner changes their profile (e.g. AI model in settings)
+    useEffect(() => {
+        if (!project?.ownerId) return;
+        const channel = supabase
+            .channel(`owner-profile-ai-${project.ownerId}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'profiles',
+                filter: `id=eq.${project.ownerId}`
+            }, () => {
+                aiModelQueryClient.invalidateQueries({ queryKey: ['project-ai-model', projectId] });
+            })
+            .subscribe();
+        return () => { supabase.removeChannel(channel); };
+    }, [project?.ownerId, projectId, aiModelQueryClient]);
 
     const AI_MODEL_INFO: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
         'MERCURY_2': {
-            label: 'Mercury 2',
+            label: t('settings.ai.model.mercury2.name'),
             color: isLight ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-sky-500/10 text-sky-400 border-sky-500/20',
             icon: (
                 <svg width="12" height="12" viewBox="0 0 100 100" fill="none">
@@ -158,7 +175,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
             )
         },
         'MISTRAL': {
-            label: 'Mistral',
+            label: t('settings.ai.model.mistral.name'),
             color: isLight ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-orange-500/10 text-orange-400 border-orange-500/20',
             icon: (
                 <svg width="12" height="12" viewBox="0 0 100 100" fill="none">
