@@ -30,7 +30,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
         tone: 'PROFESSIONAL',
         emailPersona: 'EMPATHETIC',
         antiGhosting: false,
-        rejectionContext: false
+        rejectionContext: false,
+        aiModel: 'MERCURY_2'
     },
     uiConfig: {
         theme: 'DARK',

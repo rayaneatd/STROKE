@@ -2,11 +2,13 @@
 import React from 'react';
 import { notifyOwner } from '../../services/mockData';
 import {
-    ArrowLeft, Edit2, Clock, BarChart2, FileText, Briefcase, MessageSquare, ChevronUp, ChevronDown, Zap, AlertTriangle, Coins, Activity, AtSign, Check, Link, Mail, Shield
+    ArrowLeft, Edit2, Clock, BarChart2, FileText, Briefcase, MessageSquare, ChevronUp, ChevronDown, Zap, AlertTriangle, Coins, Activity, AtSign, Check, Link, Mail, Shield, Cpu
 } from 'lucide-react';
 import { User as UserType } from '../../types';
 import { useProjectDetail } from '../../hooks/useProjectDetail';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../../lib/supabase';
 
 // Tab Components
 import OverviewTab from './project-tabs/OverviewTab';
@@ -130,6 +132,47 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
     const isLight = theme === 'LIGHT';
     const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'blue';
 
+    // Fetch AI model used for this project (based on owner's preferences)
+    const { data: aiModel } = useQuery({
+        queryKey: ['project-ai-model', projectId],
+        queryFn: async () => {
+            const { data, error } = await supabase.rpc('get_project_ai_model' as any, {
+                p_project_id: projectId
+            });
+            if (error) return 'MERCURY_2';
+            return (data as string) || 'MERCURY_2';
+        },
+        enabled: !!projectId,
+        staleTime: 1000 * 60 * 5,
+    });
+
+    const AI_MODEL_INFO: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+        'MERCURY_2': {
+            label: 'Mercury 2',
+            color: isLight ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+            icon: (
+                <svg width="12" height="12" viewBox="0 0 100 100" fill="none">
+                    <path d="M18 50 Q32 30 50 50 Q68 70 82 50" stroke="currentColor" strokeWidth="10" strokeLinecap="round" fill="none" />
+                    <circle cx="50" cy="50" r="8" fill="currentColor" />
+                </svg>
+            )
+        },
+        'MISTRAL': {
+            label: 'Mistral',
+            color: isLight ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+            icon: (
+                <svg width="12" height="12" viewBox="0 0 100 100" fill="none">
+                    <rect x="10" y="10" width="28" height="80" rx="4" fill="currentColor" />
+                    <rect x="10" y="10" width="80" height="28" rx="4" fill="currentColor" />
+                    <rect x="36" y="10" width="28" height="56" rx="4" fill="currentColor" />
+                    <rect x="10" y="38" width="54" height="28" rx="4" fill="#FF7000" />
+                    <rect x="62" y="10" width="28" height="80" rx="4" fill="currentColor" />
+                </svg>
+            )
+        }
+    };
+    const currentAIModel = AI_MODEL_INFO[aiModel || 'MERCURY_2'] || AI_MODEL_INFO['MERCURY_2'];
+
     if (!project) return <div>Project not found</div>;
 
     // Light/Dark Classes
@@ -189,6 +232,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                         <div className={`flex flex-wrap items-center gap-4 mt-2 text-xs font-medium ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
                             <div className="flex items-center gap-1.5">
                                 <Clock size={12} /> {t('project.created')} {new Date(project.createdAt).toLocaleDateString()}
+                            </div>
+
+                            {/* AI Model Badge */}
+                            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border font-semibold ${currentAIModel.color}`} title={`Scanning powered by ${currentAIModel.label}`}>
+                                <Cpu size={10} />
+                                {currentAIModel.icon}
+                                <span>AI: {currentAIModel.label}</span>
                             </div>
 
                             {isInvestmentMode ? (

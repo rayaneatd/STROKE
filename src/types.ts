@@ -71,6 +71,7 @@ export interface AIPreferences {
   emailPersona: 'EMPATHETIC' | 'DIRECT' | 'ENTHUSIASTIC';
   antiGhosting: boolean;
   rejectionContext: boolean;
+  aiModel?: 'MERCURY_2' | 'MISTRAL';
 }
 
 export interface UIPreferences {
