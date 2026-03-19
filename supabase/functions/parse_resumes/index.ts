@@ -33,6 +33,7 @@ Deno.serve(async (req: Request) => {
 
         const payload = await req.json();
         const { files, project_id, warm_up } = payload;
+        const authHeader = req.headers.get('Authorization');
 
         if (warm_up) {
             console.log("[parse_resumes] Warm-up signal received.");
@@ -74,7 +75,8 @@ Deno.serve(async (req: Request) => {
         if (filesToParse.length === 0) {
             console.log("Tout déjà parsé → dispatch direct vers scan_resumes");
             const { error: scanErr } = await supabase.functions.invoke('scan_resumes', {
-                body: { project_id, files }
+                body: { project_id, files },
+                headers: authHeader ? { Authorization: authHeader } : undefined
             });
             if (scanErr) console.error("Erreur invocation scan_resumes:", scanErr.message);
             return new Response(JSON.stringify({ message: "Déjà parsés, dispatch vers Gemini OK", skipped: existingHashesSet.size }), {
@@ -207,7 +209,8 @@ Deno.serve(async (req: Request) => {
             await Promise.all(scanBatches.map(async (batch) => {
                 try {
                     const { error: scanErr } = await supabase.functions.invoke('scan_resumes', {
-                        body: { project_id, files: batch }
+                        body: { project_id, files: batch },
+                        headers: authHeader ? { Authorization: authHeader } : undefined
                     });
                     if (scanErr) console.error(`[parse_resumes] Error triggering scan batch:`, scanErr.message);
                 } catch (e: any) {

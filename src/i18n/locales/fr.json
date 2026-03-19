@@ -306,6 +306,14 @@
             }
         },
         "security": {
+            "downloadData": {
+                "title": "Exporter les données",
+                "actionTitle": "Télécharger vos données personnelles",
+                "description": "Obtenez une copie de vos préférences, projets et candidats compilée dans un fichier structuré JSON.",
+                "button": "Demander l'export",
+                "success": "Vos données ont été compilées avec succès et le téléchargement a commencé.",
+                "error": "Échec de la compilation de vos données. Veuillez réessayer plus tard."
+            },
             "dangerZone": {
                 "title": "Zone de danger",
                 "deleteAccount": {

@@ -45,6 +45,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
         handleAIConfigChange,
         handleUIConfigChange,
         handleSave,
+        handleDownloadData,
         handleDeleteAccount,
         styles
     } = useSettings({ user, onUpdateUser, onLogout });
@@ -84,8 +85,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all border border-transparent ${activeTab === tab.id
-                                    ? `${styles.bg.accentTransparent} ${styles.text.accent} ${styles.border.accentDim} border shadow-sm`
-                                    : `${styles.text.secondary} ${styles.bg.surfaceHover}`
+                                ? `${styles.bg.accentTransparent} ${styles.text.accent} ${styles.border.accentDim} border shadow-sm`
+                                : `${styles.text.secondary} ${styles.bg.surfaceHover}`
                                 }`}
                         >
                             {tab.icon} {tab.label}
@@ -139,6 +140,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
 
                         {activeTab === 'SECURITY' && (
                             <SecuritySettings
+                                onDownloadData={handleDownloadData}
                                 onDeleteAccount={() => setIsDeleteModalOpen(true)}
                             />
                         )}

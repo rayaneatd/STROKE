@@ -16,15 +16,31 @@ const MAX_RETRY_DELAY_MS = 15000;
 const MERCURY_API_KEY = Deno.env.get("MERCURY_API_KEY");
 const MERCURY_BASE_URL = "https://api.inceptionlabs.ai/v1";
 
-// Global client variable
+// Mistral Configuration
+const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
+const MISTRAL_BASE_URL = "https://api.mistral.ai/v1";
+
+// Global clients
 let mercuryClient: OpenAI | null = null;
+let mistralClient: OpenAI | null = null;
 
-function initMercuryClient() {
-    if (mercuryClient) return mercuryClient;
-
-    if (!MERCURY_API_KEY) {
-        throw new Error("Missing MERCURY_API_KEY environment variable");
+function getAIClient(modelType: string = 'MERCURY_2') {
+    if (modelType === 'MISTRAL') {
+        if (mistralClient) return { client: mistralClient, model: "mistral-small-2506" };
+        if (!MISTRAL_API_KEY) {
+            console.warn("[scan_resumes] MISTRAL_API_KEY not found, falling back to Mercury");
+            return getAIClient('MERCURY_2');
+        }
+        console.log("[scan_resumes] Initializing Mistral Client (mistral-small-2506)...");
+        mistralClient = new OpenAI({
+            apiKey: MISTRAL_API_KEY,
+            baseURL: MISTRAL_BASE_URL,
+        });
+        return { client: mistralClient, model: "mistral-small-2506" };
     }
+
+    if (mercuryClient) return { client: mercuryClient, model: "mercury-2" };
+    if (!MERCURY_API_KEY) throw new Error("Missing MERCURY_API_KEY environment variable");
 
     console.log("[scan_resumes] Initializing Mercury 2 (Inception) Client...");
     mercuryClient = new OpenAI({
@@ -32,7 +48,7 @@ function initMercuryClient() {
         baseURL: MERCURY_BASE_URL,
     });
 
-    return mercuryClient;
+    return { client: mercuryClient, model: "mercury-2" };
 }
 
 // Structured output schema adapted for OpenAI/Mercury format
@@ -110,22 +126,28 @@ const getLanguageInstruction = (language: string) => `Réponds IMPÉRATIVEMENT e
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const fetchMercuryWithRetry = async (promptContent: string, systemInstruction: string, identifier: string = "CV", retries = 0): Promise<{ candidates: any[], usage: any }> => {
+const fetchAIWithRetry = async (promptContent: string, systemInstruction: string, modelType: string = 'MERCURY_2', identifier: string = "CV", retries = 0): Promise<{ candidates: any[], usage: any }> => {
     try {
-        const client = initMercuryClient();
+        const { client, model } = getAIClient(modelType);
 
-        console.log(`[scan_resumes] Calling Mercury 2 for ${identifier}...`);
+        const isMistral = modelType === 'MISTRAL';
+
+        let finalSystemInstruction = systemInstruction;
+        if (isMistral) {
+            finalSystemInstruction += `\n\nIMPÉRATIF: RENVOIE UNIQUEMENT DU JSON VALIDE. Voici l'exact schéma JSON attendu :\n${JSON.stringify(candidateSchema.schema.properties, null, 2)}\n\nNe retourne aucun texte ou markdown en dehors du JSON.`;
+        }
+
         const response = await client.chat.completions.create({
-            model: "mercury-2",
+            model: model,
             messages: [
-                { role: "system", content: systemInstruction },
+                { role: "system", content: finalSystemInstruction },
                 { role: "user", content: promptContent }
             ],
-            response_format: {
+            response_format: isMistral ? { type: "json_object" } : {
                 type: "json_schema",
                 json_schema: candidateSchema
             },
-            max_completion_tokens: 4000,
+            max_tokens: 4000,
             temperature: 0.2
         });
 
@@ -150,9 +172,9 @@ const fetchMercuryWithRetry = async (promptContent: string, systemInstruction: s
             const base = INITIAL_RETRY_DELAY_MS * Math.pow(2, retries);
             const delay = Math.floor(Math.random() * Math.min(MAX_RETRY_DELAY_MS, base));
 
-            console.log(`[scan_resumes] Mercury error ${error.status} for ${identifier}. Retrying in ${delay}ms... (Attempt ${retries + 1}/${MAX_RETRIES})`);
+            console.log(`[scan_resumes] AI error ${error.status} for ${identifier}. Retrying in ${delay}ms... (Attempt ${retries + 1}/${MAX_RETRIES})`);
             await sleep(delay);
-            return fetchMercuryWithRetry(promptContent, systemInstruction, identifier, retries + 1);
+            return fetchAIWithRetry(promptContent, systemInstruction, modelType, identifier, retries + 1);
         }
         throw error;
     }
@@ -182,8 +204,9 @@ Deno.serve(async (req: Request) => {
         const { data: project } = await supabase.from('projects').select('description, owner_id').eq('id', project_id).single();
         if (!project) throw new Error("Project not found");
 
-        const { data: userRecord } = await supabase.from('users').select('preferences').eq('id', project.owner_id).single();
+        const { data: userRecord } = await supabase.from('profiles').select('preferences').eq('id', project.owner_id).single();
         const aiConfig = userRecord?.preferences?.aiConfig || {};
+        const selectedModel = aiConfig.aiModel || 'MERCURY_2';
         const targetLanguage = "Français";
 
         const systemPrompt = `
@@ -240,7 +263,7 @@ ${getStrictnessInstruction(aiConfig.strictness || 'MEDIUM', targetLanguage)}
                 const cvBlocksText = `\n[CV HASH=${file.hash}]\n${sanitizedText}\n`;
 
                 try {
-                    const result = await fetchMercuryWithRetry(`${jobDescriptionText}CVs:\n${cvBlocksText}`, systemPrompt, identifier);
+                    const result = await fetchAIWithRetry(`${jobDescriptionText}CVs:\n${cvBlocksText}`, systemPrompt, selectedModel, identifier);
                     const aiData = result.candidates[0];
                     const usage = result.usage;
 

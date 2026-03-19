@@ -306,6 +306,14 @@
             }
         },
         "security": {
+            "downloadData": {
+                "title": "Export Data",
+                "actionTitle": "Download your personal data",
+                "description": "Get a copy of your preferences, projects, and candidates compiled into a JSON structured file.",
+                "button": "Request Data",
+                "success": "Your data has been compiled and the download has started.",
+                "error": "Failed to compile your data. Please try again later."
+            },
             "dangerZone": {
                 "title": "Danger Zone",
                 "deleteAccount": {

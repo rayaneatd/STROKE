@@ -203,6 +203,34 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
         }
     };
 
+    const handleDownloadData = async () => {
+        setIsLoading(true);
+        setMessage(null);
+        try {
+            const { data, error } = await supabase.functions.invoke('export_user_data', {
+                method: 'GET'
+            });
+            if (error) throw error;
+
+            // Create a blob and trigger download
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `airecruit_export_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            setMessage({ type: 'success', text: t('settings.security.downloadData.success', 'Your data has been successfully exported.') });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || t('settings.security.downloadData.error', 'Failed to export your data.') });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleDeleteAccount = async () => {
         setIsLoading(true);
         try {
@@ -237,6 +265,7 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
         handleAIConfigChange,
         handleUIConfigChange,
         handleSave,
+        handleDownloadData,
         handleDeleteAccount,
         styles // Exposed from useTheme
     };
