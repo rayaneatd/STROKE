@@ -207,9 +207,7 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
         setIsLoading(true);
         setMessage(null);
         try {
-            const { data, error } = await supabase.functions.invoke('export_user_data', {
-                method: 'GET'
-            });
+            const { data, error } = await supabase.functions.invoke('export_user_data');
             if (error) throw error;
 
             // Create a blob and trigger download
@@ -223,9 +221,9 @@ export const useSettings = ({ user, onUpdateUser, onLogout }: UseSettingsProps) 
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
 
-            setMessage({ type: 'success', text: t('settings.security.downloadData.success', 'Your data has been successfully exported.') });
+            setMessage({ type: 'success', text: 'Your data has been successfully exported.' });
         } catch (err: any) {
-            setMessage({ type: 'error', text: err.message || t('settings.security.downloadData.error', 'Failed to export your data.') });
+            setMessage({ type: 'error', text: err.message || 'Failed to export your data.' });
         } finally {
             setIsLoading(false);
         }
