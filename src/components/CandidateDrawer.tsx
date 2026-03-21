@@ -61,7 +61,7 @@ interface CandidateDrawerProps {
   onUpdateStatus?: (id: string, status: string) => Promise<void>;
 }
 
-type DrawerTab = 'analysis' | 'communication' | 'interview' | 'resume';
+type DrawerTab = 'analysis' | 'communication' | 'interview';
 
 const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   isOpen,
@@ -228,7 +228,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   }, [candidateId, isOpen, t]);
 
   useEffect(() => {
-    if (activeTab === 'resume' && data?.resume_path && !resumeUrl && !isLoadingResume) {
+    if (data?.resume_path && !resumeUrl && !isLoadingResume) {
       const fetchResumeUrl = async () => {
         setIsLoadingResume(true);
         try {
@@ -253,7 +253,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
       fetchResumeUrl();
     }
-  }, [activeTab, data?.resume_path, resumeUrl]);
+  }, [data?.resume_path, resumeUrl]);
 
   useEffect(() => {
     if (isOpen) {
@@ -622,11 +622,21 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     </div>
   );
 
-  const renderResume = () => {
+  const renderResumePreview = () => {
+    if (!data?.resume_path && !isLoadingResume) {
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-zinc-500 p-8 text-center bg-zinc-950/80">
+          <div className="w-16 h-16 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center">
+            <FileText className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">{t('candidateDrawer.error.notFound', 'Resume not available')}</p>
+        </div>
+      );
+    }
     return (
-      <div className="h-[700px] flex flex-col animate-fade-in relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/50">
+      <div className="w-full h-full flex flex-col bg-zinc-950/80">
         {isLoadingResume ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
             <p className="text-sm font-medium text-zinc-400">{t('common.loading', 'Loading...')}</p>
           </div>
@@ -636,12 +646,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             className="w-full h-full border-none"
             title="Resume Preview"
           />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-rose-500">
-            <AlertTriangle className="w-8 h-8" />
-            <p className="text-sm font-medium">{t('candidateDrawer.error.notFound', 'Resume not found')}</p>
-          </div>
-        )}
+        ) : null}
       </div>
     );
   };
@@ -789,20 +794,12 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               <MessageSquare className="w-3.5 h-3.5" />
               {t('candidateDrawer.tabs.interview')}
             </button>
-            <button
-              onClick={() => setActiveTab('resume')}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'resume' ? 'border-sky-500 text-sky-400' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              {t('candidateDrawer.tabs.resume', 'CV / Resume')}
-            </button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
           {activeTab === 'analysis' && renderAnalysis()}
           {activeTab === 'communication' && !hideCommunicationTab && renderCommunication()}
           {activeTab === 'interview' && renderInterview()}
-          {activeTab === 'resume' && renderResume()}
           <div className="h-12" />
         </div>
         <div className="shrink-0 p-4 border-t border-white/5 bg-zinc-950 flex items-center justify-between">
@@ -848,14 +845,23 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-[650px] h-full bg-zinc-950 border-l border-white/10 shadow-2xl animate-slide-in-right flex flex-col">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full text-zinc-500 hover:text-white hover:bg-white/10 transition-colors z-30"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        {renderContent()}
+      <div className="relative w-[95vw] max-w-[1400px] h-full flex flex-row shadow-2xl animate-slide-in-right z-10 pointer-events-none">
+
+        {/* Left Panel: Resume Preview */}
+        <div className="flex-1 bg-zinc-950/90 border-r border-white/10 flex flex-col pointer-events-auto backdrop-blur-xl">
+          {renderResumePreview()}
+        </div>
+
+        {/* Right Panel: Candidate Info Drawer Content */}
+        <div className="w-[600px] md:w-[650px] shrink-0 h-full bg-zinc-950 border-white/10 flex flex-col pointer-events-auto relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full text-zinc-500 hover:text-white hover:bg-white/10 transition-colors z-[60]"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          {renderContent()}
+        </div>
       </div>
     </div>,
     document.body
