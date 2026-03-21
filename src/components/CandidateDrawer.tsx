@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { debounce } from '../utils/performance';
+import { useTheme } from '../context/ThemeContext';
+import { ACCENT_PALETTES } from '../theme/designTokens';
 
 interface CandidateDrawerData {
   candidate_name: string | null;
@@ -74,6 +76,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   onUpdateStatus
 }) => {
   const { t } = useTranslation();
+  const { styles, isLight, accent } = useTheme();
   const [data, setData] = useState<CandidateDrawerData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -180,7 +183,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     try {
       const { data: signedUrlData, error } = await supabase.storage
         .from('resumes')
-        .createSignedUrl(data.resume_path, 60);
+        .createSignedUrl(data.resume_path, 10);
 
       if (error) {
         console.error('Error creating signed URL:', error.message);
@@ -234,7 +237,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
         try {
           const { data: signedUrlData, error } = await supabase.storage
             .from('resumes')
-            .createSignedUrl(data.resume_path, 3600);
+            .createSignedUrl(data.resume_path, 10);
 
           if (error) {
             console.error('Error creating signed URL:', error.message);
@@ -386,17 +389,17 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
   const renderAnalysis = () => (
     <div className="space-y-8 animate-fade-in">
-      <div className="relative p-6 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-900/50 border border-white/5 shadow-sm">
+      <div className={`relative p-6 rounded-2xl ${styles.bg.surface} border shadow-sm ${styles.border.base}`}>
         {data?.career_trajectory && (
-          <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <div className={`absolute top-4 right-4 px-3 py-1 rounded-full ${isLight ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'} text-xs font-bold flex items-center gap-1.5 shadow-sm`}>
             <Rocket className="w-3.5 h-3.5" />
             {data.career_trajectory}
           </div>
         )}
-        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">
+        <h3 className={`text-xs font-bold uppercase tracking-wider mb-3 ${styles.text.tertiary}`}>
           {t('candidateDrawer.analysis.executiveSummary')}
         </h3>
-        <p className="text-zinc-200 leading-relaxed text-sm">
+        <p className={`${styles.text.primary} leading-relaxed text-sm font-medium`}>
           {data?.executive_summary || t('candidateDrawer.analysis.noSummary')}
         </p>
       </div>
@@ -457,9 +460,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">{t('candidateDrawer.analysis.softSkills')}</h3>
-        <div className="p-5 rounded-2xl bg-zinc-900/50 border border-white/5">
-          <p className="text-zinc-300 text-sm leading-relaxed">
+        <h3 className={`text-xs font-bold uppercase tracking-wider ${styles.text.tertiary}`}>{t('candidateDrawer.analysis.softSkills')}</h3>
+        <div className={`p-5 rounded-2xl ${styles.bg.surface} border ${styles.border.base}`}>
+          <p className={`${styles.text.secondary} text-sm leading-relaxed`}>
             {data?.soft_skills_analysis || t('candidateDrawer.analysis.noJustification')}
           </p>
         </div>
@@ -472,9 +475,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
     return (
       <div className="space-y-6 h-full flex flex-col animate-fade-in">
-        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6 space-y-4 flex-1 flex flex-col">
+        <div className={`${styles.bg.surface} border ${styles.border.base} rounded-2xl p-6 space-y-4 flex-1 flex flex-col`}>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
+            <h3 className={`text-sm font-bold ${styles.text.primary} flex items-center gap-2`}>
               <Mail className="w-4 h-4 text-purple-500" />
               {t('candidateDrawer.email.draftTitle')}
             </h3>
@@ -486,7 +489,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
           </div>
           <div className="flex-1">
             <textarea
-              className={`w-full h-full min-h-[300px] bg-zinc-950 border border-white/10 rounded-xl p-4 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none ${isEmailSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full h-full min-h-[300px] ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.highlight} rounded-xl p-4 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none ${isEmailSent ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder={t('candidateDrawer.email.draftPlaceholder')}
               value={draft}
               onChange={handleDraftChange}
@@ -520,14 +523,14 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 saveDraft(''); // Immediate save for clear
               }}
               disabled={isSending || isEmailSent}
-              className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`${styles.text.tertiary} hover:${styles.text.primary} px-4 py-2 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {t('candidateDrawer.email.clear')}
             </button>
             <button
               onClick={handleSendEmail}
               disabled={isSending || !draft.trim() || isEmailSent}
-              className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`px-4 py-2 ${isLight ? 'bg-zinc-900 text-white hover:bg-black' : 'bg-zinc-100 hover:bg-white text-zinc-950'} text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isEmailSent ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Mail className="w-3.5 h-3.5" />}
               {isSending ? 'Sending...' : isEmailSent ? 'Sent' : t('candidateDrawer.email.send')}
@@ -554,14 +557,14 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       </div>
 
       {isAddingQuestion && (
-        <div className="p-4 rounded-xl bg-zinc-900 border border-purple-500/30 space-y-3 animate-fade-in">
+        <div className={`p-4 rounded-xl ${isLight ? 'bg-slate-50' : 'bg-zinc-900'} border border-purple-500/30 space-y-3 animate-fade-in`}>
           <input
             type="text"
             placeholder={t('candidateDrawer.interview.questionPlaceholder') || "Question..."}
             value={newQuestion}
             onChange={(e) => setNewQuestion(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-purple-500/50"
+            className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-lg px-3 py-2 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-purple-500`}
             autoFocus
           />
           <input
@@ -570,13 +573,13 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             value={newContext}
             onChange={(e) => setNewContext(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-400 focus:outline-none focus:border-purple-500/50"
+            className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-lg px-3 py-2 text-sm ${styles.text.secondary} focus:outline-none focus:ring-1 focus:ring-purple-500`}
           />
           <div className="flex justify-end pt-2">
             <button
               onClick={handleAddQuestion}
               disabled={!newQuestion.trim() || isUpdatingQuestions}
-              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className={`px-3 py-1.5 ${isLight ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-600 hover:bg-purple-500'} text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
             >
               {isUpdatingQuestions ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
               {t('common.save')}
@@ -588,27 +591,27 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       <div className="grid gap-3">
         {normalized.questions.length > 0 ? (
           normalized.questions.map((q, idx) => (
-            <div key={idx} className="relative p-4 rounded-xl bg-zinc-900 border border-white/5 hover:border-purple-500/30 transition-colors group">
+            <div key={idx} className={`relative p-4 rounded-xl ${styles.bg.surface} border ${styles.border.base} hover:border-purple-500/30 transition-colors group`}>
               <button
                 onClick={() => handleDeleteQuestion(idx)}
-                className="absolute top-2 right-2 p-1.5 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                className={`absolute top-2 right-2 p-1.5 ${styles.text.tertiary} hover:text-rose-500 hover:bg-rose-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all`}
                 title={t('common.delete')}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-              <p className="text-sm text-zinc-200 font-medium group-hover:text-purple-100 transition-colors pr-6">"{q.question}"</p>
+              <p className={`text-sm ${styles.text.primary} font-medium group-hover:text-purple-600 dark:group-hover:text-purple-100 transition-colors pr-6`}>"{q.question}"</p>
               {q.context && (
-                <p className="mt-2 text-xs text-zinc-500 border-t border-white/5 pt-2">
-                  <span className="font-semibold text-zinc-400">{t('candidateDrawer.interview.context')}</span> {q.context}
+                <p className={`mt-2 text-xs ${styles.text.tertiary} border-t ${styles.border.base} pt-2`}>
+                  <span className={`font-semibold ${styles.text.secondary}`}>{t('candidateDrawer.interview.context')}</span> {q.context}
                 </p>
               )}
             </div>
           ))
         ) : (
           !isAddingQuestion && (
-            <div className="flex flex-col items-center justify-center py-12 border border-dashed border-white/10 rounded-2xl">
-              <MessageSquare className="w-8 h-8 text-zinc-700 mb-3" />
-              <p className="text-zinc-500 text-sm italic">{t('candidateDrawer.interview.noQuestions')}</p>
+            <div className={`flex flex-col items-center justify-center py-12 border border-dashed ${styles.border.highlight} rounded-2xl`}>
+              <MessageSquare className={`w-8 h-8 ${styles.text.tertiary} mb-3 opacity-20`} />
+              <p className={`${styles.text.tertiary} text-sm italic`}>{t('candidateDrawer.interview.noQuestions')}</p>
               <button
                 onClick={() => setIsAddingQuestion(true)}
                 className="mt-4 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors"
@@ -625,8 +628,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   const renderResumePreview = () => {
     if (!data?.resume_path && !isLoadingResume) {
       return (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-zinc-500 p-8 text-center bg-zinc-950/80">
-          <div className="w-16 h-16 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center">
+        <div className={`w-full h-full flex flex-col items-center justify-center gap-4 ${styles.text.tertiary} p-8 text-center bg-zinc-950/80`}>
+          <div className={`w-16 h-16 rounded-full ${isLight ? 'bg-zinc-100' : 'bg-zinc-900'} border ${styles.border.base} flex items-center justify-center`}>
             <FileText className="w-8 h-8 opacity-50" />
           </div>
           <p className="text-sm font-medium">{t('candidateDrawer.error.notFound', 'Resume not available')}</p>
@@ -634,16 +637,16 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       );
     }
     return (
-      <div className="w-full h-full flex flex-col bg-zinc-950/80">
+      <div className={`w-full h-full flex flex-col ${isLight ? 'bg-slate-50' : 'bg-zinc-950/80'}`}>
         {isLoadingResume ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
-            <p className="text-sm font-medium text-zinc-400">{t('common.loading', 'Loading...')}</p>
+            <Loader2 className={`w-8 h-8 animate-spin ${styles.text.tertiary}`} />
+            <p className={`text-sm font-medium ${styles.text.secondary}`}>{t('common.loading', 'Loading...')}</p>
           </div>
         ) : resumeUrl ? (
           <iframe
             src={`${resumeUrl}#toolbar=0`}
-            className="w-full h-full border-none"
+            className={`w-full h-full border-none ${isLight ? 'mix-blend-multiply' : ''}`}
             title="Resume Preview"
           />
         ) : null}
@@ -672,14 +675,14 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
     return (
       <div className="flex flex-col h-full">
-        <div className="shrink-0 p-6 border-b border-white/5 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20">
+        <div className={`shrink-0 p-6 border-b ${styles.border.base} ${isLight ? 'bg-white/95' : 'bg-zinc-950/80'} backdrop-blur-md sticky top-0 z-20`}>
           <div className="flex justify-between items-start gap-6">
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-zinc-100 leading-tight">
+              <h2 className={`text-2xl font-bold ${styles.text.primary} leading-tight`}>
                 {data.candidate_name || t('candidateDrawer.header.unknown')}
               </h2>
-              <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-400">
-                <span className="font-medium text-zinc-300">{data.current_position || t('common.unknown')}</span>
+              <div className={`flex flex-wrap items-center gap-2 text-sm ${styles.text.secondary}`}>
+                <span className={`font-medium ${styles.text.primary}`}>{data.current_position || t('common.unknown')}</span>
                 <span>•</span>
                 <span>{yearsDisplay} {t('candidateDrawer.profile.years')}</span>
                 <span>•</span>
@@ -691,7 +694,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                     onClick={() => onToggleFavorite(candidateId!, isFavorite || false)}
                     className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${isFavorite
                       ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20'
-                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                      : isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900' : 'bg-zinc-100 hover:bg-white text-zinc-950'
                       }`}
                   >
                     <Star className={`w-4 h-4 ${isFavorite ? 'fill-amber-500' : ''}`} />
@@ -704,7 +707,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                     onClick={() => onUpdateStatus(candidateId!, status === 'rejected' ? 'new' : 'rejected')}
                     className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${status === 'rejected'
                       ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20'
-                      : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                      : isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900' : 'bg-zinc-100 hover:bg-white text-zinc-950'
                       }`}
                   >
                     <ThumbsDown className={`w-4 h-4 ${status === 'rejected' ? 'fill-rose-500' : ''}`} />
@@ -712,20 +715,20 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                   </button>
                 )}
 
-                <div className="h-8 w-px bg-white/10 mx-1" />
+                <div className={`h-8 w-px ${styles.border.base} mx-1`} />
 
                 <button
                   onClick={() => data.email && window.open(`mailto:${data.email}`)}
-                  className="px-4 py-2 bg-zinc-100 hover:bg-white text-zinc-950 text-sm font-bold rounded-xl transition-colors flex items-center gap-2"
+                  className={`px-4 py-2 ${isLight ? 'bg-zinc-900 text-white hover:bg-black' : 'bg-zinc-100 hover:bg-white text-zinc-950'} text-sm font-bold rounded-xl transition-colors flex items-center gap-2`}
                 >
                   <Mail className="w-4 h-4" />
                   {t('candidateDrawer.header.contact')}
                 </button>
-                <div className="h-8 w-px bg-white/10 mx-1" />
+                <div className={`h-8 w-px ${styles.border.base} mx-1`} />
                 {data.email && (
                   <button
                     onClick={() => copyToClipboard(data.email)}
-                    className="p-2 text-zinc-400 hover:text-zinc-100 hover:bg-white/5 rounded-xl transition-colors"
+                    className={`p-2 ${styles.text.tertiary} hover:${styles.text.primary} hover:bg-white/5 rounded-xl transition-colors`}
                     title={t('candidateDrawer.header.copyEmail')}
                   >
                     <Copy className="w-4 h-4" />
@@ -734,7 +737,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 {data.phone && (
                   <button
                     onClick={() => copyToClipboard(data.phone)}
-                    className="p-2 text-zinc-400 hover:text-zinc-100 hover:bg-white/5 rounded-xl transition-colors"
+                    className={`p-2 ${styles.text.tertiary} hover:${styles.text.primary} hover:bg-white/5 rounded-xl transition-colors`}
                     title={t('candidateDrawer.header.copyPhone')}
                   >
                     <Phone className="w-4 h-4" />
@@ -745,7 +748,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                     href={linkedinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 text-zinc-400 hover:text-[#0077b5] hover:bg-[#0077b5]/10 rounded-xl transition-colors"
+                    className={`p-2 ${styles.text.tertiary} hover:text-[#0077b5] hover:bg-[#0077b5]/10 rounded-xl transition-colors`}
                     title={t('candidateDrawer.header.openLinkedIn')}
                   >
                     <Linkedin className="w-4 h-4" />
@@ -756,7 +759,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                     href={githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                    className={`p-2 ${styles.text.tertiary} hover:${styles.text.primary} hover:bg-white/10 rounded-xl transition-colors`}
                     title={t('candidateDrawer.header.openGithub')}
                   >
                     <Github className="w-4 h-4" />
@@ -770,10 +773,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 mt-8 border-b border-white/5">
+          <div className={`flex items-center gap-1 mt-8 border-b ${styles.border.base}`}>
             <button
               onClick={() => setActiveTab('analysis')}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'analysis' ? 'border-zinc-100 text-zinc-100' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'analysis' ? (isLight ? 'border-zinc-900 text-zinc-900' : 'border-zinc-100 text-zinc-100') : `border-transparent ${styles.text.tertiary} hover:${styles.text.secondary}`}`}
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
               {t('candidateDrawer.tabs.analysis')}
@@ -781,7 +784,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             {!hideCommunicationTab && (
               <button
                 onClick={() => setActiveTab('communication')}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'communication' ? 'border-purple-500 text-purple-400' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'communication' ? 'border-purple-500 text-purple-600 dark:text-purple-400' : `border-transparent ${styles.text.tertiary} hover:${styles.text.secondary}`}`}
               >
                 <Mail className="w-3.5 h-3.5" />
                 {t('candidateDrawer.tabs.communication')}
@@ -789,7 +792,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             )}
             <button
               onClick={() => setActiveTab('interview')}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'interview' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'interview' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : `border-transparent ${styles.text.tertiary} hover:${styles.text.secondary}`}`}
             >
               <MessageSquare className="w-3.5 h-3.5" />
               {t('candidateDrawer.tabs.interview')}
@@ -802,16 +805,16 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
           {activeTab === 'interview' && renderInterview()}
           <div className="h-12" />
         </div>
-        <div className="shrink-0 p-4 border-t border-white/5 bg-zinc-950 flex items-center justify-between">
+        <div className={`shrink-0 p-4 border-t ${styles.border.base} ${isLight ? 'bg-slate-50' : 'bg-zinc-950'} flex items-center justify-between`}>
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="p-2 rounded-lg bg-zinc-900 text-zinc-400">
+            <div className={`p-2 rounded-lg ${isLight ? 'bg-slate-200 text-slate-600' : 'bg-zinc-900 text-zinc-400'}`}>
               <FileText className="w-5 h-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium text-zinc-200 truncate max-w-[200px]">
+              <span className={`text-sm font-medium ${styles.text.primary} truncate max-w-[200px]`}>
                 {data.original_resume_name || 'CV Original.pdf'}
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className={`text-xs ${styles.text.tertiary}`}>
                 {t('candidateDrawer.header.added')} {data.uploaded_at ? new Date(data.uploaded_at).toLocaleDateString() : '-'}
               </span>
             </div>
@@ -845,18 +848,18 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
-      <div className="relative w-[95vw] max-w-[1400px] h-full flex flex-row shadow-2xl animate-slide-in-right z-10 pointer-events-none">
+      <div className={`relative w-[95vw] max-w-[1400px] h-full flex flex-row shadow-2xl animate-slide-in-right z-10 pointer-events-none`}>
 
         {/* Left Panel: Resume Preview */}
-        <div className="flex-1 bg-zinc-950/90 border-r border-white/10 flex flex-col pointer-events-auto backdrop-blur-xl">
+        <div className={`flex-1 ${isLight ? 'bg-slate-200/50' : 'bg-zinc-950/90'} border-r ${styles.border.base} flex flex-col pointer-events-auto backdrop-blur-xl`}>
           {renderResumePreview()}
         </div>
 
         {/* Right Panel: Candidate Info Drawer Content */}
-        <div className="w-[600px] md:w-[650px] shrink-0 h-full bg-zinc-950 border-white/10 flex flex-col pointer-events-auto relative">
+        <div className={`w-[600px] md:w-[650px] shrink-0 h-full ${styles.bg.card} border-l ${styles.border.base} flex flex-col pointer-events-auto relative`}>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full text-zinc-500 hover:text-white hover:bg-white/10 transition-colors z-[60]"
+            className={`absolute top-4 right-4 p-2 rounded-full ${styles.text.tertiary} hover:${styles.text.primary} hover:bg-white/10 transition-colors z-[60]`}
           >
             <X className="w-6 h-6" />
           </button>

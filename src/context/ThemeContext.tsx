@@ -23,10 +23,10 @@ const DEFAULT_UI_CONFIG: UIPreferences = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode, initialConfig?: UIPreferences, onConfigChange?: (c: UIPreferences) => void }> = ({ 
-    children, 
+export const ThemeProvider: React.FC<{ children: React.ReactNode, initialConfig?: UIPreferences, onConfigChange?: (c: UIPreferences) => void }> = ({
+    children,
     initialConfig,
-    onConfigChange 
+    onConfigChange
 }) => {
     const [uiConfig, setUiConfig] = useState<UIPreferences>(initialConfig || DEFAULT_UI_CONFIG);
 
@@ -43,6 +43,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode, initialConfig?
             onConfigChange(merged);
         }
     };
+
+    useEffect(() => {
+        const root = window.document.documentElement;
+        if (uiConfig.theme === 'DARK') {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+    }, [uiConfig.theme]);
 
     const mode = uiConfig.theme;
     const accent = uiConfig.accentColor;

@@ -11,14 +11,72 @@
   }
 
   body {
-    @apply antialiased font-sans text-slate-200;
+    @apply antialiased font-sans text-zinc-900 dark:text-zinc-200 transition-colors duration-300;
     margin: 0;
     padding: 0;
     min-height: 100vh;
     overflow-x: hidden;
     overflow-y: auto !important;
-    /* Force natural scrolling */
+    background-color: theme('colors.white');
+    color: theme('colors.zinc.900');
     -webkit-overflow-scrolling: touch;
+  }
+
+  .dark body {
+    background-color: #0e0e10;
+    color: theme('colors.zinc.200');
+  }
+
+  /* Universal Slim Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.zinc.300/50') transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  .dark * {
+    scrollbar-color: theme('colors.zinc.800/80') transparent;
+  }
+
+  /* Webkit Universal Scrollbar */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    transition: background-color 0.3s ease;
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Hide Numeric Steppers */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 
   /* Accessibility focus indicators */
