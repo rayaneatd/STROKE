@@ -61,7 +61,7 @@ interface CandidateDrawerProps {
   onUpdateStatus?: (id: string, status: string) => Promise<void>;
 }
 
-type DrawerTab = 'analysis' | 'communication' | 'interview';
+type DrawerTab = 'analysis' | 'communication' | 'interview' | 'resume';
 
 const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   isOpen,
@@ -88,6 +88,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
   const [isOpeningResume, setIsOpeningResume] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+  const [isLoadingResume, setIsLoadingResume] = useState(false);
 
   // --- Autosave Logic ---
 
@@ -202,6 +204,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       setError(null);
       setData(null);
       setActiveTab('analysis');
+      setResumeUrl(null);
+      setIsLoadingResume(false);
       try {
         const { data, error } = await supabase.rpc('get_candidate_drawer_data', {
           p_candidate_id: candidateId
@@ -222,6 +226,34 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     };
     fetchData();
   }, [candidateId, isOpen, t]);
+
+  useEffect(() => {
+    if (activeTab === 'resume' && data?.resume_path && !resumeUrl && !isLoadingResume) {
+      const fetchResumeUrl = async () => {
+        setIsLoadingResume(true);
+        try {
+          const { data: signedUrlData, error } = await supabase.storage
+            .from('resumes')
+            .createSignedUrl(data.resume_path, 3600);
+
+          if (error) {
+            console.error('Error creating signed URL:', error.message);
+            return;
+          }
+
+          if (signedUrlData?.signedUrl) {
+            setResumeUrl(signedUrlData.signedUrl);
+          }
+        } catch (err) {
+          console.error('Failed to load resume:', err);
+        } finally {
+          setIsLoadingResume(false);
+        }
+      };
+
+      fetchResumeUrl();
+    }
+  }, [activeTab, data?.resume_path, resumeUrl]);
 
   useEffect(() => {
     if (isOpen) {
@@ -590,6 +622,30 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     </div>
   );
 
+  const renderResume = () => {
+    return (
+      <div className="h-[700px] flex flex-col animate-fade-in relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/50">
+        {isLoadingResume ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+            <p className="text-sm font-medium text-zinc-400">{t('common.loading', 'Loading...')}</p>
+          </div>
+        ) : resumeUrl ? (
+          <iframe
+            src={`${resumeUrl}#toolbar=0`}
+            className="w-full h-full border-none"
+            title="Resume Preview"
+          />
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-rose-500">
+            <AlertTriangle className="w-8 h-8" />
+            <p className="text-sm font-medium">{t('candidateDrawer.error.notFound', 'Resume not found')}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -733,12 +789,20 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               <MessageSquare className="w-3.5 h-3.5" />
               {t('candidateDrawer.tabs.interview')}
             </button>
+            <button
+              onClick={() => setActiveTab('resume')}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'resume' ? 'border-sky-500 text-sky-400' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              {t('candidateDrawer.tabs.resume', 'CV / Resume')}
+            </button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
           {activeTab === 'analysis' && renderAnalysis()}
           {activeTab === 'communication' && !hideCommunicationTab && renderCommunication()}
           {activeTab === 'interview' && renderInterview()}
+          {activeTab === 'resume' && renderResume()}
           <div className="h-12" />
         </div>
         <div className="shrink-0 p-4 border-t border-white/5 bg-zinc-950 flex items-center justify-between">
@@ -756,13 +820,23 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             </div>
           </div>
           <button
-            onClick={handleOpenExternal}
-            disabled={!data.resume_path || isOpeningResume}
+            onClick={() => setActiveTab('resume')}
+            disabled={!data.resume_path}
             className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-zinc-300 text-sm font-medium rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isOpeningResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-            {t('candidateDrawer.preview.openExternal')}
+            <FileText className="w-4 h-4" />
+            {t('candidateDrawer.preview.viewResume', 'View Resume')}
           </button>
+          {resumeUrl && (
+            <button
+              onClick={handleOpenExternal}
+              disabled={!data.resume_path || isOpeningResume}
+              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-zinc-300 text-sm font-medium rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isOpeningResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+              {t('candidateDrawer.preview.openExternal', 'Open External')}
+            </button>
+          )}
         </div>
       </div>
     );
