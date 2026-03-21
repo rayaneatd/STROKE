@@ -47,6 +47,7 @@ interface CandidateDrawerData {
   email_sent_at: string | null;
   original_resume_name: string | null;
   uploaded_at: string | null;
+  resume_path: string | null;
 }
 
 interface CandidateDrawerProps {
@@ -86,6 +87,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   const [newContext, setNewContext] = useState('');
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [isUpdatingQuestions, setIsUpdatingQuestions] = useState(false);
+  const [isOpeningResume, setIsOpeningResume] = useState(false);
 
   // --- Autosave Logic ---
 
@@ -166,6 +168,30 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       // Could add toast here
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleOpenExternal = async () => {
+    if (!data?.resume_path) return;
+
+    setIsOpeningResume(true);
+    try {
+      const { data: signedUrlData, error } = await supabase.storage
+        .from('resumes')
+        .createSignedUrl(data.resume_path, 60);
+
+      if (error) {
+        console.error('Error creating signed URL:', error.message);
+        return;
+      }
+
+      if (signedUrlData?.signedUrl) {
+        window.open(signedUrlData.signedUrl, '_blank', 'noopener,noreferrer');
+      }
+    } catch (err) {
+      console.error('Failed to open resume:', err);
+    } finally {
+      setIsOpeningResume(false);
     }
   };
 
@@ -729,8 +755,12 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               </span>
             </div>
           </div>
-          <button className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-zinc-300 text-sm font-medium rounded-xl transition-colors flex items-center gap-2">
-            <ExternalLink className="w-4 h-4" />
+          <button
+            onClick={handleOpenExternal}
+            disabled={!data.resume_path || isOpeningResume}
+            className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-zinc-300 text-sm font-medium rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isOpeningResume ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
             {t('candidateDrawer.preview.openExternal')}
           </button>
         </div>
