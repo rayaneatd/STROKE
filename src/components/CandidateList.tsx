@@ -26,6 +26,7 @@ interface CandidateListProps {
     onToggleFavorite?: (id: string, current: boolean) => void;
     onUpdateStatus?: (id: string, status: string) => void;
     isProcessing?: boolean;
+    isLoading?: boolean;
 }
 
 const CandidateList: React.FC<CandidateListProps> = ({
@@ -46,7 +47,8 @@ const CandidateList: React.FC<CandidateListProps> = ({
     onToggleSelect,
     onToggleFavorite,
     onUpdateStatus,
-    isProcessing = false
+    isProcessing = false,
+    isLoading = false
 }) => {
     const { t } = useTranslation();
     const textPrimary = isLight ? 'text-slate-900' : 'text-zinc-200';
@@ -92,7 +94,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
         onScroll(e);
     };
 
-    if (candidates.length === 0 && !isProcessing) {
+    if (candidates.length === 0 && !isProcessing && !isLoading) {
         return (
             <div className={`flex flex-col items-center justify-center h-full min-h-[256px] ${textSecondary}`}>
                 <FileText size={48} className="opacity-20 mb-3" />
@@ -109,10 +111,10 @@ const CandidateList: React.FC<CandidateListProps> = ({
             style={{ height: containerHeight ?? '100%', position: 'relative' }}
         >
             <div style={{ height: totalHeight + (isProcessing ? itemHeight * 2 : 0), position: 'relative' }}>
-                {/* Real-time Skeleton for new arrivals */}
-                {isProcessing && (
+                {/* Real-time Skeleton for new arrivals or initial load */}
+                {(isProcessing || isLoading) && (
                     <>
-                        {[0, 1].map(i => (
+                        {[0, 1, 2, 3, 4, 5].map(i => (
                             <div
                                 key={`skeleton-${i}`}
                                 style={{
@@ -142,7 +144,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 {visibleItems.map(({ index, offsetTop }) => {
                     const file = candidates[index];
                     if (!file) return null;
-                    const topShift = isProcessing ? itemHeight * 2 : 0;
+                    const topShift = (isProcessing || isLoading) ? itemHeight * 6 : 0;
 
                     const hasScore = file.matchScore !== null && file.matchScore !== undefined;
                     const score = hasScore ? file.matchScore : 0;

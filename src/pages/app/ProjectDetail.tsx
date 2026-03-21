@@ -1,8 +1,8 @@
-
 import React, { useEffect } from 'react';
 import { notifyOwner } from '../../services/mockData';
+import { ProjectDetailSkeleton } from '../../components/SkeletonLoader';
 import {
-    ArrowLeft, Edit2, Clock, BarChart2, FileText, Briefcase, MessageSquare, ChevronUp, ChevronDown, Zap, AlertTriangle, Coins, Activity, AtSign, Check, Link, Mail, Shield, Cpu
+    ArrowLeft, Edit2, Clock, BarChart2, FileText, Briefcase, MessageSquare, ChevronUp, ChevronDown, Zap, AlertTriangle, Coins, Activity, AtSign, Check, Link, Mail, Shield, Cpu, Search
 } from 'lucide-react';
 import { User as UserType } from '../../types';
 import { useProjectDetail } from '../../hooks/useProjectDetail';
@@ -190,7 +190,28 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
     };
     const currentAIModel = AI_MODEL_INFO[aiModel || 'MERCURY_2'] || AI_MODEL_INFO['MERCURY_2'];
 
-    if (!project) return <div>Project not found</div>;
+    if (isProjectLoading) return <ProjectDetailSkeleton />;
+
+    const textPrimary = isLight ? 'text-slate-900' : 'text-white';
+    const textSecondary = isLight ? 'text-slate-500' : 'text-zinc-500';
+
+    if (!project) return (
+        <div className="flex flex-col items-center justify-center h-96 gap-4">
+            <div className={`p-4 rounded-full ${isLight ? 'bg-slate-100' : 'bg-white/5'}`}>
+                <Search size={48} className={isLight ? 'text-slate-300' : 'text-zinc-600'} />
+            </div>
+            <div className="text-center">
+                <h3 className={`text-lg font-bold ${textPrimary}`}>Project not found</h3>
+                <p className={`text-sm ${textSecondary}`}>The project you're looking for doesn't exist or you don't have access.</p>
+            </div>
+            <button
+                onClick={() => onNavigate('projects')}
+                className={`px-6 py-2 rounded-xl bg-${accentColor}-500 text-white font-bold text-sm hover:bg-${accentColor}-600 transition-colors shadow-lg shadow-${accentColor}-500/20`}
+            >
+                Back to Projects
+            </button>
+        </div>
+    );
 
     // Light/Dark Classes
     const backBtnClass = isLight

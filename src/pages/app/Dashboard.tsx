@@ -12,6 +12,7 @@ import { useDashboard } from '../../hooks/useDashboard';
 import { User, Role } from '../../types';
 import LowCreditsBanner from '../../components/LowCreditsBanner';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { DashboardSkeleton } from '../../components/SkeletonLoader';
 
 interface DashboardProps {
     currentUser: User;
@@ -112,14 +113,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
     const isLight = theme === 'LIGHT';
     const accentColor = currentUser.preferences?.uiConfig?.accentColor || 'blue';
 
-    if (loading) return (
-        <div className="flex h-96 items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-                <RefreshCw className={`animate-spin text-${accentColor}-500`} size={24} />
-                <p className={`text-sm font-medium ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>{t('dashboard.loadingIntelligence')}</p>
-            </div>
-        </div>
-    );
+    if (loading) return <DashboardSkeleton />;
 
     if (!data) return (
         <div className="flex h-96 items-center justify-center">
@@ -128,7 +122,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                 <p className={`text-sm font-medium ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>
                     {error || 'Unable to load dashboard data'}
                 </p>
-                <button 
+                <button
                     onClick={handleManualRefresh}
                     className={`px-4 py-2 rounded-lg text-xs font-bold ${isLight ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}
                 >
@@ -363,9 +357,9 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                     ))}
                                 </Pie>
                                 <Tooltip content={<CustomChartTooltip isLight={isLight} />} />
-                                <Legend 
-                                    verticalAlign="bottom" 
-                                    height={36} 
+                                <Legend
+                                    verticalAlign="bottom"
+                                    height={36}
                                     iconType="circle"
                                     iconSize={8}
                                     formatter={(value) => <span className={`text-[10px] font-bold uppercase tracking-wide ml-1 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{value}</span>}
@@ -404,9 +398,9 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                     ))}
                                 </Pie>
                                 <Tooltip content={<CustomChartTooltip isLight={isLight} />} />
-                                <Legend 
-                                    verticalAlign="bottom" 
-                                    height={36} 
+                                <Legend
+                                    verticalAlign="bottom"
+                                    height={36}
                                     iconType="circle"
                                     iconSize={8}
                                     formatter={(value) => <span className={`text-[10px] font-bold uppercase tracking-wide ml-1 ${isLight ? 'text-slate-500' : 'text-zinc-400'}`}>{value}</span>}
@@ -434,58 +428,58 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                             <AreaChart data={data.timelineData}>
                                 <defs>
                                     <linearGradient id="colorApplications" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                     </linearGradient>
                                     <linearGradient id="colorQualified" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                     </linearGradient>
                                     <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke={isLight ? '#e2e8f0' : '#27272a'} vertical={false} />
-                                <XAxis 
-                                    dataKey="date" 
-                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
-                                    fontSize={10} 
+                                <XAxis
+                                    dataKey="date"
+                                    stroke={isLight ? '#94a3b8' : '#52525b'}
+                                    fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
                                 />
-                                <YAxis 
-                                    stroke={isLight ? '#94a3b8' : '#52525b'} 
-                                    fontSize={10} 
+                                <YAxis
+                                    stroke={isLight ? '#94a3b8' : '#52525b'}
+                                    fontSize={10}
                                     tickLine={false}
                                     axisLine={false}
                                 />
                                 <Tooltip content={<CustomChartTooltip isLight={isLight} />} />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="applications" 
+                                <Area
+                                    type="monotone"
+                                    dataKey="applications"
                                     name={t('project.overview.kpi.volume')}
-                                    stroke="#3b82f6" 
-                                    fillOpacity={1} 
-                                    fill="url(#colorApplications)" 
+                                    stroke="#3b82f6"
+                                    fillOpacity={1}
+                                    fill="url(#colorApplications)"
                                     strokeWidth={2}
                                 />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="qualified" 
+                                <Area
+                                    type="monotone"
+                                    dataKey="qualified"
                                     name={t('project.overview.kpi.qualified')}
-                                    stroke="#10b981" 
-                                    fillOpacity={1} 
-                                    fill="url(#colorQualified)" 
+                                    stroke="#10b981"
+                                    fillOpacity={1}
+                                    fill="url(#colorQualified)"
                                     strokeWidth={2}
                                 />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="failed" 
+                                <Area
+                                    type="monotone"
+                                    dataKey="failed"
                                     name={t('project.overview.kpi.failed')}
-                                    stroke="#ef4444" 
-                                    fillOpacity={1} 
-                                    fill="url(#colorFailed)" 
+                                    stroke="#ef4444"
+                                    fillOpacity={1}
+                                    fill="url(#colorFailed)"
                                     strokeWidth={2}
                                 />
                             </AreaChart>

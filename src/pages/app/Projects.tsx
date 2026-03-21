@@ -16,6 +16,9 @@ import ProjectModal from '../../components/modals/EditProjectModal'; // Unified 
 import LeaveProjectModal from '../../components/modals/LeaveProjectModal';
 import DeleteProjectModal from '../../components/modals/DeleteProjectModal';
 
+// Skeletons
+import { ProjectCardSkeleton } from '../../components/SkeletonLoader';
+
 // --- MEMOIZED COMPONENTS ---
 
 const ProjectCard = React.memo(({
@@ -324,7 +327,8 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
         confirmLeaveProject,
         handleProjectModalSave,
         handleLoadMore,
-        fundProjectMutation
+        fundProjectMutation,
+        loading
     } = useProjects({ currentUser, onUpdateUser, onNavigate });
 
     // Fund handlers wrapper
@@ -503,7 +507,13 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                 </div>
             </div>
 
-            {filteredProjects.length === 0 ? (
+            {loading ? (
+                <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-3"}>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <ProjectCardSkeleton key={i} />
+                    ))}
+                </div>
+            ) : filteredProjects.length === 0 ? (
                 <div className={`text-center py-20 rounded-2xl border-2 border-dashed ${isLight ? 'bg-white border-slate-100 shadow-sm' : 'bg-[#0e0e10] border-white/5'}`}>
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${isLight ? 'bg-slate-50 text-slate-400' : 'bg-white/5 text-zinc-500'}`}>
                         <Filter size={24} />
@@ -552,7 +562,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                                 accentColor={accentColor}
                             />
                         ))}
-                </div>
+                    </div>
 
                     {filteredProjects.length > displayCount && (
                         <div className="flex justify-center pt-8 pb-4">
