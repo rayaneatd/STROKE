@@ -22,10 +22,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const fetchProfile = async (userId: string, authUser: any) => {
         try {
             // Try RPC first to bypass potential RLS issues
-            const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_profile');
-            
+            const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_profile' as any);
+
             let data = null;
-            
+
             if (!rpcError && rpcData) {
                 data = rpcData;
             } else {
@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     .select('*')
                     .eq('id', userId)
                     .maybeSingle();
-                
+
                 if (selectError) console.error('[AuthContext] Select error:', selectError);
                 data = selectData;
             }
@@ -77,7 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     primaryEmail,
                     workEmail,
                     workMails,
-                    isOwner
+                    isOwner,
+                    marketingConsent: !!data.marketing_consent,
+                    feedbackConsent: !!data.feedback_consent
                 } as unknown as User;
             }
         } catch (err) {
@@ -108,7 +110,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             workEmail: type === EmailType.CUSTOM ? authUser.email : null,
             workMails: fallbackWorkMails,
             isOwner: false,
-            nylasConnected: false
+            nylasConnected: false,
+            marketingConsent: !!authUser.user_metadata?.marketing_consent,
+            feedbackConsent: !!authUser.user_metadata?.feedback_consent
         } as unknown as User;
     };
 
@@ -171,22 +175,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     },
                     (payload: any) => {
                         console.log('Realtime profile update received:', payload);
-                        
+
                         // Optimistically update local state if we have the new record
                         const newRecord = payload.new;
                         if (newRecord && user) {
-                             setUser(prev => {
-                                 if (!prev) return null;
-                                 return {
-                                     ...prev,
-                                     // Update fields that might have changed
-                                     scansBalance: newRecord.scans_balance ?? prev.scansBalance,
-                                     subscriptionPlan: newRecord.subscription_plan ?? prev.subscriptionPlan,
-                                     billingType: newRecord.billing_type ?? prev.billingType,
-                                     purchasedScans: newRecord.purchased_scans ?? prev.purchasedScans,
-                                     overageCap: newRecord.overage_cap ?? prev.overageCap
-                                 };
-                             });
+                            setUser(prev => {
+                                if (!prev) return null;
+                                return {
+                                    ...prev,
+                                    // Update fields that might have changed
+                                    scansBalance: newRecord.scans_balance ?? prev.scansBalance,
+                                    subscriptionPlan: newRecord.subscription_plan ?? prev.subscriptionPlan,
+                                    billingType: newRecord.billing_type ?? prev.billingType,
+                                    purchasedScans: newRecord.purchased_scans ?? prev.purchasedScans,
+                                    overageCap: newRecord.overage_cap ?? prev.overageCap
+                                };
+                            });
                         }
 
                         fetchProfile(user.id as unknown as string, {
@@ -246,7 +250,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const refreshUser = async () => {
         if (!user?.id) return;
-        
+
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {

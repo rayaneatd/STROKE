@@ -120,6 +120,11 @@ export const useLogin = () => {
                 }
             };
 
+            // BACKUP: Save to localStorage as some OAuth providers/Supabase configs 
+            // might not merge metadata for existing users correctly.
+            localStorage.setItem('pending_marketing_consent', String(marketingConsent));
+            localStorage.setItem('pending_feedback_consent', String(feedbackConsent));
+
             if (provider === 'google') {
                 options.queryParams = {
                     access_type: 'offline',
