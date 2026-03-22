@@ -135,6 +135,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }
                     return;
                 }
+
+                // === CONSENT FAIL-SAFE SYNC BEFORE FETCHING PROFILE ===
+                const pendingMarketing = localStorage.getItem('pending_marketing_consent');
+                const pendingFeedback = localStorage.getItem('pending_feedback_consent');
+                if (pendingMarketing !== null || pendingFeedback !== null) {
+                    const updates: any = {};
+                    if (pendingMarketing === 'true') updates.marketing_consent = true;
+                    if (pendingFeedback === 'true') updates.feedback_consent = true;
+
+                    if (Object.keys(updates).length > 0) {
+                        // Bypass RLS issues by using the user's active session
+                        await supabase
+                            .from('profiles')
+                            .update(updates)
+                            .eq('id', session.user.id);
+                    }
+                    localStorage.removeItem('pending_marketing_consent');
+                    localStorage.removeItem('pending_feedback_consent');
+                }
+
                 const profile = await fetchProfile(session.user.id, session.user);
                 if (isMounted) {
                     setUser(profile);

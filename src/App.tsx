@@ -138,51 +138,6 @@ const AppContent: React.FC = () => {
         syncLanguage();
     }, [user?.id, i18n]);
 
-    // --- CONSENT SYNC FAIL-SAFE (For OAuth login) ---
-    useEffect(() => {
-        if (!user || user.id === 'MOCK_USER_ID') return;
-
-        const syncPendingConsent = async () => {
-            const pendingMarketing = localStorage.getItem('pending_marketing_consent');
-            const pendingFeedback = localStorage.getItem('pending_feedback_consent');
-
-            if (pendingMarketing !== null || pendingFeedback !== null) {
-                const updates: any = {};
-
-                // Only update if the local preference was 'true' 
-                // We don't want to opt-out existing users who just didn't re-check the box
-                if (pendingMarketing === 'true' && !user.marketingConsent) {
-                    updates.marketing_consent = true;
-                }
-                if (pendingFeedback === 'true' && !user.feedbackConsent) {
-                    updates.feedback_consent = true;
-                }
-
-                if (Object.keys(updates).length > 0) {
-                    const { error } = await supabase
-                        .from('profiles')
-                        .update(updates)
-                        .eq('id', user.id);
-
-                    if (!error) {
-                        // Refresh user data in Context
-                        updateUser({
-                            ...user,
-                            marketingConsent: updates.marketing_consent ?? user.marketingConsent,
-                            feedbackConsent: updates.feedback_consent ?? user.feedbackConsent
-                        });
-                    }
-                }
-
-                // Clear regardless of success/fail to avoid infinite loops
-                localStorage.removeItem('pending_marketing_consent');
-                localStorage.removeItem('pending_feedback_consent');
-            }
-        };
-
-        syncPendingConsent();
-    }, [user?.id, updateUser]);
-
     // --- REAL-TIME BAN ENFORCEMENT ---
     useEffect(() => {
         if (!user) return;
