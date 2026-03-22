@@ -4,7 +4,7 @@ import { User, Role, SubscriptionPlan } from '../../types';
 import {
     Camera, Save, Mail, User as UserIcon, Shield, CreditCard, Check,
     AlertCircle, Loader2, Building2, Server, Link, Plus, Trash2,
-    Briefcase, Calendar, Edit2, X, AlertTriangle
+    Briefcase, Calendar, Edit2, X, AlertTriangle, Bell, Info
 } from 'lucide-react';
 import { INDUSTRIES } from '../../constants';
 import SearchableSelect from '../../components/ui/SearchableSelect';
@@ -22,7 +22,7 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNavigate }) => {
     const { t, i18n } = useTranslation();
     const { styles } = useTheme();
-    
+
     const {
         user,
         formData,
@@ -56,7 +56,10 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
         workEmailError,
         workEmailSuccess,
         handleRemoveWorkMail,
-        handleConnectAurinko
+        handleConnectAurinko,
+        handleToggleMarketing,
+        handleToggleFeedback,
+        isUpdatingConsent
     } = useProfile({ user: initialUser, onUpdateUser, onNavigate });
 
     // Use the fetched user or fallback to initial
@@ -82,7 +85,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                 {/* Left Column: Core Identity */}
                 <div className="lg:col-span-2 space-y-6">
                     <form onSubmit={handleSubmit} className={`border rounded-2xl p-8 relative ${cardBg}`}>
-                        
+
                         {/* Header / Avatar */}
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 border-b border-white/5 pb-8">
                             <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
@@ -179,6 +182,51 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                         </div>
                     </form>
 
+                    {/* Communication Preferences */}
+                    <div className={`border rounded-2xl p-6 ${cardBg}`}>
+                        <h3 className={`text-lg font-bold mb-1 flex items-center gap-2 ${textPrimary}`}>
+                            <Bell size={20} className={textSecondary} />
+                            {t('profile.personalInfo')}
+                        </h3>
+                        <p className={`text-sm mb-6 ${textSecondary}`}>
+                            {t('settings.notifications.channels.description')}
+                        </p>
+
+                        <div className="space-y-4">
+                            <div className={`flex items-start justify-between p-4 rounded-xl border transition-all ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/10'}`}>
+                                <div className="space-y-1 pr-4">
+                                    <p className={`font-bold text-sm ${textPrimary}`}>{t('profile.marketingConsent')}</p>
+                                    <p className={`text-xs ${textSecondary}`}>{t('profile.marketingConsentDesc')}</p>
+                                </div>
+                                <button
+                                    onClick={() => handleToggleMarketing(!currentUser.marketingConsent)}
+                                    disabled={isUpdatingConsent}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${currentUser.marketingConsent ? 'bg-blue-600' : (isLight ? 'bg-slate-200' : 'bg-zinc-800')}`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${currentUser.marketingConsent ? 'translate-x-6' : 'translate-x-1'}`}
+                                    />
+                                </button>
+                            </div>
+
+                            <div className={`flex items-start justify-between p-4 rounded-xl border transition-all ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/10'}`}>
+                                <div className="space-y-1 pr-4">
+                                    <p className={`font-bold text-sm ${textPrimary}`}>{t('profile.feedbackConsent')}</p>
+                                    <p className={`text-xs ${textSecondary}`}>{t('profile.feedbackConsentDesc')}</p>
+                                </div>
+                                <button
+                                    onClick={() => handleToggleFeedback(!currentUser.feedbackConsent)}
+                                    disabled={isUpdatingConsent}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${currentUser.feedbackConsent ? 'bg-blue-600' : (isLight ? 'bg-slate-200' : 'bg-zinc-800')}`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${currentUser.feedbackConsent ? 'translate-x-6' : 'translate-x-1'}`}
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Email Identity & Linked Accounts (Moved from SecuritySettings) */}
                     <div className="space-y-6">
                         {/* Linked Accounts */}
@@ -218,15 +266,15 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                                 </h3>
                                 {(emailError || emailSuccess) && (
                                     <div className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${emailSuccess ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                                        {emailSuccess ? <Check size={12}/> : <AlertCircle size={12}/>}
+                                        {emailSuccess ? <Check size={12} /> : <AlertCircle size={12} />}
                                         {emailSuccess || emailError}
                                     </div>
                                 )}
                             </div>
-                            
+
                             {!currentUser.primaryEmail && !currentUser.isOwner && (
                                 <div className={`mb-4 p-3 rounded-xl text-xs flex items-start gap-2 border ${isLight ? 'bg-amber-50 border-amber-100 text-amber-700' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
-                                    <AlertTriangle size={14} className="shrink-0 mt-0.5"/> 
+                                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
                                     <span>
                                         <strong>{t('profile.actionRequired')}</strong> {t('profile.addEmailMessage')}
                                     </span>
@@ -234,8 +282,8 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                             )}
 
                             <div className="flex gap-3">
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     value={primaryEmailInput}
                                     onChange={(e) => setPrimaryEmailInput(e.target.value)}
                                     disabled={!isEditingPrimary}
@@ -245,10 +293,10 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                                 {isEditingPrimary ? (
                                     <div className="flex gap-2">
                                         <ThemedButton variant="ghost" onClick={() => { setIsEditingPrimary(false); setPrimaryEmailInput(currentUser.email || ''); }}>{t('profile.cancel')}</ThemedButton>
-                                        <ThemedButton onClick={handleUpdateProfileEmail} isLoading={isSavingPrimary} icon={<Check size={16}/>}>{t('profile.save')}</ThemedButton>
+                                        <ThemedButton onClick={handleUpdateProfileEmail} isLoading={isSavingPrimary} icon={<Check size={16} />}>{t('profile.save')}</ThemedButton>
                                     </div>
                                 ) : (
-                                    <ThemedButton variant="secondary" onClick={() => setIsEditingPrimary(true)} icon={<Edit2 size={14}/>}>{t('profile.edit')}</ThemedButton>
+                                    <ThemedButton variant="secondary" onClick={() => setIsEditingPrimary(true)} icon={<Edit2 size={14} />}>{t('profile.edit')}</ThemedButton>
                                 )}
                             </div>
                         </div>
@@ -270,7 +318,7 @@ const Profile: React.FC<ProfileProps> = ({ user: initialUser, onUpdateUser, onNa
                                 <p className={`text-[10px] ${textSecondary}`}>{t('profile.workEmailsDescription')}</p>
                             </div>
                         </div>
-                        
+
                         <div className="space-y-3 mb-6">
                             {workEmailError || workEmailSuccess ? (
                                 <div className={`text-xs px-3 py-2 rounded-lg flex items-center gap-2 ${workEmailSuccess ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>

@@ -153,6 +153,8 @@ export interface User {
   lastActive?: string;
   signupDate?: string;
   hasCompletedOnboarding?: boolean;
+  marketingConsent: boolean;
+  feedbackConsent: boolean;
 
   // Updated: List of integrations
   emailIntegrations: EmailIntegration[];

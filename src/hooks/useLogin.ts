@@ -21,6 +21,7 @@ export const useLogin = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [staySignedIn, setStaySignedIn] = useState(false);
     const [marketingConsent, setMarketingConsent] = useState(false);
+    const [feedbackConsent, setFeedbackConsent] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [magicLinkSuccess, setMagicLinkSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -113,6 +114,10 @@ export const useLogin = () => {
         try {
             const options: any = {
                 redirectTo: `${window.location.origin}/app`,
+                data: {
+                    marketing_consent: marketingConsent,
+                    feedback_consent: feedbackConsent
+                }
             };
 
             if (provider === 'google') {
@@ -168,6 +173,10 @@ export const useLogin = () => {
                     shouldCreateUser: true,
                     emailRedirectTo: `${redirectTo}/app`,
                     captchaToken,
+                    data: {
+                        marketing_consent: marketingConsent,
+                        feedback_consent: feedbackConsent
+                    }
                 }
             });
             if (error) throw error;
@@ -232,6 +241,8 @@ export const useLogin = () => {
         toggleMode,
         marketingConsent,
         setMarketingConsent,
+        feedbackConsent,
+        setFeedbackConsent,
         captchaToken,
         setCaptchaToken,
         magicLinkLoading,

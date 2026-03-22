@@ -21,6 +21,8 @@ const Login: React.FC = () => {
         magicLinkLoading,
         marketingConsent,
         setMarketingConsent,
+        feedbackConsent,
+        setFeedbackConsent,
         captchaToken,
         setCaptchaToken,
         error,
@@ -174,20 +176,38 @@ const Login: React.FC = () => {
                         </div>
 
                         {/* Checkboxes */}
-                        <div className="space-y-3">
-                            <label className="flex items-start gap-2 cursor-pointer group">
-                                <div className="relative flex items-center mt-0.5">
+                        <div className="space-y-4 pt-1">
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                                <div className="relative flex items-center mt-1">
                                     <input
                                         type="checkbox"
                                         checked={marketingConsent}
                                         onChange={(e) => setMarketingConsent(e.target.checked)}
                                         className="peer sr-only"
                                     />
-                                    <div className="w-4 h-4 border border-zinc-600 rounded bg-transparent peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all"></div>
-                                    <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 left-[2px] top-[2px] pointer-events-none" />
+                                    <div className="w-4 h-4 border border-zinc-700 rounded bg-zinc-900/50 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all flex items-center justify-center">
+                                        <Check size={12} className="text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                    </div>
                                 </div>
-                                <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors leading-tight">
+                                <span className="text-[11px] text-zinc-500 group-hover:text-zinc-400 transition-colors leading-relaxed">
                                     {t('auth.marketingConsent')}
+                                </span>
+                            </label>
+
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                                <div className="relative flex items-center mt-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={feedbackConsent}
+                                        onChange={(e) => setFeedbackConsent(e.target.checked)}
+                                        className="peer sr-only"
+                                    />
+                                    <div className="w-4 h-4 border border-zinc-700 rounded bg-zinc-900/50 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all flex items-center justify-center">
+                                        <Check size={12} className="text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                    </div>
+                                </div>
+                                <span className="text-[11px] text-zinc-500 group-hover:text-zinc-400 transition-colors leading-relaxed">
+                                    {t('auth.feedbackConsent')}
                                 </span>
                             </label>
                         </div>

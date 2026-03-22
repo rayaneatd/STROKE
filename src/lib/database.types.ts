@@ -357,6 +357,8 @@ export type Database = {
                     work_email: string | null
                     work_mails: Json | null
                     is_owner: boolean | null
+                    marketing_consent: boolean | null
+                    feedback_consent: boolean | null
                 }
                 Insert: {
                     avatar_url?: string | null
@@ -377,6 +379,8 @@ export type Database = {
                     work_email?: string | null
                     work_mails?: Json | null
                     is_owner?: boolean | null
+                    marketing_consent?: boolean | null
+                    feedback_consent?: boolean | null
                 }
                 Update: {
                     avatar_url?: string | null
@@ -397,6 +401,8 @@ export type Database = {
                     work_email?: string | null
                     work_mails?: Json | null
                     is_owner?: boolean | null
+                    marketing_consent?: boolean | null
+                    feedback_consent?: boolean | null
                 }
                 Relationships: []
             }

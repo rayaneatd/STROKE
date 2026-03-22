@@ -75,7 +75,9 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 primaryEmail,
                 workEmail,
                 workMails,
-                isOwner
+                isOwner,
+                marketingConsent: profile.marketing_consent || false,
+                feedbackConsent: profile.feedback_consent || false
             } as unknown as User & { company?: string, industry?: string };
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
@@ -171,10 +173,10 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                     ...(user?.preferences || {}),
                     company: newData.company,
                     industry: newData.industry
-                },
+                } as any,
                 p_company: newData.company,
                 p_industry: newData.industry
-            });
+            } as any);
 
             if (error) throw error;
             setAvatarFile(null); // Clear file after success
@@ -185,6 +187,44 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         },
         onError: () => {
             setMessage({ type: 'error', text: t('profile.errors.updateFailed') });
+        }
+    });
+
+    const updateConsentMutation = useMutation({
+        mutationFn: async ({ marketing, feedback }: { marketing?: boolean, feedback?: boolean }) => {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) throw new Error(t('profile.errors.notAuthenticated'));
+
+            const updates: any = {};
+            if (marketing !== undefined) updates.marketing_consent = marketing;
+            if (feedback !== undefined) updates.feedback_consent = feedback;
+
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', authUser.id);
+
+            if (error) throw error;
+        },
+        onMutate: async ({ marketing, feedback }) => {
+            // Optimistic update
+            await queryClient.cancelQueries({ queryKey: ['profile'] });
+            const previousUser = queryClient.getQueryData(['profile']);
+            queryClient.setQueryData(['profile'], (old: any) => ({
+                ...old,
+                ...(marketing !== undefined ? { marketingConsent: marketing } : {}),
+                ...(feedback !== undefined ? { feedbackConsent: feedback } : {})
+            }));
+            return { previousUser };
+        },
+        onError: (err, variables, context) => {
+            if (context?.previousUser) {
+                queryClient.setQueryData(['profile'], context.previousUser);
+            }
+            setMessage({ type: 'error', text: t('profile.errors.updateFailed') });
+        },
+        onSuccess: () => {
+            // Silent success for real-time toggles
         }
     });
 
@@ -248,8 +288,8 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
             }
 
             // 3. Validate Existence
-            const { data: exists, error: checkError } = await supabase.rpc('check_email_availability', { 
-                email_to_check: email 
+            const { data: exists, error: checkError } = await supabase.rpc('check_email_availability' as any, {
+                email_to_check: email
             });
 
             if (checkError) throw checkError;
@@ -259,7 +299,7 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
 
             // 4. Update Auth Email (Triggers Verification & Sync)
             const { error } = await supabase.auth.updateUser({ email });
-            
+
             if (error) throw error;
 
             await queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -355,6 +395,9 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
         workEmailError,
         workEmailSuccess,
         handleRemoveWorkMail,
-        handleConnectAurinko
+        handleConnectAurinko,
+        handleToggleMarketing: (val: boolean) => updateConsentMutation.mutate({ marketing: val }),
+        handleToggleFeedback: (val: boolean) => updateConsentMutation.mutate({ feedback: val }),
+        isUpdatingConsent: updateConsentMutation.isPending
     };
 };
