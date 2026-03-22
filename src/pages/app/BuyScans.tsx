@@ -105,58 +105,69 @@ const BuyScans: React.FC<BuyScansProps> = ({ onBack, onBuy, currentBalance }) =>
                                 <Clock size={16} className="text-blue-400" /> Scan History
                             </h3>
                         </div>
-                        <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                        <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
                             {user?.scansBalanceDetail && user.scansBalanceDetail.length > 0 ? (
                                 <div className="divide-y divide-inherit">
-                                    {[...user.scansBalanceDetail].reverse().map((slot, i) => (
-                                        <div key={i} className="p-4 hover:bg-white/5 transition-colors">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <span className={`text-sm font-bold ${headerText}`}>+{slot.count} Scans</span>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/10 text-zinc-400'}`}>
-                                                    {slot.source.toUpperCase()}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className={`text-[10px] ${subText}`}>
-                                                    {new Date(slot.added_at).toLocaleDateString()}
-                                                </span>
-                                                {slot.price > 0 && (
-                                                    <span className={`text-[10px] font-medium text-emerald-400`}>${slot.price}</span>
-                                                )}
-                                            </div>
-                                            {slot.expires_at && (
-                                                <div className="mt-2 text-[10px] flex items-center gap-1 text-amber-500 font-medium">
-                                                    Expires: {new Date(slot.expires_at).toLocaleDateString()}
+                                    {[...user.scansBalanceDetail].reverse().map((slot, i) => {
+                                        const now = new Date();
+                                        const expiryDate = slot.expires_at ? new Date(slot.expires_at) : null;
+                                        const isExpired = expiryDate && expiryDate < now;
+                                        const isPermanent = !expiryDate;
+                                        const isSoonExpiring = expiryDate && !isExpired && (expiryDate.getTime() - now.getTime()) < (7 * 24 * 60 * 60 * 1000); // 7 days
+
+                                        return (
+                                            <div key={i} className={`p-4 transition-colors ${isExpired ? 'opacity-50 grayscale' : 'hover:bg-white/5'}`}>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <div className={`text-sm font-black ${isExpired ? 'text-slate-500 line-through' : headerText}`}>
+                                                            {slot.count} Scans
+                                                        </div>
+                                                        <div className={`text-[10px] uppercase tracking-tighter font-bold ${subText}`}>
+                                                            {slot.source}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        {isExpired ? (
+                                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-500 font-bold uppercase">Expired</span>
+                                                        ) : isPermanent ? (
+                                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold uppercase">Permanent</span>
+                                                        ) : isSoonExpiring ? (
+                                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold uppercase">Expiring Soon</span>
+                                                        ) : (
+                                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-bold uppercase">Active</span>
+                                                        )}
+                                                        {slot.price > 0 && (
+                                                            <span className="text-[10px] font-bold text-emerald-400/80">${slot.price}</span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
+
+                                                <div className="flex justify-between items-center mt-3">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Added on</span>
+                                                        <span className={`text-[10px] font-medium ${subText}`}>{new Date(slot.added_at).toLocaleDateString()}</span>
+                                                    </div>
+                                                    {expiryDate && (
+                                                        <div className="flex flex-col items-end text-right">
+                                                            <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-bold">Valid until</span>
+                                                            <span className={`text-[10px] font-medium ${isExpired ? 'text-red-400' : isSoonExpiring ? 'text-amber-400' : subText}`}>
+                                                                {expiryDate.toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className={`p-10 text-center ${subText} text-xs italic`}>
-                                    No transaction history found.
+                                    No scan packs found in your wallet.
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Polar.sh Integration Placeholder */}
-                    <div className={`p-8 rounded-3xl border bg-gradient-to-br ${isLight ? 'from-blue-50 to-indigo-50 border-blue-100' : 'from-blue-500/10 to-indigo-500/5 border-blue-500/20'}`}>
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-blue-500 rounded-lg shadow-lg shadow-blue-500/20">
-                                <ShieldCheck size={20} className="text-white" />
-                            </div>
-                            <h4 className={`font-bold ${headerText}`}>Polar.sh Billing</h4>
-                        </div>
-                        <p className={`text-xs mb-6 leading-relaxed ${subText}`}>
-                            Our billing is currently being migrated to the Polar.sh ecosystem for better global management, open-source support, and detailed invoicing.
-                        </p>
-                        <div className="pt-4 border-t border-inherit">
-                            <button className={`w-full py-3 rounded-xl text-xs font-bold border flex items-center justify-center gap-2 transition-all ${isLight ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}>
-                                Manage Subscription <ExternalLink size={12} />
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

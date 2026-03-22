@@ -140,16 +140,24 @@ const ScanPackageCard: React.FC<ScanPackageCardProps> = ({ pkg, onBuy, isLoading
                         <label className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Quantity</label>
                         <span className={`text-xs font-bold ${theme.accent}`}>{totalScans} Total Scans</span>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <input
-                            type="range"
-                            min="1"
-                            max="20"
-                            value={quantity}
-                            onChange={(e) => setQuantity(parseInt(e.target.value))}
-                            className={`flex-1 h-1.5 rounded-lg appearance-none cursor-pointer ${isLight ? 'bg-slate-200' : 'bg-white/10'}`}
-                        />
-                        <div className={`min-w-[40px] text-center font-black ${theme.title}`}>{quantity}</div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setQuantity(Math.max(1, quantity - 1)); }}
+                            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50' : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:border-white/20'}`}
+                            disabled={quantity <= 1}
+                        >
+                            <span className="text-xl font-bold">-</span>
+                        </button>
+                        <div className={`flex-1 flex flex-col items-center justify-center p-2 rounded-xl border shadow-inner ${isLight ? 'bg-white border-slate-100' : 'bg-black/20 border-white/5'}`}>
+                            <span className={`text-lg font-black leading-none ${theme.title}`}>{quantity}</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-tighter mt-1 opacity-50`}>Units</span>
+                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setQuantity(Math.min(50, quantity + 1)); }}
+                            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50' : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:border-white/20'}`}
+                        >
+                            <span className="text-xl font-bold">+</span>
+                        </button>
                     </div>
                 </div>
 
@@ -161,10 +169,6 @@ const ScanPackageCard: React.FC<ScanPackageCardProps> = ({ pkg, onBuy, isLoading
                     {isLoading ? 'Processing...' : `Purchase ${totalScans} Scans`}
                 </button>
 
-                {/* Future polar.sh integration placeholder */}
-                <div className="mt-4 text-[10px] text-center opacity-40 hover:opacity-100 transition-opacity">
-                    Powered by <span className="font-bold">polar.sh</span> payment infrastructure
-                </div>
             </div>
         </div>
     );
