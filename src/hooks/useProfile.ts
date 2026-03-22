@@ -61,7 +61,15 @@ export const useProfile = ({ user: initialUser, onUpdateUser, onNavigate }: UseP
                 avatarUrl: profile.avatar_url || authUser.user_metadata?.avatar_url || '',
                 role: profile.role as Role || Role.USER,
                 subscriptionPlan: profile.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
-                scansBalance: profile.scans_balance || 0,
+                scansBalance: Array.isArray(profile.scans_balance)
+                    ? (profile.scans_balance as any[]).reduce((acc, slot) => {
+                        if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                            return acc + (slot.count || 0);
+                        }
+                        return acc;
+                    }, 0)
+                    : 0,
+                scansBalanceDetail: (Array.isArray(profile.scans_balance) ? profile.scans_balance : []) as any[],
                 purchasedScans: profile.purchased_scans || 0,
                 billingType: profile.billing_type as BillingType || BillingType.PREPAID,
                 overageCap: 0,

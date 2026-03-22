@@ -63,7 +63,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     avatarUrl: data.avatar_url || authUser.user_metadata?.avatar_url || '',
                     role: data.role as Role || Role.USER,
                     subscriptionPlan: data.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
-                    scansBalance: data.scans_balance || 0,
+                    scansBalanceDetail: (Array.isArray(data.scans_balance) ? data.scans_balance : []) as unknown as any[],
+                    scansBalance: Array.isArray(data.scans_balance)
+                        ? (data.scans_balance as any[]).reduce((acc, slot) => {
+                            // Only sum if not expired
+                            if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                                return acc + (slot.count || 0);
+                            }
+                            return acc;
+                        }, 0)
+                        : 0,
                     purchasedScans: data.purchased_scans || 0,
                     billingType: data.billing_type as BillingType || BillingType.PREPAID,
                     overageCap: data.overage_cap || 0,
@@ -99,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             role: Role.USER,
             subscriptionPlan: SubscriptionPlan.FREE,
             scansBalance: 0,
+            scansBalanceDetail: [],
             purchasedScans: 0,
             billingType: BillingType.PREPAID,
             overageCap: 0,
@@ -204,7 +214,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                 return {
                                     ...prev,
                                     // Update fields that might have changed
-                                    scansBalance: newRecord.scans_balance ?? prev.scansBalance,
+                                    scansBalanceDetail: Array.isArray(newRecord.scans_balance) ? newRecord.scans_balance : prev.scansBalanceDetail,
+                                    scansBalance: Array.isArray(newRecord.scans_balance)
+                                        ? (newRecord.scans_balance as any[]).reduce((acc, slot) => {
+                                            if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                                                return acc + (slot.count || 0);
+                                            }
+                                            return acc;
+                                        }, 0)
+                                        : prev.scansBalance,
                                     subscriptionPlan: newRecord.subscription_plan ?? prev.subscriptionPlan,
                                     billingType: newRecord.billing_type ?? prev.billingType,
                                     purchasedScans: newRecord.purchased_scans ?? prev.purchasedScans,
@@ -252,8 +270,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (data.displayName !== undefined) dbData.display_name = data.displayName;
                 if (data.avatarUrl !== undefined) dbData.avatar_url = data.avatarUrl;
                 if (data.preferences !== undefined) dbData.preferences = data.preferences as unknown as Json;
-                if (data.scansBalance !== undefined) dbData.scans_balance = data.scansBalance;
-                if (data.subscriptionPlan !== undefined) dbData.subscription_plan = data.subscriptionPlan;
+                // scans_balance is now JSONB managed by RPCs
                 if (data.company !== undefined) dbData.company = data.company;
                 if (data.industry !== undefined) dbData.industry = data.industry;
                 if (data.overageCap !== undefined && data.overageCap !== 'UNLIMITED') dbData.overage_cap = data.overageCap;

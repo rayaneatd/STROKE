@@ -351,7 +351,7 @@ export type Database = {
                     primary_email: string | null
                     purchased_scans: number | null
                     role: string | null
-                    scans_balance: number | null
+                    scans_balance: Json | null
                     signup_date: string | null
                     subscription_plan: string | null
                     work_email: string | null
@@ -373,7 +373,7 @@ export type Database = {
                     primary_email?: string | null
                     purchased_scans?: number | null
                     role?: string | null
-                    scans_balance?: number | null
+                    scans_balance?: Json | null
                     signup_date?: string | null
                     subscription_plan?: string | null
                     work_email?: string | null
@@ -395,7 +395,7 @@ export type Database = {
                     primary_email?: string | null
                     purchased_scans?: number | null
                     role?: string | null
-                    scans_balance?: number | null
+                    scans_balance?: Json | null
                     signup_date?: string | null
                     subscription_plan?: string | null
                     work_email?: string | null
@@ -678,7 +678,7 @@ export type Database = {
                     preferences: Json | null
                     purchased_scans: number | null
                     role: string | null
-                    scans_balance: number | null
+                    scans_balance: Json | null
                     signup_date: string | null
                     subscription_plan: string | null
                 }[]

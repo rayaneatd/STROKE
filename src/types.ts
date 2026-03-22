@@ -127,6 +127,13 @@ export interface EmailIntegration {
   addedAt: string;
 }
 
+
+export interface ScanSlot {
+  count: number;
+  expires_at: string | null;
+  source: string;
+}
+
 export interface User {
   id: UserId;
   email: string;
@@ -137,8 +144,10 @@ export interface User {
   industry?: string;
   role: Role;
   subscriptionPlan: SubscriptionPlan;
-  scansBalance: number;
+  scansBalance: number; // Keep as number for total, but add the array details if needed
+  scansBalanceDetail: ScanSlot[];
   purchasedScans: number;
+
   billingType: BillingType;
   overageCap: number | 'UNLIMITED';
   preferences?: UserPreferences;
