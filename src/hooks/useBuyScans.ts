@@ -20,14 +20,15 @@ export const useBuyScans = ({ onBack, onBuy }: UseBuyScansProps) => {
         setPackages(getScanPackages() as ScanPackage[]);
     }, []);
 
-    const handlePurchase = async (amount: number) => {
+    const handlePurchase = async (amount: number, price: number = 0) => {
         if (!user) return;
-        
+
         setIsProcessing(true);
         try {
-            const { data, error } = await supabase.rpc('purchase_credits', {
+            const { data, error } = await supabase.rpc('purchase_scans', {
                 p_user_id: user.id,
-                p_amount: amount
+                p_amount: amount,
+                p_price: price
             });
 
             if (error) throw error;
@@ -42,7 +43,7 @@ export const useBuyScans = ({ onBack, onBuy }: UseBuyScansProps) => {
             if (refreshUser) {
                 await refreshUser();
             }
-            
+
             onBack();
         } catch (err) {
             console.error('Purchase error:', err);
@@ -57,6 +58,7 @@ export const useBuyScans = ({ onBack, onBuy }: UseBuyScansProps) => {
         styles,
         isProcessing,
         packages,
-        handlePurchase
+        handlePurchase,
+        user
     };
 };

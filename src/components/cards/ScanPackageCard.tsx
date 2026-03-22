@@ -15,7 +15,7 @@ export interface ScanPackage {
 
 interface ScanPackageCardProps {
     pkg: ScanPackage;
-    onBuy: (amount: number) => void;
+    onBuy: (amount: number, price: number) => void;
     isLoading?: boolean;
 }
 
@@ -90,11 +90,15 @@ const ScanPackageCard: React.FC<ScanPackageCardProps> = ({ pkg, onBuy, isLoading
         }
     };
 
+    const [quantity, setQuantity] = React.useState(1);
     const theme = getThemeClasses();
     const cardBg = isLight ? 'bg-white' : 'bg-[#0e0e10]';
-    const popularBadgeBg = isLight 
-        ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white border-white shadow-md' 
+    const popularBadgeBg = isLight
+        ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white border-white shadow-md'
         : 'bg-gradient-to-r from-pink-600 to-rose-600 text-white border-white/10';
+
+    const totalPrice = (pkg.price * quantity).toFixed(2);
+    const totalScans = pkg.scans * quantity;
 
     return (
         <div className={`relative flex flex-col ${cardBg} rounded-3xl border transition-all duration-300 hover:shadow-2xl hover:border-opacity-50 hover:-translate-y-1 ${theme.border} ${pkg.isPopular ? 'shadow-lg scale-105 z-10' : 'shadow-sm'}`}>
@@ -110,16 +114,16 @@ const ScanPackageCard: React.FC<ScanPackageCardProps> = ({ pkg, onBuy, isLoading
                         <Zap size={24} className="fill-current" />
                     </div>
                     <div className="text-right">
-                        <span className={`block text-2xl font-black ${theme.price}`}>${pkg.price}</span>
+                        <span className={`block text-2xl font-black ${theme.price}`}>${totalPrice}</span>
                         <span className={`text-xs font-medium ${isLight ? 'text-slate-500' : 'text-zinc-500'}`}>One-time payment</span>
                     </div>
                 </div>
                 <h3 className={`text-xl font-bold ${theme.title}`}>{pkg.name}</h3>
-                <p className={`text-sm font-bold ${theme.accent} mt-1`}>{pkg.scans} Scans</p>
+                <p className={`text-sm font-bold ${theme.accent} mt-1`}>{pkg.scans} Scans per unit</p>
             </div>
 
             <div className="p-6 flex-1 flex flex-col">
-                <ul className="space-y-3 mb-8 flex-1">
+                <ul className="space-y-3 mb-6 flex-1">
                     {pkg.features.map((feat, i) => (
                         <li key={i} className={`flex items-start gap-3 text-sm ${isLight ? 'text-slate-600' : 'text-zinc-400'}`}>
                             <div className={`mt-0.5 p-0.5 rounded-full ${theme.iconBg}`}>
@@ -130,13 +134,37 @@ const ScanPackageCard: React.FC<ScanPackageCardProps> = ({ pkg, onBuy, isLoading
                     ))}
                 </ul>
 
+                {/* Bulk Selector */}
+                <div className={`mb-6 p-4 rounded-2xl border ${isLight ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/5'}`}>
+                    <div className="flex justify-between items-center mb-2">
+                        <label className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Quantity</label>
+                        <span className={`text-xs font-bold ${theme.accent}`}>{totalScans} Total Scans</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="range"
+                            min="1"
+                            max="20"
+                            value={quantity}
+                            onChange={(e) => setQuantity(parseInt(e.target.value))}
+                            className={`flex-1 h-1.5 rounded-lg appearance-none cursor-pointer ${isLight ? 'bg-slate-200' : 'bg-white/10'}`}
+                        />
+                        <div className={`min-w-[40px] text-center font-black ${theme.title}`}>{quantity}</div>
+                    </div>
+                </div>
+
                 <button
-                    onClick={() => onBuy(pkg.scans)}
+                    onClick={() => onBuy(totalScans, parseFloat(totalPrice))}
                     disabled={isLoading}
                     className={`w-full py-4 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg ${theme.button}`}
                 >
-                    {isLoading ? 'Processing...' : 'Purchase Pack'}
+                    {isLoading ? 'Processing...' : `Purchase ${totalScans} Scans`}
                 </button>
+
+                {/* Future polar.sh integration placeholder */}
+                <div className="mt-4 text-[10px] text-center opacity-40 hover:opacity-100 transition-opacity">
+                    Powered by <span className="font-bold">polar.sh</span> payment infrastructure
+                </div>
             </div>
         </div>
     );

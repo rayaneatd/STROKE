@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboard';
 import { User, Role } from '../../types';
-import LowCreditsBanner from '../../components/LowCreditsBanner';
+import LowScansBanner from '../../components/LowScansBanner';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 import { DashboardSkeleton } from '../../components/SkeletonLoader';
 
@@ -139,7 +139,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
 
     return (
         <div className="space-y-8 animate-fade-in pb-12">
-            <LowCreditsBanner balance={currentUser.scansBalance} onBuy={() => onNavigate('buy-scans')} />
+            <LowScansBanner balance={currentUser.scansBalance} onBuy={() => onNavigate('buy-scans')} />
 
             {/* --- HEADER CONTROLS --- */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">

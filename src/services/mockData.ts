@@ -49,6 +49,9 @@ export const MOCK_USERS: User[] = [
             notifications: { email: true, push: true, digestFrequency: 'WEEKLY' },
             uiConfig: { theme: 'DARK', accentColor: 'blue', ambientGlow: 'blue', glassIntensity: 'MEDIUM', density: 'COMFORTABLE', reducedMotion: false }
         },
+        scansBalanceDetail: [],
+        marketingConsent: true,
+        feedbackConsent: true,
         signupDate: '2023-01-01T00:00:00Z',
         hasCompletedOnboarding: true
     },
@@ -81,6 +84,9 @@ export const MOCK_USERS: User[] = [
             notifications: { email: true, push: true, digestFrequency: 'WEEKLY' },
             uiConfig: { theme: 'LIGHT', accentColor: 'emerald', ambientGlow: 'emerald', glassIntensity: 'LOW', density: 'COMFORTABLE', reducedMotion: false }
         },
+        scansBalanceDetail: [],
+        marketingConsent: true,
+        feedbackConsent: true,
         signupDate: '2023-06-15T00:00:00Z',
         hasCompletedOnboarding: true
     }
@@ -122,26 +128,26 @@ export const MOCK_FILES: ProjectFile[] = [
     {
         id: 'f1' as FileId,
         projectId: 'p1' as ProjectId,
-        name: 'resume_alice.pdf',
+        fileName: 'resume_alice.pdf',
         size: '1.2 MB',
         status: 'COMPLETED',
         uploadedAt: '2023-10-05T10:00:00Z',
         uploadedByUserId: 'u1' as UserId,
         candidateName: 'Alice Smith',
-        score: 92,
+        matchScore: 92,
         viewedBy: [],
         exportedBy: []
     },
     {
         id: 'f2' as FileId,
         projectId: 'p1' as ProjectId,
-        name: 'resume_bob.pdf',
+        fileName: 'resume_bob.pdf',
         size: '0.8 MB',
         status: 'COMPLETED',
         uploadedAt: '2023-10-06T14:30:00Z',
         uploadedByUserId: 'u2' as UserId,
         candidateName: 'Bob Jones',
-        score: 78,
+        matchScore: 78,
         viewedBy: [],
         exportedBy: []
     }
@@ -170,6 +176,9 @@ export const register = (email: string, pass: string, name: string): User => {
         overageCap: 0,
         emailIntegrations: [],
         preferences: {} as any, // Defaults handled in component or hook
+        scansBalanceDetail: [],
+        marketingConsent: true,
+        feedbackConsent: true,
         signupDate: new Date().toISOString(),
         hasCompletedOnboarding: false
     };
@@ -376,7 +385,8 @@ export const getAdvancedDashboardAnalytics = (options: AnalyticsOptions): Dashbo
             qualifiedTrend: '+5%',
             activeProjects: MOCK_PROJECTS.filter(p => p.status === 'ACTIVE').length,
             avgTimeProcessing: '1.2s',
-            failedUploadsCount: 5
+            failedUploadsCount: 5,
+            rejectedCount: 15
         },
         teamStats: {
             admins: 2,
@@ -385,18 +395,25 @@ export const getAdvancedDashboardAnalytics = (options: AnalyticsOptions): Dashbo
             analysts: 1
         },
         timelineData: [
-            { date: 'Mon', applications: 40, avgQuality: 65 },
-            { date: 'Tue', applications: 30, avgQuality: 70 },
-            { date: 'Wed', applications: 55, avgQuality: 68 },
-            { date: 'Thu', applications: 45, avgQuality: 72 },
-            { date: 'Fri', applications: 60, avgQuality: 75 },
-            { date: 'Sat', applications: 20, avgQuality: 60 },
-            { date: 'Sun', applications: 15, avgQuality: 62 },
+            { date: 'Mon', applications: 40, avgQuality: 65, qualified: 10, failed: 2 },
+            { date: 'Tue', applications: 30, avgQuality: 70, qualified: 8, failed: 1 },
+            { date: 'Wed', applications: 55, avgQuality: 68, qualified: 15, failed: 3 },
+            { date: 'Thu', applications: 45, avgQuality: 72, qualified: 12, failed: 2 },
+            { date: 'Fri', applications: 60, avgQuality: 75, qualified: 20, failed: 1 },
+            { date: 'Sat', applications: 20, avgQuality: 60, qualified: 5, failed: 0 },
+            { date: 'Sun', applications: 15, avgQuality: 62, qualified: 3, failed: 0 },
         ],
         errorData: [
             { name: 'Format', value: 2, fill: '#ef4444' },
             { name: 'Size', value: 1, fill: '#f59e0b' },
             { name: 'Corrupt', value: 2, fill: '#64748b' }
+        ],
+        statusDistribution: [
+            { name: 'New', value: 10, fill: '#3b82f6' },
+            { name: 'Screened', value: 15, fill: '#10b981' },
+            { name: 'Interview', value: 5, fill: '#f59e0b' },
+            { name: 'Hired', value: 2, fill: '#8b5cf6' },
+            { name: 'Rejected', value: 8, fill: '#ef4444' }
         ],
         projectPerformance: MOCK_PROJECTS.map(p => ({
             id: p.id,
@@ -622,9 +639,9 @@ export const getSubscriptionPlans = (): PricingPlan[] => [
 export const updateSubscriptionPlan = (id: string, data: any) => { };
 
 export const getScanPackages = (): ScanPackageConfig[] => [
-    { id: 'pkg1', name: 'Starter Pack', scans: 50, price: 15, features: [], colorTheme: 'blue' },
-    { id: 'pkg2', name: 'Growth Pack', scans: 200, price: 50, features: [], colorTheme: 'purple', isPopular: true },
-    { id: 'pkg3', name: 'Enterprise Pack', scans: 1000, price: 200, features: [], colorTheme: 'amber' }
+    { id: 'pkg1', name: 'Starter Pack', scans: 50, price: 15, features: ['Priority AI Analysis', 'Email Support'], colorTheme: 'blue' },
+    { id: 'pkg2', name: 'Growth Pack', scans: 200, price: 50, features: ['Advanced Matching', 'Bulk Operations', 'Priority AI Analysis'], colorTheme: 'purple', isPopular: true },
+    { id: 'pkg3', name: 'Enterprise Pack', scans: 1000, price: 200, features: ['Dedicated Support', 'Custom AI Calibration', 'Everything in Growth'], colorTheme: 'amber' }
 ];
 
 export const updateScanPackage = (id: string, data: any) => { };

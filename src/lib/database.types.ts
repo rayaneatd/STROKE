@@ -765,6 +765,21 @@ export type Database = {
                 }
                 Returns: void
             }
+            deduct_scans: {
+                Args: {
+                    p_user_id: string
+                    p_amount: number
+                }
+                Returns: Json
+            }
+            purchase_scans: {
+                Args: {
+                    p_user_id: string
+                    p_amount: number
+                    p_price: number
+                }
+                Returns: Json
+            }
         }
         Enums: {
             [_ in never]: never

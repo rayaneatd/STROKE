@@ -115,8 +115,8 @@
         "noData": "No data available",
         "unknown": "Unknown",
         "featureSimulated": "Feature is simulated in this demo.",
-        "lowCredits": {
-            "title": "Low Credits Warning",
+        "lowScans": {
+            "title": "Low Scans Warning",
             "description": "You have only {{count}} scans remaining. Top up now to avoid interruption.",
             "action": "Buy Scans"
         }
@@ -299,7 +299,7 @@
                 "description": "Work continues seamlessly. Negative balance (overage) is tracked via Polar.sh and billed automatically at the end of the cycle."
             },
             "overage": {
-                "title": "Credit Limit (Safety Cap)",
+                "title": "Scan Limit (Safety Cap)",
                 "unlimited": "Unlimited",
                 "unlimitedDesc": "You will be billed for all usage at the end of the billing cycle without interruption.",
                 "limitedDesc": "Scanning will automatically stop if your balance reaches -{{cap}} scans."

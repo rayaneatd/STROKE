@@ -8,14 +8,14 @@ interface ProjectBudgetBannerProps {
     project: Project;
     ownerBalance: number;
     onFundProject: () => void;
-    onBuyCredits: () => void;
+    onBuyScans: () => void;
 }
 
-const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({ 
-    project, 
-    ownerBalance, 
+const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
+    project,
+    ownerBalance,
     onFundProject,
-    onBuyCredits
+    onBuyScans
 }) => {
     const { t } = useTranslation();
 
@@ -24,16 +24,16 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
 
     const currentBudget = project.investmentBalance;
     const totalInvested = project.totalInvested || project.investmentBalance || 1; // Fallback to avoid div by zero
-    
+
     // Calculate percentage remaining
     const percentRemaining = (currentBudget / totalInvested) * 100;
 
-    const averageFundingEstimate = Math.max(50, totalInvested * 0.2); 
-    const ownerHasLowCredits = ownerBalance < averageFundingEstimate;
+    const averageFundingEstimate = Math.max(50, totalInvested * 0.2);
+    const ownerHasLowScans = ownerBalance < averageFundingEstimate;
     const ownerHasCredits = ownerBalance > 0;
 
     // Condition 2: Critical (15-20%) AND Owner Low Credits
-    if (percentRemaining <= 20 && ownerHasLowCredits) {
+    if (percentRemaining <= 20 && ownerHasLowScans) {
         return (
             <div className="bg-red-500/10 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm mb-6 animate-fade-in flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-y border-r border-red-500/20">
                 <div className="flex items-start gap-3">
@@ -52,13 +52,13 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
                     </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                    <button 
-                        onClick={onBuyCredits}
+                    <button
+                        onClick={onBuyScans}
                         className="px-4 py-2 bg-white/5 text-red-300 text-xs font-bold border border-red-500/30 hover:bg-red-500/20 rounded-lg transition-colors flex items-center gap-1 shadow-sm"
                     >
-                        <Zap size={14} className="fill-current"/> {t('projectBudget.critical.buyCredits')}
+                        <Zap size={14} className="fill-current" /> {t('projectBudget.critical.buyScans')}
                     </button>
-                    <button 
+                    <button
                         onClick={onFundProject}
                         className="px-4 py-2 bg-red-600 text-white text-xs font-bold hover:bg-red-700 rounded-lg transition-colors shadow-lg shadow-red-900/20 flex items-center gap-1"
                     >
@@ -88,7 +88,7 @@ const ProjectBudgetBanner: React.FC<ProjectBudgetBannerProps> = ({
                         </p>
                     </div>
                 </div>
-                <button 
+                <button
                     onClick={onFundProject}
                     className="px-5 py-2.5 bg-amber-500 text-black text-xs font-bold hover:bg-amber-400 rounded-lg transition-colors shadow-lg shadow-amber-500/10 flex items-center gap-2 shrink-0"
                 >

@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
       <div className="flex items-center justify-end gap-4 z-10 w-48">
         <div className={`flex items-center gap-1 pl-1 pr-1 py-1 rounded-full border transition-all shadow-sm group hover:border-opacity-50 ${isLight ? 'bg-white border-slate-200/80 shadow-slate-100' : 'bg-[#0e0e10] border-white/10'} ${user.scansBalance < 10 ? 'border-red-500/50' : ''}`}>
           <div className="px-3 py-1 flex items-baseline gap-2">
-            <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${isLight ? 'text-slate-400 group-hover:text-slate-600' : 'text-zinc-500 group-hover:text-zinc-400'}`}>Credits</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${isLight ? 'text-slate-400 group-hover:text-slate-600' : 'text-zinc-500 group-hover:text-zinc-400'}`}>Scans</span>
             <span className={`font-mono text-sm font-bold ${user.scansBalance < 10 ? 'text-red-500' : isLight ? 'text-slate-800' : 'text-white'}`}>
               {user.scansBalance.toLocaleString()}
             </span>
@@ -99,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({ user, onBuyScans, onUpgradePlan, uiConf
           <button
             onClick={onBuyScans}
             className={`w-7 h-7 rounded-full flex items-center justify-center text-white shadow-lg transition-all hover:scale-105 active:scale-95 bg-${accentColor}-600 hover:bg-${accentColor}-500 shadow-${accentColor}-900/20`}
-            title="Top up credits"
+            title="Top up scans"
           >
             <Plus size={14} strokeWidth={3} />
           </button>

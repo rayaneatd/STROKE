@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useProjects } from '../../hooks/useProjects';
 import { Project, User, ProjectRole } from '../../types';
-import LowCreditsBanner from '../../components/LowCreditsBanner';
+import LowScansBanner from '../../components/LowScansBanner';
 import { useTranslation } from 'react-i18next'; // Import useTranslation
 
 // Modals
@@ -369,7 +369,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
 
     return (
         <div className="space-y-6 animate-fade-in relative">
-            <LowCreditsBanner balance={currentUser.scansBalance} onBuy={() => onNavigate('buy-scans')} />
+            <LowScansBanner balance={currentUser.scansBalance} onBuy={() => onNavigate('buy-scans')} />
 
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>

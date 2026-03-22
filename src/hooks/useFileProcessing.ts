@@ -331,10 +331,9 @@ export const useFileProcessing = (
             // Callback for credit deduction per chunk
             async (count) => {
                 try {
-                    const { data, error } = await supabase.rpc('deduct_scan_credits' as any, {
-                        p_project_id: projectId,
+                    const { data, error } = await supabase.rpc('deduct_scans' as any, {
                         p_user_id: currentUser.id,
-                        p_cost: count
+                        p_amount: count
                     });
 
                     if (error) {

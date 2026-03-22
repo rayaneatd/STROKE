@@ -132,6 +132,8 @@ export interface ScanSlot {
   count: number;
   expires_at: string | null;
   source: string;
+  added_at: string;
+  price: number;
 }
 
 export interface User {
@@ -254,6 +256,7 @@ export interface Project {
 export interface ProjectFile {
   id: FileId;
   projectId: ProjectId;
+  fileName: string;
   candidateName: string;
   size: string;
   status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'SCANNING' | 'new' | 'screened' | 'interview' | 'rejected' | 'hired';
