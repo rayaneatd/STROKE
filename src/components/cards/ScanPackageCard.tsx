@@ -90,7 +90,8 @@ const ScanPackageCard: React.FC<ScanPackageCardProps> = ({ pkg, onBuy, isLoading
         }
     };
 
-    const [quantity, setQuantity] = React.useState(1);
+    const [quantityInput, setQuantityInput] = React.useState<string | number>(1);
+    const quantity = typeof quantityInput === 'number' ? quantityInput : parseInt(quantityInput as string) || 1;
     const theme = getThemeClasses();
     const cardBg = isLight ? 'bg-white' : 'bg-[#0e0e10]';
     const popularBadgeBg = isLight
@@ -134,29 +135,51 @@ const ScanPackageCard: React.FC<ScanPackageCardProps> = ({ pkg, onBuy, isLoading
                     ))}
                 </ul>
 
-                {/* Bulk Selector */}
-                <div className={`mb-6 p-4 rounded-2xl border ${isLight ? 'bg-slate-50 border-slate-100' : 'bg-white/5 border-white/5'}`}>
-                    <div className="flex justify-between items-center mb-2">
-                        <label className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Quantity</label>
-                        <span className={`text-xs font-bold ${theme.accent}`}>{totalScans} Total Scans</span>
+                {/* Premium Bulk Selector */}
+                <div className="mb-6">
+                    <div className="flex justify-between items-end mb-2">
+                        <label className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>Units</label>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${theme.iconBg}`}>{totalScans} Total Scans</span>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className={`flex items-center justify-between p-1.5 rounded-2xl border transition-all ${isLight ? 'bg-slate-50 border-slate-200 group-hover:bg-slate-100/50' : 'bg-black/20 border-white/5'} hover:border-opacity-100`}>
                         <button
-                            onClick={(e) => { e.stopPropagation(); setQuantity(Math.max(1, quantity - 1)); }}
-                            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50' : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:border-white/20'}`}
+                            onClick={(e) => { e.stopPropagation(); setQuantityInput(Math.max(1, quantity - 1)); }}
+                            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${isLight ? 'text-slate-400 hover:text-slate-800 hover:bg-white hover:shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/10'}`}
                             disabled={quantity <= 1}
                         >
-                            <span className="text-xl font-bold">-</span>
+                            <span className="text-2xl font-light leading-none mb-1">-</span>
                         </button>
-                        <div className={`flex-1 flex flex-col items-center justify-center p-2 rounded-xl border shadow-inner ${isLight ? 'bg-white border-slate-100' : 'bg-black/20 border-white/5'}`}>
-                            <span className={`text-lg font-black leading-none ${theme.title}`}>{quantity}</span>
-                            <span className={`text-[10px] font-bold uppercase tracking-tighter mt-1 opacity-50`}>Units</span>
+
+                        <div className="flex-1 flex justify-center">
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={quantityInput}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === '') {
+                                        setQuantityInput('');
+                                        return;
+                                    }
+                                    const num = parseInt(val);
+                                    if (!isNaN(num)) {
+                                        setQuantityInput(Math.min(9999, num));
+                                    }
+                                }}
+                                onBlur={() => {
+                                    if (quantityInput === '' || quantity < 1) setQuantityInput(1);
+                                }}
+                                className={`w-full text-center text-3xl font-black bg-transparent outline-none ${theme.title}`}
+                                placeholder="1"
+                            />
                         </div>
+
                         <button
-                            onClick={(e) => { e.stopPropagation(); setQuantity(Math.min(50, quantity + 1)); }}
-                            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${isLight ? 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50' : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:border-white/20'}`}
+                            onClick={(e) => { e.stopPropagation(); setQuantityInput(Math.min(9999, quantity + 1)); }}
+                            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 ${isLight ? 'text-slate-400 hover:text-slate-800 hover:bg-white hover:shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/10'}`}
                         >
-                            <span className="text-xl font-bold">+</span>
+                            <span className="text-2xl font-light leading-none mb-1">+</span>
                         </button>
                     </div>
                 </div>
