@@ -489,7 +489,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
           </div>
           <div className="flex-1">
             <textarea
-              className={`w-full h-full min-h-[300px] ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.highlight} rounded-xl p-4 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none ${isEmailSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full h-full min-h-[300px] ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.highlight} rounded-xl p-4 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none custom-scrollbar ${isEmailSent ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder={t('candidateDrawer.email.draftPlaceholder')}
               value={draft}
               onChange={handleDraftChange}
