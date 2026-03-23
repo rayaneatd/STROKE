@@ -331,9 +331,11 @@ export const useFileProcessing = (
             // Callback for credit deduction per chunk
             async (count) => {
                 try {
-                    const { data, error } = await supabase.rpc('deduct_scans' as any, {
+                    // Use the new project-aware deduction RPC
+                    const { data, error } = await supabase.rpc('deduct_scan_credits' as any, {
+                        p_project_id: projectId,
                         p_user_id: currentUser.id,
-                        p_amount: count
+                        p_cost: count
                     });
 
                     if (error) {
@@ -341,7 +343,7 @@ export const useFileProcessing = (
                         return false;
                     }
 
-                    const result = data as { success: boolean; error?: string };
+                    const result = data as unknown as { success: boolean; error?: string };
                     if (!result.success) {
                         console.error('Credit deduction denied:', result.error);
                         return false;
