@@ -46,9 +46,19 @@ export const useEditProjectModal = ({
 
     const [error, setError] = useState<string | null>(null);
 
+    // 1. Reset Tab ONLY when the modal first opens
     useEffect(() => {
         if (isOpen) {
+            setActiveTab('GENERAL');
             setError(null);
+            setFundAmount('');
+            setFundMessage(null);
+        }
+    }, [isOpen]);
+
+    // 2. Sync Form Data when project/user changes, but don't reset the tab
+    useEffect(() => {
+        if (isOpen) {
             if (project) {
                 // EDIT MODE: Load existing data
                 setFormData({
@@ -66,7 +76,7 @@ export const useEditProjectModal = ({
                 setFormData({
                     title: '',
                     description: '',
-                    ownerId: currentUser.id, // Explicitly set owner for new project
+                    ownerId: currentUser.id,
                     status: 'ACTIVE',
                     investmentBalance: currentUser.preferences?.defaultInvestmentBudget || 0,
                     settings: {
@@ -96,11 +106,6 @@ export const useEditProjectModal = ({
                     }]
                 });
             }
-
-            // Reset temporary states
-            setFundAmount('');
-            setFundMessage(null);
-            setActiveTab('GENERAL');
         }
     }, [isOpen, project, currentUser.preferences, currentUser.id]);
 
@@ -152,7 +157,7 @@ export const useEditProjectModal = ({
                 // We should ensure onSave doesn't overwrite the work done by RPC if it's concurrent, 
                 // but since we await RPC first, onSave (which uses supabase update) will just overwrite settings with same values.
                 // Ideally, onSave should be refactored to use this RPC or we just use this RPC for settings.
-                
+
                 // For now, to meet the requirement "make sure changes reflect on existing members", the RPC is critical.
                 // We will call onSave as normal to handle the rest of the flow (UI update, toast, etc.)
                 onSave(e, formData);
@@ -184,14 +189,14 @@ export const useEditProjectModal = ({
                 await withdrawProjectFunds({ amount });
                 setFundMessage({ type: 'success', text: t('modal.billing.withdrawSuccess') });
             }
-            
+
             setFundAmount('');
             // Refresh data in parent component will happen automatically via query invalidation
             // But we need to update local form data if we are showing it
             setFormData(prev => ({
                 ...prev,
-                investmentBalance: action === 'DEPOSIT' 
-                    ? (prev.investmentBalance || 0) + amount 
+                investmentBalance: action === 'DEPOSIT'
+                    ? (prev.investmentBalance || 0) + amount
                     : (prev.investmentBalance || 0) - amount
             }));
 
