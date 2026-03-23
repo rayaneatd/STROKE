@@ -202,11 +202,22 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await supabase.from('projects').delete().eq('id', id);
+            const { data, error } = await supabase.rpc('delete_project_safely' as any, {
+                p_project_id: id
+            });
             if (error) throw error;
+            const result = data as unknown as { success: boolean; new_user_balance?: number; error?: string; refunded_amount?: number };
+            if (!result.success) throw new Error(result.error || 'Failed to delete project');
+            return result;
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+
+            if (onUpdateUser && data.new_user_balance !== undefined) {
+                onUpdateUser({ scansBalance: data.new_user_balance }, true);
+            }
+
             setProjectToDelete(null);
         }
     });
