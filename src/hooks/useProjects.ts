@@ -202,6 +202,18 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
+            // 1. Cleanup Storage folder (resumes) before database deletion
+            try {
+                const { data: listData } = await supabase.storage.from('resumes').list(id);
+                if (listData && listData.length > 0) {
+                    const filesToRemove = listData.map(f => `${id}/${f.name}`);
+                    await supabase.storage.from('resumes').remove(filesToRemove);
+                }
+            } catch (err) {
+                console.warn('Storage cleanup failed, continuing with DB deletion:', err);
+            }
+
+            // 2. Database deletion via RPC (handles refunds)
             const { data, error } = await supabase.rpc('delete_project_safely' as any, {
                 p_project_id: id
             });
@@ -219,6 +231,11 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
             }
 
             setProjectToDelete(null);
+        },
+        onError: (error: any) => {
+            console.error('Project deletion failed:', error);
+            alert(t('projects.errors.deleteFailed', { error: error.message || t('common.unknown') }));
+            setProjectToDelete(null);
         }
     });
 
@@ -233,6 +250,11 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['projects'] });
+            setProjectToLeave(null);
+        },
+        onError: (error: any) => {
+            console.error('Leave project failed:', error);
+            alert(t('projects.errors.leaveFailed', { error: error.message || t('common.unknown') }));
             setProjectToLeave(null);
         }
     });
