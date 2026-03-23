@@ -33,12 +33,11 @@ export const useBuyScans = ({ onBack, onBuy }: UseBuyScansProps) => {
 
             if (error) throw error;
 
-            const result = data as { success: boolean; new_balance?: number; error?: string };
-            if (!result.success) {
-                throw new Error(result.error || 'Purchase failed');
-            }
+            // The RPC now returns the new total integer balance directly
+            const newTotalBalance = data as unknown as number;
 
             // Update local state and context
+            // onBuy(amount) is mostly for secondary side effects now
             onBuy(amount);
             if (refreshUser) {
                 await refreshUser();

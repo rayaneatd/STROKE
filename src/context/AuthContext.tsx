@@ -15,6 +15,54 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Helper to ensure a user object has consistent scan balance data
+ * handles both camelCase (frontend) and snake_case (realtime DB payload) inputs
+ */
+const normalizeUser = (input: any, current: User): User => {
+    const result = { ...current, ...input };
+
+    // Normalize snake_case keys from DB to camelCase UI keys
+    if (input.display_name) result.displayName = input.display_name;
+    if (input.avatar_url) result.avatarUrl = input.avatar_url;
+    if (input.subscription_plan) result.subscriptionPlan = input.subscription_plan;
+    if (input.billing_type) result.billingType = input.billing_type;
+    if (input.overage_cap !== undefined) result.overageCap = input.overage_cap;
+    if (input.marketing_consent !== undefined) result.marketingConsent = input.marketing_consent;
+    if (input.feedback_consent !== undefined) result.feedbackConsent = input.feedback_consent;
+
+    // Handle Scan Balance logic
+    const rawPacks = input.scans_balance || input.scansBalanceDetail;
+    if (rawPacks && Array.isArray(rawPacks)) {
+        result.scansBalanceDetail = rawPacks;
+        result.scansBalance = rawPacks.reduce((acc: number, slot: any) => {
+            const count = Number(slot.count) || 0;
+            // Only count non-expired packs
+            if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                return acc + count;
+            }
+            return acc;
+        }, 0);
+    } else if (input.scansBalance !== undefined) {
+        // If scansBalance was passed directly as an array (common mistake when passing raw DB object)
+        if (Array.isArray(input.scansBalance)) {
+            result.scansBalanceDetail = input.scansBalance;
+            result.scansBalance = input.scansBalance.reduce((acc: number, slot: any) => {
+                const count = Number(slot.count) || 0;
+                if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                    return acc + count;
+                }
+                return acc;
+            }, 0);
+        } else {
+            // It's already a number
+            result.scansBalance = Number(input.scansBalance) || 0;
+        }
+    }
+
+    return result;
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -206,40 +254,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     (payload: any) => {
                         console.log('Realtime profile update received:', payload);
 
-                        // Optimistically update local state if we have the new record
+                        // Optimistically update local state
                         const newRecord = payload.new;
                         if (newRecord && user) {
                             setUser(prev => {
                                 if (!prev) return null;
-                                return {
-                                    ...prev,
-                                    // Update fields that might have changed
-                                    scansBalanceDetail: Array.isArray(newRecord.scans_balance) ? newRecord.scans_balance : prev.scansBalanceDetail,
-                                    scansBalance: Array.isArray(newRecord.scans_balance)
-                                        ? (newRecord.scans_balance as any[]).reduce((acc, slot) => {
-                                            if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
-                                                return acc + (slot.count || 0);
-                                            }
-                                            return acc;
-                                        }, 0)
-                                        : prev.scansBalance,
-                                    subscriptionPlan: newRecord.subscription_plan ?? prev.subscriptionPlan,
-                                    billingType: newRecord.billing_type ?? prev.billingType,
-                                    purchasedScans: newRecord.purchased_scans ?? prev.purchasedScans,
-                                    overageCap: newRecord.overage_cap ?? prev.overageCap
-                                };
+                                return normalizeUser(newRecord, prev);
                             });
                         }
-
-                        fetchProfile(user.id as unknown as string, {
-                            email: user.email,
-                            user_metadata: {
-                                display_name: user.displayName,
-                                avatar_url: user.avatarUrl
-                            }
-                        }).then(updatedProfile => {
-                            if (isMounted) setUser(updatedProfile);
-                        });
                     }
                 )
                 .subscribe();
@@ -258,29 +280,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const updateUser = async (data: Partial<User>, syncWithBackend = false) => {
-        setUser((prev) => {
+        setUser(prev => {
             if (!prev) return null;
-            return { ...prev, ...data };
+            const updated = normalizeUser(data, prev);
+            return updated;
         });
 
         if (syncWithBackend && user?.id) {
-            try {
-                // Map local fields to DB fields if necessary
-                const dbData: TablesUpdate<'profiles'> = {};
-                if (data.displayName !== undefined) dbData.display_name = data.displayName;
-                if (data.avatarUrl !== undefined) dbData.avatar_url = data.avatarUrl;
-                if (data.preferences !== undefined) dbData.preferences = data.preferences as unknown as Json;
-                // scans_balance is now JSONB managed by RPCs
-                if (data.company !== undefined) dbData.company = data.company;
-                if (data.industry !== undefined) dbData.industry = data.industry;
-                if (data.overageCap !== undefined && data.overageCap !== 'UNLIMITED') dbData.overage_cap = data.overageCap;
+            // Clean data for Supabase update
+            const { scansBalance, scansBalanceDetail, email, identities, ...profileUpdates } = data as any;
 
-                await supabase
+            // Map camelCase fields to snake_case for Postgres
+            const dbUpdates: any = {};
+            if (profileUpdates.displayName !== undefined) dbUpdates.display_name = profileUpdates.displayName;
+            if (profileUpdates.avatarUrl !== undefined) dbUpdates.avatar_url = profileUpdates.avatarUrl;
+            if (profileUpdates.preferences !== undefined) dbUpdates.preferences = profileUpdates.preferences;
+            if (profileUpdates.company !== undefined) dbUpdates.company = profileUpdates.company;
+            if (profileUpdates.industry !== undefined) dbUpdates.industry = profileUpdates.industry;
+            if (profileUpdates.billingType !== undefined) dbUpdates.billing_type = profileUpdates.billingType;
+            if (profileUpdates.overageCap !== undefined) dbUpdates.overage_cap = profileUpdates.overageCap;
+            if (profileUpdates.marketingConsent !== undefined) dbUpdates.marketing_consent = profileUpdates.marketingConsent;
+            if (profileUpdates.feedbackConsent !== undefined) dbUpdates.feedback_consent = profileUpdates.feedbackConsent;
+
+            // If explicit scans update is passed (rare but possible), map to scans_balance
+            if (data.scansBalanceDetail !== undefined) dbUpdates.scans_balance = data.scansBalanceDetail;
+
+            if (Object.keys(dbUpdates).length > 0) {
+                supabase
                     .from('profiles')
-                    .update(dbData)
-                    .eq('id', user.id as unknown as string);
-            } catch (err) {
-                console.error('Failed to sync user update:', err);
+                    .update(dbUpdates)
+                    .eq('id', user.id)
+                    .then(({ error }) => {
+                        if (error) {
+                            console.error('[AuthContext] Update error:', error);
+                        }
+                    });
             }
         }
     };
