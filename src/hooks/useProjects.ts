@@ -74,7 +74,17 @@ export const useProjects = ({ currentUser, onUpdateUser, onNavigate }: UseProjec
                                     email: m.user.email,
                                     displayName: m.user.displayName || m.user.email?.split('@')[0] || 'Unknown',
                                     avatarUrl: m.user.avatarUrl,
-                                    scansBalance: m.user.scansBalance ?? m.user.scans_balance ?? 0,
+                                    scansBalanceDetail: Array.isArray(m.user.scans_balance) ? m.user.scans_balance : [],
+                                    marketingConsent: !!m.user.marketing_consent,
+                                    feedbackConsent: !!m.user.feedback_consent,
+                                    scansBalance: Array.isArray(m.user.scans_balance)
+                                        ? m.user.scans_balance.reduce((acc: number, slot: any) => {
+                                            if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                                                return acc + (slot.count || 0);
+                                            }
+                                            return acc;
+                                        }, 0)
+                                        : (m.user.scansBalance ?? m.user.scans_balance ?? 0),
                                     workMails: Array.isArray(m.user.workMails) ? m.user.workMails : [],
                                     orgNames: Array.isArray(m.user.orgNames) ? m.user.orgNames : []
                                 } : undefined

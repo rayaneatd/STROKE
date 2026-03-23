@@ -56,7 +56,17 @@ export const useAddMemberModal = ({
                             role: u.role as Role || Role.USER,
                             avatarUrl: u.avatar_url || '',
                             subscriptionPlan: u.subscription_plan as SubscriptionPlan || SubscriptionPlan.FREE,
-                            scansBalance: u.scans_balance || 0,
+                            scansBalanceDetail: Array.isArray(u.scans_balance) ? u.scans_balance : [],
+                            scansBalance: Array.isArray(u.scans_balance)
+                                ? u.scans_balance.reduce((acc: number, slot: any) => {
+                                    if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                                        return acc + (slot.count || 0);
+                                    }
+                                    return acc;
+                                }, 0)
+                                : 0,
+                            marketingConsent: !!u.marketing_consent,
+                            feedbackConsent: !!u.feedback_consent,
                             purchasedScans: u.purchased_scans || 0,
                             billingType: u.billing_type as BillingType || BillingType.PREPAID,
                             overageCap: 0,

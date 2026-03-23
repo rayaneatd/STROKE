@@ -68,7 +68,17 @@ export const useProjectDetail = ({ projectId, onBack, currentUser, onNavigate, o
                         email: m.user.email,
                         displayName: m.user.displayName || m.user.display_name || m.user.email?.split('@')[0] || '',
                         avatarUrl: m.user.avatarUrl || m.user.avatar_url,
-                        scansBalance: m.user.scansBalance ?? m.user.scans_balance ?? 0,
+                        scansBalanceDetail: Array.isArray(m.user.scans_balance) ? m.user.scans_balance : [],
+                        marketingConsent: !!(m.user.marketing_consent ?? m.user.marketingConsent),
+                        feedbackConsent: !!(m.user.feedback_consent ?? m.user.feedbackConsent),
+                        scansBalance: Array.isArray(m.user.scans_balance)
+                            ? m.user.scans_balance.reduce((acc: number, slot: any) => {
+                                if (!slot.expires_at || new Date(slot.expires_at) > new Date()) {
+                                    return acc + (slot.count || 0);
+                                }
+                                return acc;
+                            }, 0)
+                            : (m.user.scansBalance ?? m.user.scans_balance ?? 0),
                         isBanned: m.user.role === 'BANNED'
                     } : undefined
                 })) : []
