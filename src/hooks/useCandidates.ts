@@ -46,8 +46,8 @@ export const useCandidates = ({
                 },
                 (payload) => {
                     console.log('Real-time update:', payload);
-                    // Invalidate query to refetch fresh data and update rankings
-                    queryClient.invalidateQueries({ queryKey });
+                    // Invalidate all candidates queries for this project to ensure consistency across tabs/filters
+                    queryClient.invalidateQueries({ queryKey: ['candidates', projectId] });
                     // Also invalidate analytics to update counts
                     queryClient.invalidateQueries({ queryKey: ['project-analytics', projectId] });
                 }
