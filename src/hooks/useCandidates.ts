@@ -106,7 +106,8 @@ export const useCandidates = ({
                 // Elite Data Mapping
                 currentPosition: row.current_position,
                 yearsOfExperience: row.years_of_experience,
-                matchScore: row.match_score,
+                matchScore: row.recruiter_override_score != null ? row.recruiter_override_score : row.match_score,
+                isScoreOverridden: row.recruiter_override_score != null,
                 scoreBreakdown: row.score_breakdown,
                 executiveSummary: row.executive_summary,
                 keySkills: row.key_skills, // Already JSONB/Array from RPC

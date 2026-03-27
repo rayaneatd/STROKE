@@ -68,22 +68,15 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             // 2. Analytics Events for accurate historical & team data
             // 3. Top 5 candidates
 
-            const [statsResult, eventsResult, topResult, timelineResult, failureDistResult] = await Promise.all([
+            const [statsResult, eventsResult, timelineResult, failureDistResult] = await Promise.all([
                 supabase
                     .from('candidates')
-                    .select('match_score, uploaded_at, uploaded_by, email_sent_at, size, status')
+                    .select('id, candidate_name, match_score, recruiter_override_score, uploaded_at, uploaded_by, email_sent_at, size, status')
                     .eq('project_id', projectId),
                 supabase
                     .from('analytics_events')
                     .select('*')
                     .eq('project_id', projectId),
-                supabase
-                    .from('candidates')
-                    .select('id, candidate_name, match_score, uploaded_at')
-                    .eq('project_id', projectId)
-                    .not('match_score', 'is', null)
-                    .order('match_score', { ascending: false })
-                    .limit(5),
                 // New optimized RPC calls
                 supabase.rpc('get_project_activity_timeline', {
                     p_project_id: projectId,
@@ -97,12 +90,14 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
 
             if (statsResult.error) throw statsResult.error;
             if (eventsResult.error) console.warn('Analytics events error:', eventsResult.error);
-            if (topResult.error) throw topResult.error;
             if (timelineResult.error) console.warn('Timeline RPC error:', timelineResult.error);
             if (failureDistResult.error) console.warn('Failure Dist RPC error:', failureDistResult.error);
 
             // Filter by Date Range locally (Legacy stats)
-            const allData = statsResult.data || [];
+            const allData = (statsResult.data || []).map((c: any) => ({
+                ...c,
+                match_score: c.recruiter_override_score != null ? c.recruiter_override_score : c.match_score
+            }));
             const allEvents = eventsResult.data || [];
 
             const data = startDate
@@ -269,12 +264,16 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 .map(([userId, stats]) => ({ userId, ...stats }))
                 .sort((a, b) => b.scans - a.scans);
 
-            const topCandidates = topResult.data.map((c: any) => ({
-                id: c.id,
-                candidateName: c.candidate_name,
-                score: c.match_score,
-                uploadedAt: c.uploaded_at
-            }));
+            const topCandidates = data
+                .filter((c: any) => c.match_score != null)
+                .sort((a: any, b: any) => (b.match_score as number) - (a.match_score as number))
+                .slice(0, 5)
+                .map((c: any) => ({
+                    id: c.id,
+                    candidateName: c.candidate_name,
+                    score: c.match_score,
+                    uploadedAt: c.uploaded_at
+                }));
 
             // Failures
             const events = startDate

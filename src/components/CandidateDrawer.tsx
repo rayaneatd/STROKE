@@ -73,7 +73,7 @@ interface CandidateDrawerProps {
   onUpdateStatus?: (id: string, status: string) => Promise<void>;
 }
 
-type DrawerTab = 'analysis' | 'communication' | 'interview';
+type DrawerTab = 'analysis' | 'communication' | 'interview' | 'oversight';
 
 const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   isOpen,
@@ -313,7 +313,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     document.body.style.overflow = 'unset';
   }, [isOpen]);
 
-  const getScoreColor = (score: number) => {
+  const getScoreColor = (score: number, isOverridden: boolean = false) => {
+    if (isOverridden) return 'text-white bg-slate-500/20 border-slate-500/40 shadow-[0_0_15px_-3px_rgba(255,255,255,0.3)]';
     if (score >= 80) return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]';
     if (score >= 50) return 'text-amber-500 bg-amber-500/10 border-amber-500/20 shadow-[0_0_15px_-3px_rgba(245,158,11,0.2)]';
     return 'text-rose-500 bg-rose-500/10 border-rose-500/20 shadow-[0_0_15px_-3px_rgba(244,63,94,0.2)]';
@@ -363,7 +364,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
   if (!isOpen) return null;
 
-  const matchScoreValue = typeof data?.match_score === 'number' ? data.match_score : null;
+  const isScoreOverridden = data?.recruiter_override_score != null;
+  const matchScoreValue = isScoreOverridden ? data.recruiter_override_score : (typeof data?.match_score === 'number' ? data.match_score : null);
   const linkedinUrl = data?.social_links?.linkedin;
   const githubUrl = data?.social_links?.github;
 
@@ -517,17 +519,25 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
         </div>
       </div>
 
-      {/* Human Oversight Section (AI Act Art. 14) */}
-      <div className={`p-5 rounded-2xl ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-900/50 border-zinc-800'} border space-y-4`}>
+    </div>
+  );
+
+  const renderOversight = () => (
+    <div className="space-y-6 h-full flex flex-col animate-fade-in relative">
+      <div className={`p-6 rounded-2xl ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-900/50 border-zinc-800'} border flex-1 space-y-6 shadow-sm`}>
         <div className="flex items-center justify-between">
-          <h3 className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider ${styles.text.tertiary}`}>
-            <CheckCircle2 className="w-4 h-4" />
+          <h3 className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wider ${styles.text.secondary}`}>
+            <CheckCircle2 className="w-5 h-5 text-amber-500" />
             {t('candidateDrawer.analysis.humanOversight', 'Human Oversight (AI Act Art. 14)')}
           </h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className={`block text-xs font-bold ${styles.text.secondary} mb-1.5`}>
+        <p className={`text-sm ${styles.text.tertiary} leading-relaxed max-w-2xl`}>
+          {t('candidateDrawer.oversight.description', 'As a recruiter, you can override the AI-generated score and add a written justification. Your modified human score will replace the AI score entirely in lists and views.')}
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+          <div className="md:col-span-2 max-w-sm">
+            <label className={`block text-xs font-bold ${styles.text.secondary} mb-2`}>
               {t('candidateDrawer.analysis.overrideScore', 'Override Score (0-100)')}
             </label>
             <input
@@ -536,31 +546,32 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               max="100"
               value={overrideScore}
               onChange={e => setOverrideScore(e.target.value)}
-              className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-3 py-2 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-amber-500/50`}
+              className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-4 py-3 text-lg font-bold ${styles.text.primary} focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all`}
               placeholder={t('candidateDrawer.analysis.overridePlaceholder', 'e.g. 85')}
             />
           </div>
           <div className="md:col-span-2">
-            <label className={`block text-xs font-bold ${styles.text.secondary} mb-1.5`}>
+            <label className={`block text-xs font-bold ${styles.text.secondary} mb-2`}>
               {t('candidateDrawer.analysis.recruiterNotes', 'Recruiter Notes')}
             </label>
             <textarea
               value={recruiterNotes}
               onChange={e => setRecruiterNotes(e.target.value)}
-              rows={3}
-              className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-3 py-2 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-amber-500/50 resize-none`}
+              rows={5}
+              className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-4 py-3 text-sm ${styles.text.primary} focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none transition-all leading-relaxed`}
               placeholder={t('candidateDrawer.analysis.notesPlaceholder', 'Justify the manual override or add human evaluation notes...')}
             />
           </div>
         </div>
-        <div className="flex justify-end pt-2">
+
+        <div className="flex justify-start pt-6 border-t border-white/5">
           <button
             onClick={saveOversight}
             disabled={isSavingOversight || (overrideScore === (data?.recruiter_override_score ? String(data.recruiter_override_score) : '') && recruiterNotes === (data?.recruiter_notes || ''))}
-            className={`px-4 py-2 ${isLight ? 'bg-amber-100 hover:bg-amber-200 text-amber-900' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400'} border border-amber-500/30 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`px-8 py-3 ${isLight ? 'bg-amber-100 hover:bg-amber-200 text-amber-900' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400'} border border-amber-500/30 text-sm font-bold rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {isSavingOversight ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-            {t('common.save', 'Save')}
+            {isSavingOversight ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            {t('common.save', 'Save Override')}
           </button>
         </div>
       </div>
@@ -863,10 +874,24 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                   </a>
                 )}
               </div>
+
+              {data.recruiter_notes && (
+                <div className={`mt-5 p-4 rounded-xl ${isLight ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-amber-500/10 border-amber-500/20 text-amber-100'} border relative shadow-sm max-w-2xl`}>
+                  <div className="flex justify-between flex-row items-center mb-2">
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isLight ? 'text-amber-600' : 'text-amber-500/70'} flex items-center gap-2`}>
+                      <AlertTriangle className="w-3 h-3" />
+                      {t('candidateDrawer.analysis.recruiterNotes', 'Recruiter Notes')}
+                    </span>
+                  </div>
+                  <p className="text-sm italic leading-relaxed font-medium">"{data.recruiter_notes}"</p>
+                </div>
+              )}
             </div>
+
             <div className="group relative cursor-help">
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 text-xl font-bold ${getScoreColor(matchScoreValue || 0)}`}>
-                {matchScoreValue ?? 0}%
+              <div className={`w-20 h-20 rounded-full flex flex-col items-center justify-center border-4 transition-colors duration-300 ${getScoreColor(matchScoreValue || 0, isScoreOverridden)}`}>
+                <span className="text-xl font-bold">{matchScoreValue ?? 0}%</span>
+                {isScoreOverridden && <span className="text-[9px] uppercase tracking-wide opacity-80 mt-0.5" title="Human Override">OVR</span>}
               </div>
               {data?.score_breakdown && (
                 <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-30">
@@ -917,12 +942,20 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               <MessageSquare className="w-3.5 h-3.5" />
               {t('candidateDrawer.tabs.interview')}
             </button>
+            <button
+              onClick={() => setActiveTab('oversight')}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'oversight' ? (isLight ? 'border-amber-500 text-amber-600' : 'border-amber-500 text-amber-500') : `border-transparent ${styles.text.tertiary} hover:${styles.text.secondary}`}`}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {t('candidateDrawer.tabs.oversight', 'Oversight')}
+            </button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
           {activeTab === 'analysis' && renderAnalysis()}
           {activeTab === 'communication' && !hideCommunicationTab && renderCommunication()}
           {activeTab === 'interview' && renderInterview()}
+          {activeTab === 'oversight' && renderOversight()}
           <div className="h-12" />
         </div>
         <div className={`shrink-0 p-4 border-t ${styles.border.base} ${isLight ? 'bg-slate-50' : 'bg-zinc-950'} flex items-center justify-between`}>

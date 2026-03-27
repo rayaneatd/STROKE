@@ -291,10 +291,13 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             {!showScannedBy && (
                                 <div className="col-span-3">
                                     <div className="flex items-center gap-3">
-                                        <div className={`flex-1 h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
-                                            <div className={`h-full rounded-full ${isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500'}`} style={{ width: `${score}%` }}></div>
+                                        <div className={`flex-[0.8] h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
+                                            <div className={`h-full rounded-full ${file.isScoreOverridden ? 'bg-amber-400' : (isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500')}`} style={{ width: `${score}%` }}></div>
                                         </div>
-                                        <span className={`text-sm font-bold ${isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary}`}>{score}%</span>
+                                        <div className="flex flex-col items-center justify-center -space-y-0.5">
+                                            <span className={`text-sm font-bold ${file.isScoreOverridden ? (isLight ? 'text-amber-600' : 'text-amber-400') : (isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary)}`}>{score}%</span>
+                                            {file.isScoreOverridden && <span className="text-[8px] font-bold text-amber-500 uppercase tracking-widest scale-90">OVR</span>}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -362,10 +365,12 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                         )
                                     )}
 
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${hasScore ? (score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                    <span className={`inline-flex flex-col items-center px-2 py-0.5 rounded text-xs font-bold border ${hasScore ? (file.isScoreOverridden ? 'bg-amber-500/10 text-amber-500 border-amber-500/30 shadow-[0_0_10px_-2px_rgba(245,158,11,0.2)]' : (score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                         score >= 50 ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                            isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700') : (isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700')}`}>
-                                        {hasScore ? `${score}%` : '--'}
+                                            isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700')) : (isLight ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-zinc-800 text-zinc-500 border-zinc-700')}`}>
+                                        <span className="flex items-center gap-1">
+                                            {hasScore ? `${score}%` : '--'}
+                                        </span>
                                     </span>
                                 </div>
                             )}

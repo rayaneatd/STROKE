@@ -99,7 +99,10 @@ export const useDashboard = ({ currentUser }: UseDashboardProps) => {
             }
 
             // 4. Aggregate Data
-            let candidates = (candidatesData || []) as any[];
+            let candidates = ((candidatesData || []) as any[]).map(c => ({
+                ...c,
+                match_score: c.recruiter_override_score != null ? c.recruiter_override_score : c.match_score
+            }));
             let events = (failEvents || []) as any[];
 
             // Apply Time Range Filter

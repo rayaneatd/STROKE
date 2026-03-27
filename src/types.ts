@@ -319,6 +319,7 @@ export interface ProjectFile {
   aiModelUsed?: string;
   scannedAt?: string;
   recruiterOverrideScore?: number;
+  isScoreOverridden?: boolean;
   recruiterNotes?: string;
   aiAnalysisVersion?: string;
   totalTokensUsed?: number;
