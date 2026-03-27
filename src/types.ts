@@ -72,6 +72,14 @@ export interface AIPreferences {
   antiGhosting: boolean;
   rejectionContext: boolean;
   aiModel?: 'MERCURY_2' | 'MISTRAL';
+  language?: string;
+}
+
+export interface ScoreBreakdown {
+  technical_skills: number;
+  experience: number;
+  education: number;
+  soft_skills: number;
 }
 
 export interface UIPreferences {
@@ -289,6 +297,7 @@ export interface ProjectFile {
   currentPosition?: string;
   yearsOfExperience?: number;
   matchScore?: number;
+  scoreBreakdown?: ScoreBreakdown;
   executiveSummary?: string;
   keySkills?: string[];
   missingSkills?: string[];
@@ -305,6 +314,14 @@ export interface ProjectFile {
   careerTrajectory?: string;
   socialLinks?: { linkedin?: string; github?: string; portfolio?: string };
   originalResumeName?: string;
+
+  // --- AI ACT COMPLIANCE FIELDS ---
+  aiModelUsed?: string;
+  scannedAt?: string;
+  recruiterOverrideScore?: number;
+  recruiterNotes?: string;
+  aiAnalysisVersion?: string;
+  totalTokensUsed?: number;
 }
 
 // --- WORKER MESSAGES ---

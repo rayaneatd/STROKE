@@ -38,6 +38,12 @@ interface CandidateDrawerData {
     github?: string;
   } | null;
   match_score: number | null;
+  score_breakdown: {
+    technical_skills: number;
+    experience: number;
+    education: number;
+    soft_skills: number;
+  } | null;
   career_trajectory: string | null;
   executive_summary: string | null;
   soft_skills_analysis: string | null;
@@ -389,6 +395,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
   const renderAnalysis = () => (
     <div className="space-y-8 animate-fade-in">
+      <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl ${isLight ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-amber-500/5 border-amber-500/15 text-amber-400/80'} border text-xs font-medium`}>
+        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+        <span>{t('candidateDrawer.analysis.aiDisclaimer', 'AI-generated analysis — human validation required')}</span>
+      </div>
       <div className={`relative p-6 rounded-2xl ${styles.bg.surface} border shadow-sm ${styles.border.base}`}>
         {data?.career_trajectory && (
           <div className={`absolute top-4 right-4 px-3 py-1 rounded-full ${isLight ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'} text-xs font-bold flex items-center gap-1.5 shadow-sm`}>
@@ -771,6 +781,29 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 text-xl font-bold ${getScoreColor(matchScoreValue || 0)}`}>
                 {matchScoreValue ?? 0}%
               </div>
+              {data?.score_breakdown && (
+                <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-30">
+                  <div className={`p-3 rounded-xl ${isLight ? 'bg-white border-zinc-200 shadow-lg' : 'bg-zinc-900 border-zinc-700 shadow-2xl'} border text-xs whitespace-nowrap space-y-1.5`}>
+                    <div className={`font-bold ${styles.text.primary} mb-2`}>{t('candidateDrawer.analysis.scoreBreakdown', 'Score Breakdown')}</div>
+                    <div className="flex justify-between gap-4">
+                      <span className={styles.text.secondary}>Tech Skills</span>
+                      <span className="font-bold text-blue-400">{data.score_breakdown.technical_skills}/40</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className={styles.text.secondary}>Experience</span>
+                      <span className="font-bold text-purple-400">{data.score_breakdown.experience}/30</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className={styles.text.secondary}>Education</span>
+                      <span className="font-bold text-amber-400">{data.score_breakdown.education}/15</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className={styles.text.secondary}>Soft Skills</span>
+                      <span className="font-bold text-emerald-400">{data.score_breakdown.soft_skills}/15</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className={`flex items-center gap-1 mt-8 border-b ${styles.border.base}`}>

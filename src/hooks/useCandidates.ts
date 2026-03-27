@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
++import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { ProjectFile } from '../types';
@@ -107,6 +107,7 @@ export const useCandidates = ({
                 currentPosition: row.current_position,
                 yearsOfExperience: row.years_of_experience,
                 matchScore: row.match_score,
+                scoreBreakdown: row.score_breakdown,
                 executiveSummary: row.executive_summary,
                 keySkills: row.key_skills, // Already JSONB/Array from RPC
                 missingSkills: row.missing_skills,
@@ -115,7 +116,15 @@ export const useCandidates = ({
                 interviewQuestions: row.interview_questions,
                 careerTrajectory: row.career_trajectory,
                 socialLinks: row.social_links,
-                originalResumeName: row.original_resume_name
+                originalResumeName: row.original_resume_name,
+
+                // AI Act Compliance
+                aiModelUsed: row.ai_model_used,
+                scannedAt: row.scanned_at,
+                recruiterOverrideScore: row.recruiter_override_score,
+                recruiterNotes: row.recruiter_notes,
+                aiAnalysisVersion: row.ai_analysis_version,
+                totalTokensUsed: row.total_tokens_used
             } as ProjectFile));
 
             const totalCount = data && data.length > 0 ? Number(data[0].full_count) : 0;
