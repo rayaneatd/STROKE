@@ -29,6 +29,7 @@ const Manifesto = React.lazy(() => import('./pages/landing/Manifesto'));
 const Documentation = React.lazy(() => import('./pages/landing/Documentation'));
 const ContactSupport = React.lazy(() => import('./pages/landing/ContactSupport'));
 const AboutUs = React.lazy(() => import('./pages/landing/AboutUs'));
+const Transparency = React.lazy(() => import('./pages/landing/Transparency'));
 
 // App Pages
 const Dashboard = React.lazy(() => import('./pages/app/Dashboard'));
@@ -231,6 +232,7 @@ const AppContent: React.FC = () => {
                     <Route path="/docs" element={<Documentation />} />
                     <Route path="/support" element={<ContactSupport />} />
                     <Route path="/about" element={<AboutUs />} />
+                    <Route path="/transparency" element={<Transparency />} />
 
                     {/* App Routes - Protected */}
                     <Route path="/app/*" element={

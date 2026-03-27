@@ -56,6 +56,10 @@ interface CandidateDrawerData {
   original_resume_name: string | null;
   uploaded_at: string | null;
   resume_path: string | null;
+  recruiter_override_score: number | null;
+  recruiter_notes: string | null;
+  ai_model_used: string | null;
+  scanned_at: string | null;
 }
 
 interface CandidateDrawerProps {
@@ -90,6 +94,11 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   const [draft, setDraft] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+
+  // --- Human Oversight State (AI Act Art. 14) ---
+  const [overrideScore, setOverrideScore] = useState<string>('');
+  const [recruiterNotes, setRecruiterNotes] = useState('');
+  const [isSavingOversight, setIsSavingOversight] = useState(false);
 
   // --- Interview Questions State ---
   const [newQuestion, setNewQuestion] = useState('');
@@ -146,6 +155,34 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       }
     };
   }, [candidateId, draft, saveDraft]);
+
+  // --- Human Oversight Save Logic ---
+  const saveOversight = async () => {
+    if (!candidateId) return;
+    setIsSavingOversight(true);
+    try {
+      const scoreInt = overrideScore ? parseInt(overrideScore, 10) : null;
+      const { error } = await supabase
+        .from('candidates')
+        .update({
+          recruiter_override_score: scoreInt,
+          recruiter_notes: recruiterNotes || null
+        })
+        .eq('id', candidateId);
+
+      if (error) throw error;
+
+      setData(prev => prev ? {
+        ...prev,
+        recruiter_override_score: scoreInt,
+        recruiter_notes: recruiterNotes || null
+      } : null);
+    } catch (err) {
+      console.error('Failed to save human oversight', err);
+    } finally {
+      setIsSavingOversight(false);
+    }
+  };
 
   // --- Sending Logic ---
 
@@ -226,6 +263,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
         }
         setData(candidateData);
         setDraft(candidateData.email_draft || '');
+        setOverrideScore(candidateData.recruiter_override_score ? String(candidateData.recruiter_override_score) : '');
+        setRecruiterNotes(candidateData.recruiter_notes || '');
       } catch (err: any) {
         console.error('Error fetching candidate data:', err);
         setError(err.message || t('common.error'));
@@ -475,6 +514,54 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
           <p className={`${styles.text.secondary} text-sm leading-relaxed`}>
             {data?.soft_skills_analysis || t('candidateDrawer.analysis.noJustification')}
           </p>
+        </div>
+      </div>
+
+      {/* Human Oversight Section (AI Act Art. 14) */}
+      <div className={`p-5 rounded-2xl ${isLight ? 'bg-zinc-50 border-zinc-200' : 'bg-zinc-900/50 border-zinc-800'} border space-y-4`}>
+        <div className="flex items-center justify-between">
+          <h3 className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider ${styles.text.tertiary}`}>
+            <CheckCircle2 className="w-4 h-4" />
+            {t('candidateDrawer.analysis.humanOversight', 'Human Oversight (AI Act Art. 14)')}
+          </h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className={`block text-xs font-bold ${styles.text.secondary} mb-1.5`}>
+              {t('candidateDrawer.analysis.overrideScore', 'Override Score (0-100)')}
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={overrideScore}
+              onChange={e => setOverrideScore(e.target.value)}
+              className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-3 py-2 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-amber-500/50`}
+              placeholder={t('candidateDrawer.analysis.overridePlaceholder', 'e.g. 85')}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className={`block text-xs font-bold ${styles.text.secondary} mb-1.5`}>
+              {t('candidateDrawer.analysis.recruiterNotes', 'Recruiter Notes')}
+            </label>
+            <textarea
+              value={recruiterNotes}
+              onChange={e => setRecruiterNotes(e.target.value)}
+              rows={3}
+              className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-3 py-2 text-sm ${styles.text.primary} focus:outline-none focus:ring-1 focus:ring-amber-500/50 resize-none`}
+              placeholder={t('candidateDrawer.analysis.notesPlaceholder', 'Justify the manual override or add human evaluation notes...')}
+            />
+          </div>
+        </div>
+        <div className="flex justify-end pt-2">
+          <button
+            onClick={saveOversight}
+            disabled={isSavingOversight || (overrideScore === (data?.recruiter_override_score ? String(data.recruiter_override_score) : '') && recruiterNotes === (data?.recruiter_notes || ''))}
+            className={`px-4 py-2 ${isLight ? 'bg-amber-100 hover:bg-amber-200 text-amber-900' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400'} border border-amber-500/30 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isSavingOversight ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+            {t('common.save', 'Save')}
+          </button>
         </div>
       </div>
     </div>
