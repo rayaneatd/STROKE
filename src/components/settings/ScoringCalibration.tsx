@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Target, Sparkles, RefreshCcw, Save, AlertCircle, Info } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Target, Sparkles, RefreshCcw, AlertCircle, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { Project, ScoringWeights } from '../../types';
@@ -13,6 +13,7 @@ interface ScoringCalibrationProps {
 const ScoringCalibration: React.FC<ScoringCalibrationProps> = ({ project, onUpdate }) => {
     const { t } = useTranslation();
     const { styles, isLight } = useTheme();
+
     const [weights, setWeights] = useState<ScoringWeights>(
         project.scoringConfig?.weights || {
             technical_skills: 40,
@@ -22,13 +23,22 @@ const ScoringCalibration: React.FC<ScoringCalibrationProps> = ({ project, onUpda
         }
     );
     const [isCalibrating, setIsCalibrating] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [justification, setJustification] = useState<string | null>(
         project.scoringConfig?.calibrationJustification || null
     );
 
     const total = weights.technical_skills + weights.experience + weights.education + weights.soft_skills;
     const isValid = total === 100;
+
+    // Sync state with parent whenever weights or justification change
+    useEffect(() => {
+        const newConfig = {
+            weights,
+            calibrationJustification: justification,
+            lastCalibratedAt: new Date().toISOString()
+        };
+        onUpdate(newConfig);
+    }, [weights, justification]);
 
     const handleWeightChange = (key: keyof ScoringWeights, value: number) => {
         setWeights(prev => ({ ...prev, [key]: value }));
@@ -50,30 +60,6 @@ const ScoringCalibration: React.FC<ScoringCalibrationProps> = ({ project, onUpda
             console.error('Calibration failed:', err);
         } finally {
             setIsCalibrating(false);
-        }
-    };
-
-    const saveConfig = async () => {
-        if (!isValid) return;
-        setIsSaving(true);
-        try {
-            const newConfig = {
-                weights,
-                calibrationJustification: justification,
-                lastCalibratedAt: new Date().toISOString()
-            };
-
-            const { error } = await supabase
-                .from('projects')
-                .update({ scoring_config: newConfig })
-                .eq('id', project.id);
-
-            if (error) throw error;
-            onUpdate(newConfig);
-        } catch (err) {
-            console.error('Save failed:', err);
-        } finally {
-            setIsSaving(false);
         }
     };
 
@@ -99,6 +85,7 @@ const ScoringCalibration: React.FC<ScoringCalibrationProps> = ({ project, onUpda
                 <button
                     onClick={calibrateWithAI}
                     disabled={isCalibrating}
+                    type="button"
                     className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] transition-all disabled:opacity-50`}
                 >
                     {isCalibrating ? <RefreshCcw size={14} className="animate-spin" /> : <Sparkles size={14} />}
@@ -137,14 +124,7 @@ const ScoringCalibration: React.FC<ScoringCalibrationProps> = ({ project, onUpda
                                 {isValid ? 'Total valid: 100%' : `Total invalid: ${total}% (Must be 100)`}
                             </span>
                         </div>
-                        <button
-                            onClick={saveConfig}
-                            disabled={!isValid || isSaving}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-bold transition-all ${isValid ? 'bg-zinc-100 text-zinc-950 hover:bg-white shadow-xl' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-                        >
-                            {isSaving ? <RefreshCcw size={14} className="animate-spin" /> : <Save size={14} />}
-                            {t('common.save', 'Save Config')}
-                        </button>
+                        {/* THE SAVE BUTTON HAS BEEN REMOVED. Logic is now handled by the modal's main Save button. */}
                     </div>
                 </div>
 
