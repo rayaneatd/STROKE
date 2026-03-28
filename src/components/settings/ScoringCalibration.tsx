@@ -11,7 +11,7 @@ interface ScoringCalibrationProps {
 }
 
 const ScoringCalibration: React.FC<ScoringCalibrationProps> = ({ project, onUpdate }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { styles, isLight } = useTheme();
 
     const [weights, setWeights] = useState<ScoringWeights>(
@@ -48,7 +48,10 @@ const ScoringCalibration: React.FC<ScoringCalibrationProps> = ({ project, onUpda
         setIsCalibrating(true);
         try {
             const { data, error } = await supabase.functions.invoke('calibrate_scoring', {
-                body: { project_id: project.id }
+                body: {
+                    project_id: project.id,
+                    language: i18n.language || 'en'
+                }
             });
             if (error) throw error;
 
