@@ -149,11 +149,7 @@ const AppContent: React.FC = () => {
         return () => clearInterval(banCheckInterval);
     }, [user, updateUser]);
 
-    const handleThemeChange = (newConfig: UIPreferences) => {
-        if (user) {
-            updateUser({ preferences: { ...user.preferences, uiConfig: newConfig } as any }, true);
-        }
-    };
+    // Theme handling moved to AppThemeWrapper
 
     const getCurrentPageId = () => {
         const path = location.pathname;
@@ -206,7 +202,7 @@ const AppContent: React.FC = () => {
     } : null;
 
     return (
-        <ThemeProvider initialConfig={user?.preferences?.uiConfig} onConfigChange={handleThemeChange}>
+        <>
             {user?.isBanned && (
                 <GlobalBanModal user={user} onLogout={logout} />
             )}
@@ -324,7 +320,7 @@ const AppContent: React.FC = () => {
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Suspense>
-        </ThemeProvider>
+        </>
     );
 };
 
@@ -338,14 +334,32 @@ const queryClient = new QueryClient({
     },
 });
 
+const AppThemeWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user, updateUser } = useAuth();
+
+    const handleThemeChange = useCallback((newConfig: UIPreferences) => {
+        if (user) {
+            updateUser({ preferences: { ...user.preferences, uiConfig: newConfig } as any }, true);
+        }
+    }, [user, updateUser]);
+
+    return (
+        <ThemeProvider initialConfig={user?.preferences?.uiConfig} onConfigChange={handleThemeChange}>
+            {children}
+        </ThemeProvider>
+    );
+};
+
 const App: React.FC = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
                 <AuthProvider>
-                    <ComingSoonProvider>
-                        <AppContent />
-                    </ComingSoonProvider>
+                    <AppThemeWrapper>
+                        <ComingSoonProvider>
+                            <AppContent />
+                        </ComingSoonProvider>
+                    </AppThemeWrapper>
                 </AuthProvider>
             </BrowserRouter>
             <ReactQueryDevtools initialIsOpen={false} />
