@@ -140,6 +140,52 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     [saveDraft]
   );
 
+  const oversightValuesRef = React.useRef({ score: overrideScore, notes: recruiterNotes });
+
+  // Sync ref with current state values
+  useEffect(() => {
+    oversightValuesRef.current = { score: overrideScore, notes: recruiterNotes };
+  }, [overrideScore, recruiterNotes]);
+
+  // --- Human Oversight Save Logic ---
+  const saveOversight = useCallback(async (score?: string, notes?: string) => {
+    if (!candidateId) return;
+
+    // Use current state/ref if params not provided
+    const currentScore = score !== undefined ? score : oversightValuesRef.current.score;
+    const currentNotes = notes !== undefined ? notes : oversightValuesRef.current.notes;
+
+    setIsSavingOversight(true);
+    try {
+      const scoreInt = currentScore ? parseInt(currentScore, 10) : null;
+      const { error } = await supabase
+        .from('candidates')
+        .update({
+          recruiter_override_score: scoreInt,
+          recruiter_notes: currentNotes || null
+        })
+        .eq('id', candidateId);
+
+      if (error) throw error;
+
+      setData(prev => prev ? {
+        ...prev,
+        recruiter_override_score: scoreInt,
+        recruiter_notes: currentNotes || null
+      } : null);
+    } catch (err) {
+      console.error('Failed to save human oversight', err);
+    } finally {
+      setIsSavingOversight(false);
+    }
+  }, [candidateId]);
+
+  // Debounced oversight save
+  const debouncedSaveOversight = useMemo(
+    () => debounce((s: string, n: string) => saveOversight(s, n), 1000),
+    [saveOversight]
+  );
+
   // Handle draft changes
   const handleDraftChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -156,32 +202,24 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
     };
   }, [candidateId, draft, saveDraft]);
 
-  // --- Human Oversight Save Logic ---
-  const saveOversight = async () => {
-    if (!candidateId) return;
-    setIsSavingOversight(true);
-    try {
-      const scoreInt = overrideScore ? parseInt(overrideScore, 10) : null;
-      const { error } = await supabase
-        .from('candidates')
-        .update({
-          recruiter_override_score: scoreInt,
-          recruiter_notes: recruiterNotes || null
-        })
-        .eq('id', candidateId);
-
-      if (error) throw error;
-
-      setData(prev => prev ? {
-        ...prev,
-        recruiter_override_score: scoreInt,
-        recruiter_notes: recruiterNotes || null
-      } : null);
-    } catch (err) {
-      console.error('Failed to save human oversight', err);
-    } finally {
-      setIsSavingOversight(false);
+  const handleOversightKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      // Immediate save on Enter
+      saveOversight(overrideScore, recruiterNotes);
     }
+  };
+
+  const handleScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setOverrideScore(val);
+    debouncedSaveOversight(val, recruiterNotes);
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setRecruiterNotes(val);
+    debouncedSaveOversight(overrideScore, val);
   };
 
   // --- Sending Logic ---
@@ -545,7 +583,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
               min="0"
               max="100"
               value={overrideScore}
-              onChange={e => setOverrideScore(e.target.value)}
+              onChange={handleScoreChange}
+              onKeyDown={handleOversightKeyDown}
               className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-4 py-3 text-lg font-bold ${styles.text.primary} focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all`}
               placeholder={t('candidateDrawer.analysis.overridePlaceholder', 'e.g. 85')}
             />
@@ -556,7 +595,8 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             </label>
             <textarea
               value={recruiterNotes}
-              onChange={e => setRecruiterNotes(e.target.value)}
+              onChange={handleNotesChange}
+              onKeyDown={handleOversightKeyDown}
               rows={5}
               className={`w-full ${isLight ? 'bg-white' : 'bg-black/20'} border ${styles.border.base} rounded-xl px-4 py-3 text-sm ${styles.text.primary} focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none transition-all leading-relaxed`}
               placeholder={t('candidateDrawer.analysis.notesPlaceholder', 'Justify the manual override or add human evaluation notes...')}
