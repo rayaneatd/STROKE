@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { debounce } from '../utils/performance';
+import { ComingSoonProvider, useComingSoon } from '../context/ComingSoonContext';
 import { useTheme } from '../context/ThemeContext';
 import { ACCENT_PALETTES } from '../theme/designTokens';
 
@@ -224,37 +225,41 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
   // --- Sending Logic ---
 
+  const { checkComingSoon } = useComingSoon();
+
   const handleSendEmail = async () => {
     if (!candidateId || !draft.trim()) return;
 
-    setIsSending(true);
-    try {
-      // 1. Simulate sending (replace with real API later)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    checkComingSoon(async () => {
+      setIsSending(true);
+      try {
+        // 1. Simulate sending (replace with real API later)
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // 2. Log for debug
-      console.log('draft envoyé');
-      console.log(`[Debug] To: ${data?.email || 'N/A'} | Content: ${draft.substring(0, 50)}...`);
+        // 2. Log for debug
+        console.log('draft envoyé');
+        console.log(`[Debug] To: ${data?.email || 'N/A'} | Content: ${draft.substring(0, 50)}...`);
 
-      // 3. Update DB state
-      const now = new Date().toISOString();
-      const { error } = await supabase.rpc('save_candidate_email_draft', {
-        p_candidate_id: candidateId,
-        p_draft: draft,
-        p_sent_at: now
-      });
+        // 3. Update DB state
+        const now = new Date().toISOString();
+        const { error } = await supabase.rpc('save_candidate_email_draft', {
+          p_candidate_id: candidateId,
+          p_draft: draft,
+          p_sent_at: now
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // 4. Update local state
-      setData(prev => prev ? { ...prev, email_sent_at: now } : null);
+        // 4. Update local state
+        setData(prev => prev ? { ...prev, email_sent_at: now } : null);
 
-    } catch (err) {
-      console.error('Failed to send email:', err);
-      // Could add toast here
-    } finally {
-      setIsSending(false);
-    }
+      } catch (err) {
+        console.error('Failed to send email:', err);
+        // Could add toast here
+      } finally {
+        setIsSending(false);
+      }
+    });
   };
 
   const handleOpenExternal = async () => {

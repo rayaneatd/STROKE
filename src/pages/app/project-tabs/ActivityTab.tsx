@@ -10,6 +10,7 @@ import {
     Star, ThumbsDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { ComingSoonProvider, useComingSoon } from '../../../context/ComingSoonContext';
 import CandidateList from '../../../components/CandidateList';
 import CandidateDrawer from '../../../components/CandidateDrawer';
 import { supabase } from '../../../lib/supabase';
@@ -297,20 +298,25 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
         // Clear selection if it was selection based? Maybe keep it.
     };
 
+    const { checkComingSoon } = useComingSoon();
+
     const handleBulkSend = async (targetCandidates: ProjectFile[]) => {
         if (!onBatchUpdate || targetCandidates.length === 0) return;
-        setIsSending(true);
 
-        // Mock sending - in reality we would call an API
-        // Here we just mark as emailed
-        const updates = targetCandidates.map(c => ({
-            id: c.id,
-            changes: { emailSentAt: new Date().toISOString() }
-        }));
+        checkComingSoon(async () => {
+            setIsSending(true);
 
-        await onBatchUpdate(updates);
-        setIsSending(false);
-        if (selectedIds.size > 0) setSelectedIds(new Set());
+            // Mock sending - in reality we would call an API
+            // Here we just mark as emailed
+            const updates = targetCandidates.map(c => ({
+                id: c.id,
+                changes: { emailSentAt: new Date().toISOString() }
+            }));
+
+            await onBatchUpdate(updates);
+            setIsSending(false);
+            if (selectedIds.size > 0) setSelectedIds(new Set());
+        });
     };
 
     const handleBulkClearDrafts = async (targetCandidates: ProjectFile[]) => {

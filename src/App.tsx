@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import Layout from './components/Layout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext'; // Import ThemeProvider
+import { ComingSoonProvider, useComingSoon } from './context/ComingSoonContext';
 import { Loader2 } from 'lucide-react';
 import ErrorBoundary from './components/ErrorBoundary';
 import { User, SubscriptionPlan, UIPreferences } from './types';
@@ -15,9 +16,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useTranslation } from 'react-i18next';
 import { supabase } from './lib/supabase';
 
-
 // --- LAZY LOADED ROUTES (Code Splitting) ---
-// Landing Pages
 const LandingPage = React.lazy(() => import('./pages/landing/LandingPage'));
 const Login = React.lazy(() => import('./pages/landing/Login'));
 const TermsOfService = React.lazy(() => import('./pages/landing/TermsOfService'));
@@ -42,7 +41,6 @@ const BuyScans = React.lazy(() => import('./pages/app/BuyScans'));
 const UpgradePlan = React.lazy(() => import('./pages/app/UpgradePlan'));
 const Profile = React.lazy(() => import('./pages/app/Profile'));
 
-// Wrapper to extract route params for ProjectDetail
 import { useParams } from 'react-router-dom';
 
 const ProjectDetailWrapper = ({ user, onNavigate, onUpdateUser }: { user: User, onNavigate: (p: string) => void, onUpdateUser: (u: User) => void }) => {
@@ -63,7 +61,6 @@ const ProjectDetailWrapper = ({ user, onNavigate, onUpdateUser }: { user: User, 
     );
 };
 
-// --- LOADING FALLBACK ---
 const PageLoader = () => (
     <div className="flex h-screen w-full items-center justify-center bg-[#050505] text-zinc-400">
         <div className="flex flex-col items-center gap-4">
@@ -89,28 +86,22 @@ const getThemeForPlan = (plan: SubscriptionPlan) => {
     }
 }
 
-// Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
-    // Show loader ONLY for app routes — never block landing pages
     if (loading) return <PageLoader />;
     if (!isAuthenticated) return <Navigate to="/login" replace />;
     return <>{children}</>;
 };
 
-
-// --- MAIN APP CONTENT ---
 const AppContent: React.FC = () => {
     const { user, logout, updateUser, isAuthenticated, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { i18n } = useTranslation();
+    const { checkComingSoon } = useComingSoon();
 
-    // --- LANGUAGE SYNC ---
     useEffect(() => {
         if (!user) return;
-
-        // 1. Sync i18n with user profile language on load
         const syncLanguage = async () => {
             const { data: profile } = await supabase
                 .from('profiles')
@@ -135,11 +126,9 @@ const AppContent: React.FC = () => {
                     .eq('id', user.id);
             }
         };
-
         syncLanguage();
     }, [user?.id, i18n]);
 
-    // --- REAL-TIME BAN ENFORCEMENT ---
     useEffect(() => {
         if (!user) return;
 
@@ -179,18 +168,26 @@ const AppContent: React.FC = () => {
     };
 
     const handleNavigate = useCallback((pageId: string) => {
-        switch (pageId) {
-            case 'dashboard': navigate('/app'); break;
-            case 'projects': navigate('/app/projects'); break;
-            case 'connections': navigate('/app/connections'); break;
-            case 'settings': navigate('/app/settings'); break;
-            case 'admin': navigate('/app/admin'); break;
-            case 'profile': navigate('/app/profile'); break;
-            case 'buy-scans': navigate('/app/buy-scans'); break;
-            case 'upgrade-plan': navigate('/app/upgrade-plan'); break;
-            default: navigate('/app');
+        const go = () => {
+            switch (pageId) {
+                case 'dashboard': navigate('/app'); break;
+                case 'projects': navigate('/app/projects'); break;
+                case 'connections': navigate('/app/connections'); break;
+                case 'settings': navigate('/app/settings'); break;
+                case 'admin': navigate('/app/admin'); break;
+                case 'profile': navigate('/app/profile'); break;
+                case 'buy-scans': navigate('/app/buy-scans'); break;
+                case 'upgrade-plan': navigate('/app/upgrade-plan'); break;
+                default: navigate('/app');
+            }
+        };
+
+        if (pageId === 'upgrade-plan' || pageId === 'buy-scans') {
+            checkComingSoon(go);
+        } else {
+            go();
         }
-    }, [navigate]);
+    }, [navigate, checkComingSoon]);
 
     const handleProjectClick = useCallback((projectId: string) => {
         navigate(`/app/projects/${projectId}`);
@@ -200,16 +197,12 @@ const AppContent: React.FC = () => {
         updateUser(updatedUser);
     }, [updateUser]);
 
-    // NOTE: We do NOT block rendering here on `loading`.
-    // Landing pages must render immediately and never wait for auth.
-    // Only the ProtectedRoute handles the auth loading state.
-
     const commonLayoutProps = user ? {
         user,
         onLogout: logout,
         currentPage: getCurrentPageId(),
         onNavigate: handleNavigate,
-        onBuyScans: () => navigate('/app/buy-scans')
+        onBuyScans: () => checkComingSoon(() => navigate('/app/buy-scans'))
     } : null;
 
     return (
@@ -220,7 +213,6 @@ const AppContent: React.FC = () => {
 
             <Suspense fallback={<PageLoader />}>
                 <Routes>
-                    {/* Public/Landing Routes - Accessible always */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={isAuthenticated ? <Navigate to="/app" replace /> : <Login />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
@@ -234,7 +226,6 @@ const AppContent: React.FC = () => {
                     <Route path="/about" element={<AboutUs />} />
                     <Route path="/transparency" element={<Transparency />} />
 
-                    {/* App Routes - Protected */}
                     <Route path="/app/*" element={
                         <ProtectedRoute>
                             {user ? (
@@ -330,7 +321,6 @@ const AppContent: React.FC = () => {
                             ) : <PageLoader />}
                         </ProtectedRoute>
                     } />
-
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Suspense>
@@ -338,11 +328,10 @@ const AppContent: React.FC = () => {
     );
 };
 
-// Initialize React Query Client
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
+            staleTime: 1000 * 60 * 5,
             retry: 1,
             refetchOnWindowFocus: false,
         },
@@ -354,7 +343,9 @@ const App: React.FC = () => {
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
                 <AuthProvider>
-                    <AppContent />
+                    <ComingSoonProvider>
+                        <AppContent />
+                    </ComingSoonProvider>
                 </AuthProvider>
             </BrowserRouter>
             <ReactQueryDevtools initialIsOpen={false} />
@@ -363,4 +354,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
