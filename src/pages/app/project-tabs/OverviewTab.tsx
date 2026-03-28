@@ -10,7 +10,6 @@ import {
 } from 'recharts';
 import { Project, ProjectFile, User, ScoringConfig } from '../../../types';
 import { useProjectAnalytics, TimeRange } from '../../../hooks/useProjectAnalytics';
-import ScoringCalibration from '../../../components/settings/ScoringCalibration';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -80,19 +79,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
 
     return (
         <div className="space-y-6 animate-fade-in pb-10">
-            {/* AI Scoring Calibration Section */}
-            {(currentUser.role === 'ADMIN' || project.ownerId === currentUser.id) && (
-                <div className="mb-8">
-                    <ScoringCalibration
-                        project={project}
-                        onUpdate={(newConfig) => {
-                            // Update local project state if necessary, 
-                            // though usually handled by parent/query invalidation
-                        }}
-                    />
-                </div>
-            )}
-
             {/* Header & Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>

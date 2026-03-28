@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Project, User, ProjectRole, SubscriptionPlan, EmployeeAddPermission, OutreachStrategy } from '../types';
 import { useTheme } from '../context/ThemeContext';
 
-export type TabType = 'GENERAL' | 'TEAM' | 'BILLING';
+export type TabType = 'GENERAL' | 'TEAM' | 'BILLING' | 'CALIBRATION';
 
 export interface UseEditProjectModalProps {
     isOpen: boolean;

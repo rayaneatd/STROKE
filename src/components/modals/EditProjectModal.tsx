@@ -1,7 +1,7 @@
 
 import React from 'react';
 import {
-    Layout, Users, Save, Loader2, Wallet, Rocket, AlertTriangle
+    Layout, Users, Save, Loader2, Wallet, Rocket, AlertTriangle, Target
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Project, User } from '../../types';
@@ -12,6 +12,7 @@ import GeneralTab from './project-settings/GeneralTab';
 import TeamAccessTab from './project-settings/TeamAccessTab';
 import BillingQuotaTab from './project-settings/BillingQuotaTab';
 import AIDiagnosticsTab from './project-settings/AIDiagnosticsTab';
+import ScoringCalibration from '../settings/ScoringCalibration';
 
 interface ProjectModalProps {
     isOpen: boolean;
@@ -104,6 +105,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                                 <button onClick={() => setActiveTab('BILLING')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'BILLING' ? sidebarActive : sidebarInactive}`}>
                                     <Wallet size={18} /> {t('modal.tabs.billing')}
                                 </button>
+                                <button onClick={() => setActiveTab('CALIBRATION')} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition-all ${activeTab === 'CALIBRATION' ? sidebarActive : sidebarInactive}`}>
+                                    <Target size={18} /> {t('modal.tabs.calibration', 'Calibration')}
+                                </button>
                             </>
                         )}
                     </div>
@@ -150,6 +154,20 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                                     userHasPlan={userHasPlan}
                                     mode={mode}
                                 />
+                            )}
+
+                            {activeTab === 'CALIBRATION' && isOwner && (
+                                <div className="animate-fade-in">
+                                    <ScoringCalibration
+                                        project={project || (formData as Project)}
+                                        onUpdate={(newConfig) => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                scoringConfig: newConfig
+                                            }));
+                                        }}
+                                    />
+                                </div>
                             )}
 
                         </form>
