@@ -75,6 +75,20 @@ export interface AIPreferences {
   language?: string;
 }
 
+export interface ScoringWeights {
+  technical_skills: number;
+  experience: number;
+  education: number;
+  soft_skills: number;
+}
+
+export interface ScoringConfig {
+  weights: ScoringWeights;
+  jobFamily?: string;
+  calibrationJustification?: string;
+  lastCalibratedAt?: string;
+}
+
 export interface ScoreBreakdown {
   technical_skills: number;
   experience: number;
@@ -259,6 +273,7 @@ export interface Project {
   settings: ProjectSettings;
   investmentBalance: number;
   totalInvested?: number;
+  scoringConfig?: ScoringConfig;
 }
 
 export interface ProjectFile {
