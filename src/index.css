@@ -89,14 +89,9 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-  }
-
-  /* Magazine Typography Scale */
-  h1,
-  h2,
-  h3 {
-    @apply tracking-tighter;
-    text-wrap: balance;
+    position: relative;
+    z-index: 1;
+    overflow-x: hidden;
   }
 
   /* Target everything EXCEPT landing page for the 80% zoom fix */
@@ -108,6 +103,8 @@
     height: 125%;
     min-width: 125vw;
     min-height: 125vh;
+    display: flex;
+    flex-direction: column;
   }
 }
 

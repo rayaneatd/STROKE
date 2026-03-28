@@ -57,7 +57,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
 
   return (
     <div className="h-screen w-screen overflow-hidden">
-      <div className={`app-zoom-container ${styles.bg.app} flex flex-col font-sans ${styles.text.primary} relative transition-colors duration-500 selection:text-white`}>
+      <div className={`app-zoom-container ${styles.bg.app} flex flex-col font-sans mb-0 ${styles.text.primary} relative transition-colors duration-500 selection:text-white`}>
 
 
         {/* Dynamic Style Injection for selection color & scrollbars */}
