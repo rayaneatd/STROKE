@@ -19,7 +19,8 @@ import {
   LayoutDashboard,
   MessageSquare,
   Star,
-  ThumbsDown
+  ThumbsDown,
+  Sparkles
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { debounce } from '../utils/performance';
@@ -497,6 +498,23 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
           {data?.executive_summary || t('candidateDrawer.analysis.noSummary')}
         </p>
       </div>
+
+      {data?.is_hidden_gem && (
+        <div className="relative p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 shadow-[0_0_20px_-5px_rgba(245,158,11,0.2)] overflow-hidden animate-fade-in">
+          <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
+            <Sparkles className="w-12 h-12 text-amber-500 rotate-12" />
+          </div>
+          <div className="relative z-10">
+            <h3 className="flex items-center gap-2 text-xs font-black text-amber-500 uppercase tracking-[0.2em] mb-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+              {t('candidateDrawer.analysis.hiddenGemTitle', 'Exceptional Talent / Hidden Gem')}
+            </h3>
+            <p className="text-amber-100/90 text-sm leading-relaxed font-bold italic border-l-2 border-amber-500/50 pl-4">
+              "{data?.hidden_gem_reason || 'This profile shows exceptional atypical characteristics.'}"
+            </p>
+          </div>
+        </div>
+      )}
 
       {normalized.redFlags.length > 0 && (
         <div className="p-5 rounded-2xl bg-rose-950/10 border border-rose-500/20 shadow-sm">

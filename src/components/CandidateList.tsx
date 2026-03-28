@@ -4,7 +4,7 @@ import { ProjectFile, User } from '../types';
 import { useVirtualizer } from '../hooks/useVirtualizer';
 import {
     Loader2, FileText, Clock, Calendar,
-    Medal, Eye, MailCheck, FileCheck, FileEdit, Check, Star, XCircle, ThumbsDown, RotateCcw
+    Medal, Eye, MailCheck, FileCheck, FileEdit, Check, Star, XCircle, ThumbsDown, RotateCcw, Sparkles
 } from 'lucide-react';
 
 interface CandidateListProps {
@@ -212,8 +212,9 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center transition-all duration-300 cursor-pointer group ${isSelected
                                 ? `bg-${accentColor}-500/10 border-l-4 border-l-${accentColor}-500 ${isLight ? 'border-b-slate-100' : 'border-b-white/5'}`
                                 : `border-l-4 border-l-transparent hover:bg-${accentColor}-500/5 ${isLight ? 'border-b-slate-50 hover:border-l-slate-300' : 'border-b-white/5 hover:border-l-zinc-700'}`
-                                } ${file.status === 'rejected' ? 'opacity-40 grayscale-[0.8]' : ''}`}
+                                } ${file.status === 'rejected' ? 'opacity-40 grayscale-[0.8]' : ''} ${file.is_hidden_gem ? 'hidden-gem-row' : ''}`}
                         >
+                            {file.is_hidden_gem && <div className="glass-shard-effect" />}
                             {/* Checkbox for Bulk Actions */}
                             {showCheckboxes && (
                                 <div
@@ -239,6 +240,12 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
                                             <h4 className={`text-sm font-bold truncate ${isSelected ? `text-${accentColor}-500` : textPrimary}`}>{file.candidateName || 'Candidate'}</h4>
+                                            {file.is_hidden_gem && (
+                                                <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded text-[9px] font-black text-amber-500 uppercase tracking-tighter shadow-[0_0_10px_-2px_rgba(245,158,11,0.3)] animate-pulse">
+                                                    <Sparkles size={8} className="fill-current" />
+                                                    Hidden Gem
+                                                </div>
+                                            )}
                                             <div className="flex -space-x-1">
                                                 {isEmailed && (
                                                     <div className={`rounded-full p-0.5 shadow-sm border ${isLight ? 'bg-white border-slate-100' : 'bg-[#0e0e10] border-white/10'}`} title={t('candidateList.emailSent')}>

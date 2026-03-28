@@ -338,6 +338,8 @@ export interface ProjectFile {
   recruiterNotes?: string;
   aiAnalysisVersion?: string;
   totalTokensUsed?: number;
+  is_hidden_gem?: boolean;
+  hidden_gem_reason?: string;
 }
 
 // --- WORKER MESSAGES ---
