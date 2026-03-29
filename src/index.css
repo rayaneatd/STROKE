@@ -477,3 +477,70 @@
     border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
   }
 }
+
+/* --- HIDDEN GEM SPECIAL EFFECTS --- */
+.hidden-gem-row {
+  position: relative !important;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, rgba(251, 191, 36, 0.03) 100%) !important;
+  overflow: hidden !important;
+  border-left: 4px solid #fbbf24 !important;
+}
+
+.hidden-gem-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 40px rgba(251, 191, 36, 0.25);
+  animation: gem-glow-pulse 3s ease-in-out infinite;
+  z-index: 10;
+}
+
+.glass-shard-effect {
+  position: absolute;
+  top: 0;
+  left: -200%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 70%,
+      transparent 100%);
+  transform: skewX(-25deg);
+  pointer-events: none;
+  z-index: 11;
+  animation: glass-shard-sweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes gem-glow-pulse {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.8;
+    box-shadow: inset 0 0 60px rgba(251, 191, 36, 0.4);
+  }
+}
+
+@keyframes glass-shard-sweep {
+  0% {
+    left: -200%;
+    opacity: 0;
+  }
+
+  10%,
+  40% {
+    opacity: 1;
+  }
+
+  60%,
+  100% {
+    left: 200%;
+    opacity: 0;
+  }
+}
