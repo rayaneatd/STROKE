@@ -104,7 +104,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                         >
                             {tab.icon} {tab.label}
                             {tab.id === 'AI' && showAiConfigPulse && (
-                                <div className="absolute top-2 right-2 onboarding-hotspot" />
+                                <div className="absolute top-1/2 -translate-y-1/2 -right-1 onboarding-hotspot z-[9999]" />
                             )}
                         </button>
                     ))}

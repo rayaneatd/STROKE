@@ -87,9 +87,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center gap-3 px-3.5 ${itemPadding} rounded-xl transition-all duration-200 group border border-transparent ${isActive
-                  ? theme.activeSimple
-                  : `${textColor} ${isLight ? 'hover:bg-slate-100/80 hover:text-slate-900' : 'hover:bg-white/5 hover:text-zinc-200'}`
+              className={`w-full flex items-center gap-3 px-3.5 ${itemPadding} rounded-xl transition-all duration-200 group border border-transparent relative ${isActive
+                ? theme.activeSimple
+                : `${textColor} ${isLight ? 'hover:bg-slate-100/80 hover:text-slate-900' : 'hover:bg-white/5 hover:text-zinc-200'}`
                 }`}
             >
               <span className={`transition-colors duration-200 ${isActive ? theme.iconActive : hoverText} ${isActive && isLight ? 'drop-shadow-sm' : ''}`}>
@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
 
               {/* Onboarding Pulse */}
               {item.id === 'settings' && showSettingsPulse && (
-                <div className="absolute top-2 right-2 onboarding-hotspot" />
+                <div className="absolute top-1/2 -translate-y-1/2 right-4 onboarding-hotspot z-[9999]" />
               )}
 
               {/* Active Indicator Dot */}
@@ -117,8 +117,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
           <button
             onClick={() => onNavigate('upgrade-plan')}
             className={`w-full p-3 rounded-xl border border-dashed flex items-center gap-3 text-xs font-bold transition-all group ${isLight
-                ? 'border-slate-300/60 bg-slate-50/50 text-slate-500 hover:bg-white hover:border-slate-300 hover:text-slate-800 hover:shadow-sm'
-                : 'border-white/10 text-zinc-500 hover:text-zinc-300 hover:bg-white/5 hover:border-white/20'
+              ? 'border-slate-300/60 bg-slate-50/50 text-slate-500 hover:bg-white hover:border-slate-300 hover:text-slate-800 hover:shadow-sm'
+              : 'border-white/10 text-zinc-500 hover:text-zinc-300 hover:bg-white/5 hover:border-white/20'
               }`}
           >
             <div className={`p-1.5 rounded-lg group-hover:scale-110 transition-transform ${isLight ? 'bg-white border border-slate-200 shadow-sm' : 'bg-white/5'}`}>
@@ -130,8 +130,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
 
         <div
           className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-all cursor-pointer group relative overflow-hidden ${isLight
-              ? 'bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-md hover:border-slate-300/80'
-              : 'bg-[#0e0e10] border-white/10 hover:bg-[#18181b]'
+            ? 'bg-white/60 border-slate-200/60 hover:bg-white hover:shadow-md hover:border-slate-300/80'
+            : 'bg-[#0e0e10] border-white/10 hover:bg-[#18181b]'
             } hover:border-${accentColor}-500/30`}
           onClick={() => onNavigate('profile')}
         >
@@ -143,8 +143,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
               src={currentUser.avatarUrl || `https://ui-avatars.com/api/?name=${currentUser.displayName}`}
               alt="Profile"
               className={`w-9 h-9 rounded-full border-2 object-cover transition-colors ${isLight
-                  ? `border-white shadow-sm group-hover:border-${accentColor}-200`
-                  : `border-${accentColor}-500/20 group-hover:border-${accentColor}-500/50`
+                ? `border-white shadow-sm group-hover:border-${accentColor}-200`
+                : `border-${accentColor}-500/20 group-hover:border-${accentColor}-500/50`
                 }`}
             />
             <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 bg-${accentColor}-500 ${isLight ? 'border-white' : 'border-[#0e0e10]'}`}></div>
