@@ -865,9 +865,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 {onToggleFavorite && (
                   <button
                     onClick={() => onToggleFavorite(candidateId!, isFavorite || false)}
-                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${isFavorite
-                      ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20'
-                      : isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900' : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                    className={`h-10 px-4 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 min-w-[140px] ${isFavorite
+                      ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20 shadow-sm'
+                      : isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600' : 'bg-white/5 hover:bg-white/10 text-zinc-400'
                       }`}
                   >
                     <Star className={`w-4 h-4 ${isFavorite ? 'fill-amber-500' : ''}`} />
@@ -878,9 +878,9 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 {onUpdateStatus && (
                   <button
                     onClick={() => onUpdateStatus(candidateId!, status === 'rejected' ? 'new' : 'rejected')}
-                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${status === 'rejected'
-                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20'
-                      : isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900' : 'bg-zinc-100 hover:bg-white text-zinc-950'
+                    className={`h-10 px-4 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 min-w-[140px] ${status === 'rejected'
+                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20 shadow-sm'
+                      : isLight ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600' : 'bg-white/5 hover:bg-white/10 text-zinc-400'
                       }`}
                   >
                     <ThumbsDown className={`w-4 h-4 ${status === 'rejected' ? 'fill-rose-500' : ''}`} />
@@ -892,7 +892,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 
                 <button
                   onClick={() => data.email && window.open(`mailto:${data.email}`)}
-                  className={`px-4 py-2 ${isLight ? 'bg-zinc-900 text-white hover:bg-black' : 'bg-zinc-100 hover:bg-white text-zinc-950'} text-sm font-bold rounded-xl transition-colors flex items-center gap-2`}
+                  className={`h-10 px-5 transition-all text-sm font-bold rounded-xl flex items-center justify-center gap-2 shadow-sm ${isLight
+                    ? 'bg-zinc-900 text-white hover:bg-black'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-900/20'
+                    }`}
                 >
                   <Mail className="w-4 h-4" />
                   {t('candidateDrawer.header.contact')}
