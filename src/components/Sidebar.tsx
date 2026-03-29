@@ -15,7 +15,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, onNavigate, uiConfig }) => {
   const { t } = useTranslation();
-  const { showSettingsPulse } = useOnboarding(currentUser);
+  const { showSettingsPulse, updateStatus } = useOnboarding(currentUser);
 
   const navItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
@@ -86,7 +86,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
           return (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => {
+                onNavigate(item.id);
+                if (item.id === 'settings') updateStatus('has_visited_settings');
+              }}
               className={`w-full flex items-center gap-3 px-3.5 ${itemPadding} rounded-xl transition-all duration-200 group border border-transparent relative ${isActive
                 ? theme.activeSimple
                 : `${textColor} ${isLight ? 'hover:bg-slate-100/80 hover:text-slate-900' : 'hover:bg-white/5 hover:text-zinc-200'}`

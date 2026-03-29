@@ -481,14 +481,49 @@
 /* --- ONBOARDING HOTSPOT --- */
 .onboarding-hotspot {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  background-color: #ffffff;
+  width: 12px;
+  height: 12px;
+  background-color: #8b5cf6;
   border-radius: 50%;
   z-index: 99999 !important;
   pointer-events: none;
-  box-shadow: 0 0 15px #8b5cf6, 0 0 30px #8b5cf6;
-  border: 3px solid #8b5cf6;
+  box-shadow: 0 0 10px #8b5cf6,
+    0 0 20px rgba(139, 92, 246, 0.8);
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+}
+
+.onboarding-hotspot::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid #8b5cf6;
+  animation: hotspot-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.onboarding-hotspot::before {
+  content: '';
+  position: absolute;
+  inset: -15px;
+  border-radius: 50%;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  animation: hotspot-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite 0.5s;
+}
+
+@keyframes hotspot-pulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
 }
 
 .onboarding-hotspot::after {

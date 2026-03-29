@@ -403,7 +403,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                         <Plus size={16} />
                         {t('projects.createProject')}
                         {showCreateProjectPulse && (
-                            <div className="absolute -top-1 -right-1 onboarding-hotspot" />
+                            <div className="absolute -top-1 -right-1 onboarding-hotspot z-[99999]" />
                         )}
                     </button>
                 </div>

@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { supabaseClient } from '../services/supabase';
-import { User, Role } from '../types';
+import { User } from '../types';
 
 export interface OnboardingStatus {
     has_visited_settings: boolean;
@@ -16,24 +16,19 @@ const DEFAULT_STATUS: OnboardingStatus = {
 };
 
 export const useOnboarding = (user: User | null, onUpdateUser?: (updated: User) => void) => {
-    const onboardingConfig = import.meta.env.VITE_ONBOARDING_STATUS || 'false';
-    const isAdmin = user?.role === Role.ADMIN || true; // Temporary bypass for admin check if user not loaded
+    // 1. Config Check
+    const onboardingEnabled = import.meta.env.VITE_ONBOARDING_STATUS !== 'false';
+    const isDebug = import.meta.env.VITE_ONBOARDING_STATUS === 'debug';
 
-    // Determine if onboarding should be active
-    const isEnabled = useMemo(() => {
-        const config = String(onboardingConfig).toLowerCase();
-        if (config === 'debug') return true;
-        if (config === 'true') return true;
-        return false;
-    }, [onboardingConfig]);
-
+    // 2. Status Resolution
     const status: OnboardingStatus = useMemo(() => {
         if (!user?.onboarding_status) return DEFAULT_STATUS;
         return { ...DEFAULT_STATUS, ...(user.onboarding_status as any) };
     }, [user?.onboarding_status]);
 
+    // 3. Update Function
     const updateStatus = useCallback(async (key: keyof OnboardingStatus) => {
-        if (!user || status[key]) return;
+        if (!user || status[key] || !onboardingEnabled) return;
 
         const newStatus = { ...status, [key]: true };
 
@@ -44,29 +39,27 @@ export const useOnboarding = (user: User | null, onUpdateUser?: (updated: User) 
                 .eq('id', user.id);
 
             if (error) throw error;
-
-            if (onUpdateUser) {
-                onUpdateUser({
-                    ...user,
-                    onboarding_status: newStatus
-                });
-            }
+            if (onUpdateUser) onUpdateUser({ ...user, onboarding_status: newStatus });
         } catch (err) {
-            console.error('Failed to update onboarding status:', err);
+            console.error('[Onboarding] Update failed:', err);
         }
-    }, [user, status, onUpdateUser]);
+    }, [user, status, onboardingEnabled, onUpdateUser]);
 
-    // Computed visibilities
-    const showSettingsPulse = isEnabled && !status.has_visited_settings;
-    const showAiConfigPulse = isEnabled && status.has_visited_settings && !status.has_visited_ai_config;
-    const showCreateProjectPulse = isEnabled && status.has_visited_ai_config && !status.has_created_first_project;
+    // 4. Conditional Visibility Logic
+    // Step 1: Settings pulse if NOT visited settings
+    const showSettingsPulse = onboardingEnabled && !status.has_visited_settings;
+
+    // Step 2: AI Config pulse ONLY if visited settings AND NOT visited AI config
+    const showAiConfigPulse = onboardingEnabled && status.has_visited_settings && !status.has_visited_ai_config;
+
+    // Step 3: Create Project pulse ONLY if visited AI config AND NOT created project
+    const showCreateProjectPulse = onboardingEnabled && status.has_visited_ai_config && !status.has_created_first_project;
 
     return {
-        isEnabled,
-        status,
         showSettingsPulse,
         showAiConfigPulse,
         showCreateProjectPulse,
-        updateStatus
+        updateStatus,
+        status
     };
 };
