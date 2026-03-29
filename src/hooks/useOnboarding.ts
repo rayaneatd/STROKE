@@ -17,18 +17,21 @@ const DEFAULT_STATUS: OnboardingStatus = {
 
 export const useOnboarding = (user: User | null, onUpdateUser?: (updated: User) => void) => {
     // 1. Config Check
-    const onboardingEnabled = import.meta.env.VITE_ONBOARDING_STATUS !== 'false';
-    const isDebug = import.meta.env.VITE_ONBOARDING_STATUS === 'debug';
+    const onboardingConfig = import.meta.env.VITE_ONBOARDING_STATUS || 'false';
+    const onboardingVisible = onboardingConfig !== 'false';
+    const isDebug = onboardingConfig === 'debug';
 
     // 2. Status Resolution
     const status: OnboardingStatus = useMemo(() => {
+        // If debug is on, we ignore the DB state to ALWAYS show something if needed
+        if (isDebug) return DEFAULT_STATUS;
         if (!user?.onboarding_status) return DEFAULT_STATUS;
         return { ...DEFAULT_STATUS, ...(user.onboarding_status as any) };
-    }, [user?.onboarding_status]);
+    }, [user?.onboarding_status, isDebug]);
 
     // 3. Update Function
     const updateStatus = useCallback(async (key: keyof OnboardingStatus) => {
-        if (!user || status[key] || !onboardingEnabled) return;
+        if (!user || status[key] || !onboardingVisible) return;
 
         const newStatus = { ...status, [key]: true };
 
@@ -43,17 +46,17 @@ export const useOnboarding = (user: User | null, onUpdateUser?: (updated: User) 
         } catch (err) {
             console.error('[Onboarding] Update failed:', err);
         }
-    }, [user, status, onboardingEnabled, onUpdateUser]);
+    }, [user, status, onboardingVisible, onUpdateUser]);
 
     // 4. Conditional Visibility Logic
     // Step 1: Settings pulse if NOT visited settings
-    const showSettingsPulse = onboardingEnabled && !status.has_visited_settings;
+    const showSettingsPulse = onboardingVisible && !status.has_visited_settings;
 
     // Step 2: AI Config pulse ONLY if visited settings AND NOT visited AI config
-    const showAiConfigPulse = onboardingEnabled && status.has_visited_settings && !status.has_visited_ai_config;
+    const showAiConfigPulse = onboardingVisible && status.has_visited_settings && !status.has_visited_ai_config;
 
     // Step 3: Create Project pulse ONLY if visited AI config AND NOT created project
-    const showCreateProjectPulse = onboardingEnabled && status.has_visited_ai_config && !status.has_created_first_project;
+    const showCreateProjectPulse = onboardingVisible && status.has_visited_ai_config && !status.has_created_first_project;
 
     return {
         showSettingsPulse,

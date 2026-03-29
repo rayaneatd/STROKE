@@ -478,50 +478,45 @@
   }
 }
 
-/* --- ONBOARDING HOTSPOT --- */
+/* --- ONBOARDING PULSE SYSTEM --- */
 .onboarding-hotspot {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   background-color: #8b5cf6;
   border-radius: 50%;
   z-index: 99999 !important;
   pointer-events: none;
-  box-shadow: 0 0 10px #8b5cf6,
-    0 0 20px rgba(139, 92, 246, 0.8);
-  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.9), 0 0 5px rgba(255, 255, 255, 0.5);
+  border: 2px solid white;
 }
 
 .onboarding-hotspot::after {
   content: '';
   position: absolute;
-  inset: -8px;
+  inset: -6px;
   border-radius: 50%;
-  border: 2px solid #8b5cf6;
-  animation: hotspot-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  border: 2px solid rgba(139, 92, 246, 0.6);
+  animation: hotspot-pulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 .onboarding-hotspot::before {
   content: '';
   position: absolute;
-  inset: -15px;
+  inset: -12px;
   border-radius: 50%;
-  border: 1px solid rgba(139, 92, 246, 0.4);
-  animation: hotspot-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite 0.5s;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  animation: hotspot-pulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite 0.4s;
 }
 
 @keyframes hotspot-pulse {
   0% {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-
-  50% {
+    transform: scale(0.8);
     opacity: 1;
   }
 
   100% {
-    transform: scale(2.5);
+    transform: scale(2.8);
     opacity: 0;
   }
 }
