@@ -62,6 +62,8 @@ interface CandidateDrawerData {
   recruiter_notes: string | null;
   ai_model_used: string | null;
   scanned_at: string | null;
+  is_hidden_gem: boolean | null;
+  hidden_gem_reason: string | null;
 }
 
 interface CandidateDrawerProps {
