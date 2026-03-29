@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
-import { startOfDay, subDays, isAfter, parseISO, format } from 'date-fns';
+import { startOfDay, subDays, isAfter, parseISO } from 'date-fns';
 
 export type TimeRange = '7d' | '30d' | '90d' | 'ALL';
 
@@ -65,11 +65,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             if (timeRange === '90d') startDate = subDays(now, 90);
 
             // Parallel requests:
-            // 1. All candidates for legacy stats
-            // 2. Analytics Events for accurate historical & team data
-            // 3. Top 5 candidates
-
-            const [statsResult, eventsResult, timelineResult, failureDistResult] = await Promise.all([
+            const [statsResult, eventsResult, timelineResult, failureDistResult, hiddenGemsRes] = await Promise.all([
                 supabase
                     .from('candidates')
                     .select('id, candidate_name, match_score, recruiter_override_score, uploaded_at, uploaded_by, email_sent_at, size, status, is_hidden_gem')
@@ -78,7 +74,6 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     .from('analytics_events')
                     .select('*')
                     .eq('project_id', projectId),
-                // New optimized RPC calls
                 supabase.rpc('get_project_activity_timeline', {
                     p_project_id: projectId,
                     p_start_date: startDate ? startDate.toISOString() : null
@@ -86,13 +81,15 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 supabase.rpc('get_project_failure_distribution', {
                     p_project_id: projectId,
                     p_start_date: startDate ? startDate.toISOString() : null
+                }),
+                supabase.rpc('get_project_hidden_gems_count', {
+                    p_project_id: projectId
                 })
             ]);
 
             if (statsResult.error) throw statsResult.error;
-            if (eventsResult.error) console.warn('Analytics events error:', eventsResult.error);
-            if (timelineResult.error) console.warn('Timeline RPC error:', timelineResult.error);
-            if (failureDistResult.error) console.warn('Failure Dist RPC error:', failureDistResult.error);
+
+            const hiddenGemsCount = Number(hiddenGemsRes.data || 0);
 
             // Filter by Date Range locally (Legacy stats)
             const allData = (statsResult.data || []).map((c: any) => ({
@@ -105,19 +102,14 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 ? allData.filter(c => isAfter(parseISO(c.uploaded_at), startDate))
                 : allData;
 
-            // Basic Stats (Still based on current state for accuracy of "now")
+            // Basic Stats
             const total = data.length;
             const completed = data.filter(c => c.match_score != null).length;
 
-            // Pending -> Imported Today
             const todayStart = startOfDay(new Date());
             const pending = data.filter(c => isAfter(parseISO(c.uploaded_at), todayStart)).length;
-
             const qualified = data.filter(c => c.match_score != null && c.match_score >= 50).length;
-
-            // Rejected -> Explicit status 'rejected'
             const rejected = data.filter(c => c.status === 'rejected').length;
-
             const contacted = data.filter(c => c.email_sent_at != null).length;
 
             const scores = data
@@ -128,67 +120,44 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
                 : 0;
 
-            // Rates
             const qualificationRate = completed > 0 ? Math.round((qualified / completed) * 100) : 0;
             const contactRate = qualified > 0 ? Math.round((contacted / qualified) * 100) : 0;
             const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-            // Timeline (Use RPC result if available, otherwise fallback to legacy calculation)
+            // Timeline
             let timelineData: any[] = [];
-
             if (timelineResult.data && Array.isArray(timelineResult.data) && timelineResult.data.length > 0) {
-                // Ensure data types are correct for Recharts
                 timelineData = timelineResult.data.map((item: any) => ({
-                    date: item.date, // 'YYYY-MM-DD'
+                    date: item.date,
                     added: Number(item.added || 0),
                     qualified: Number(item.qualified || 0),
                     failed: Number(item.failed || 0),
                     avgScore: Number(item.avg_score || 0)
                 }));
             } else {
-                // Fallback Logic (Legacy)
                 const timelineMap = new Map<string, { added: number; qualified: number; contacted: number; rejected: number; failed: number }>();
-
                 data.forEach(c => {
                     const date = c.uploaded_at.split('T')[0];
                     const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
-
                     current.added++;
                     if (c.match_score != null && c.match_score >= 50) current.qualified++;
                     if (c.email_sent_at) current.contacted++;
                     if (c.match_score != null && c.match_score < 50) current.rejected++;
-
                     timelineMap.set(date, current);
                 });
-
-                // Failures from events (Legacy fallback)
-                const events = startDate
-                    ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
-                    : allEvents;
-
-                events.forEach(e => {
-                    if (e.event_type === 'FAIL') {
-                        const date = e.created_at.split('T')[0];
-                        const current = timelineMap.get(date) || { added: 0, qualified: 0, contacted: 0, rejected: 0, failed: 0 };
-                        current.failed++;
-                        timelineMap.set(date, current);
-                    }
-                });
-
                 timelineData = Array.from(timelineMap.entries())
                     .map(([date, stats]) => ({
                         date,
                         added: stats.added,
                         qualified: stats.qualified,
                         failed: stats.failed,
-                        avgScore: stats.added > 0 ? Math.round(stats.qualified * 100 / stats.added) : 0 // Fallback estimate
+                        avgScore: stats.added > 0 ? Math.round(stats.qualified * 100 / stats.added) : 0
                     }))
                     .sort((a, b) => a.date.localeCompare(b.date));
             }
 
-            // Failure Distribution (Unified Logic)
+            // Failure Distribution
             const failureMap = new Map<string, number>();
-
             const getFailLabel = (reason: string) => {
                 const r = (reason || '').toLowerCase();
                 if (r.includes('upload') || r.includes('storage')) return t('dashboard.failReasons.uploadFailed');
@@ -204,26 +173,12 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     const label = getFailLabel(item.reason);
                     failureMap.set(label, (failureMap.get(label) || 0) + Number(item.count || 0));
                 });
-            } else {
-                // Fallback Logic
-                const events = startDate
-                    ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
-                    : allEvents;
-
-                events.forEach(e => {
-                    if (e.event_type === 'FAIL') {
-                        const reason = (e.metadata as any)?.reason;
-                        const label = getFailLabel(reason);
-                        failureMap.set(label, (failureMap.get(label) || 0) + 1);
-                    }
-                });
             }
 
             const failureDistribution = Array.from(failureMap.entries())
                 .map(([reason, count]) => ({ reason, count }))
                 .sort((a, b) => b.count - a.count);
 
-            // Score Distribution (unchanged)
             const distribution = [
                 { range: '0-20', min: 0, max: 20, count: 0 },
                 { range: '21-40', min: 21, max: 40, count: 0 },
@@ -238,18 +193,14 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             });
 
             const scoreDistribution = distribution.map(d => ({ range: d.range, count: d.count }));
-
-            // Funnel (using keys for translation)
             const funnelData = [
-                { stage: 'imported', count: total, fill: '#6366f1' }, // Indigo
-                { stage: 'analyzed', count: completed, fill: '#8b5cf6' }, // Violet
-                { stage: 'qualified', count: qualified, fill: '#10b981' }, // Emerald
-                { stage: 'contacted', count: contacted, fill: '#f59e0b' }, // Amber
+                { stage: 'imported', count: total, fill: '#6366f1' },
+                { stage: 'analyzed', count: completed, fill: '#8b5cf6' },
+                { stage: 'qualified', count: qualified, fill: '#10b981' },
+                { stage: 'contacted', count: contacted, fill: '#f59e0b' },
             ];
 
-            // Contribution (Legacy source for consistency)
             const contributionMap = new Map<string, { scans: number; qualified: number; rejected: number; contacted: number }>();
-
             data.forEach(c => {
                 if (c.uploaded_by) {
                     const current = contributionMap.get(c.uploaded_by) || { scans: 0, qualified: 0, rejected: 0, contacted: 0 };
@@ -276,7 +227,6 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     uploadedAt: c.uploaded_at
                 }));
 
-            // Failures
             const events = startDate
                 ? allEvents.filter(e => isAfter(parseISO(e.created_at), startDate))
                 : allEvents;
@@ -301,7 +251,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 topCandidates,
                 recentFailures,
                 riskCount: 0,
-                hiddenGemCount: data.filter(c => !!c.is_hidden_gem).length
+                hiddenGemCount: hiddenGemsCount
             };
         }
     });
