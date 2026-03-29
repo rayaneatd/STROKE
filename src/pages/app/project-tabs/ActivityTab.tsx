@@ -18,7 +18,6 @@ import { supabase } from '../../../lib/supabase';
 interface ActivityTabProps {
     project: Project;
     riskCount: number;
-    hiddenGemCount: number;
     contributionData: { userId: string; scans: number }[];
     canUseAntiGhosting: boolean;
     onMarkContacted?: (fileId: string) => void;
@@ -37,7 +36,6 @@ const ITEM_HEIGHT = 72;
 const ActivityTab: React.FC<ActivityTabProps> = ({
     project,
     riskCount,
-    hiddenGemCount,
     contributionData,
     canUseAntiGhosting,
     onMarkContacted,
@@ -103,6 +101,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     const {
         candidates,
         totalCount: totalScans,
+        totalHiddenGems,
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
@@ -370,7 +369,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                         <Sparkles size={20} />
                     </div>
                     <div>
-                        <div className={`text-2xl font-bold ${textPrimary}`}>{hiddenGemCount}</div>
+                        <div className={`text-2xl font-bold ${textPrimary}`}>{totalHiddenGems}</div>
                         <div className={`text-xs ${textSecondary} font-medium uppercase tracking-wide`}>{t('candidateDrawer.analysis.hiddenGemTitle', 'Hidden Gems')}</div>
                     </div>
                 </div>

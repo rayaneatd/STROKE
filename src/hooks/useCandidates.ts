@@ -130,11 +130,13 @@ export const useCandidates = ({
                 totalTokensUsed: row.total_tokens_used
             } as ProjectFile));
 
-            const totalCount = data && data.length > 0 ? Number(data[0].full_count) : 0;
+            const totalCount = data && data.length > 0 ? Number((data[0] as any).full_count) : 0;
+            const totalHiddenGems = data && data.length > 0 ? Number((data[0] as any).hidden_gems_count || 0) : 0;
 
             return {
                 candidates,
                 count: totalCount,
+                hiddenGemsCount: totalHiddenGems,
                 nextPage: (pageParam + 1) * PAGE_SIZE < totalCount ? pageParam + 1 : undefined
             };
         },
@@ -145,6 +147,7 @@ export const useCandidates = ({
 
     const candidates = data?.pages.flatMap(page => page.candidates) || [];
     const totalCount = data?.pages[0]?.count || 0;
+    const totalHiddenGems = data?.pages[0]?.hiddenGemsCount || 0;
 
     // --- Actions ---
     const updateCandidateStatus = async (candidateId: string, status: 'new' | 'screened' | 'interview' | 'rejected' | 'hired') => {
@@ -182,6 +185,7 @@ export const useCandidates = ({
     return {
         candidates,
         totalCount,
+        totalHiddenGems,
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
