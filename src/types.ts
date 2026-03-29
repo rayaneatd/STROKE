@@ -188,6 +188,7 @@ export interface User {
   hasCompletedOnboarding?: boolean;
   marketingConsent: boolean;
   feedbackConsent: boolean;
+  onboarding_status?: unknown;
 
   // Updated: List of integrations
   emailIntegrations: EmailIntegration[];

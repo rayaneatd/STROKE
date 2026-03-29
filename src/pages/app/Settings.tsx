@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { User, SubscriptionPlan } from '../../types';
 import {
     Bell, Shield, Save, Check, Loader2,
@@ -9,8 +9,9 @@ import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
 import ThemedCard from '../../components/ui/ThemedCard';
 import ThemedButton from '../../components/ui/ThemedButton';
 import { useSettings } from '../../hooks/useSettings';
-import LanguageSwitcher from '../../components/LanguageSwitcher'; // Import LanguageSwitcher
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
+import { useOnboarding } from '../../hooks/useOnboarding';
 
 // Sub-Components
 import WorkflowSettings from '../../components/settings/WorkflowSettings';
@@ -28,6 +29,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => {
     const { t } = useTranslation();
+    const { showAiConfigPulse, updateStatus } = useOnboarding(user, onUpdateUser as any);
     const {
         activeTab,
         setActiveTab,
@@ -49,6 +51,12 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
         handleDeleteAccount,
         styles
     } = useSettings({ user, onUpdateUser, onLogout });
+
+    useEffect(() => {
+        if (activeTab === 'WORKFLOW') {
+            updateStatus('has_visited_settings');
+        }
+    }, [activeTab, updateStatus]);
 
     return (
         <div className="max-w-5xl mx-auto animate-fade-in space-y-8 pb-12 relative">
@@ -83,13 +91,21 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                     ].map((tab) => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all border border-transparent ${activeTab === tab.id
+                            onClick={() => {
+                                setActiveTab(tab.id as any);
+                                if (tab.id === 'AI') {
+                                    updateStatus('has_visited_ai_config');
+                                }
+                            }}
+                            className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all border border-transparent relative ${activeTab === tab.id
                                 ? `${styles.bg.accentTransparent} ${styles.text.accent} ${styles.border.accentDim} border shadow-sm`
                                 : `${styles.text.secondary} ${styles.bg.surfaceHover}`
                                 }`}
                         >
                             {tab.icon} {tab.label}
+                            {tab.id === 'AI' && showAiConfigPulse && (
+                                <div className="absolute top-2 right-2 onboarding-hotspot" />
+                            )}
                         </button>
                     ))}
                 </div>

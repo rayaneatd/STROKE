@@ -9,7 +9,9 @@ import {
 import { useProjects } from '../../hooks/useProjects';
 import { Project, User, ProjectRole } from '../../types';
 import LowScansBanner from '../../components/LowScansBanner';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
+import { useOnboarding } from '../../hooks/useOnboarding';
 
 // Modals
 import ProjectModal from '../../components/modals/EditProjectModal'; // Unified modal for Edit/Create
@@ -287,7 +289,8 @@ interface ProjectsProps {
 }
 
 const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavigate, onUpdateUser }) => {
-    const { t, i18n } = useTranslation(); // Initialize hook
+    const { t, i18n } = useTranslation();
+    const { showCreateProjectPulse, updateStatus } = useOnboarding(currentUser, onUpdateUser);
     const {
         projects,
         searchTerm,
@@ -325,11 +328,20 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
         handleStatusChange,
         confirmDeleteProject,
         confirmLeaveProject,
-        handleProjectModalSave,
+        handleProjectModalSave: originalHandleProjectModalSave,
         handleLoadMore,
         fundProjectMutation,
         loading
     } = useProjects({ currentUser, onUpdateUser, onNavigate });
+
+    // Intercept project modal save to finish onboarding
+    const handleProjectModalSave = async (data: any, originalOnSave?: any) => {
+        const result = await originalHandleProjectModalSave(data, originalOnSave);
+        if (showCreateProjectPulse) {
+            updateStatus('has_created_first_project');
+        }
+        return result;
+    };
 
     // Fund handlers wrapper
     const handleFundProject = async (params: { amount: number }) => {
@@ -386,10 +398,13 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                         onClick={canCreateProject ? handleCreateClick : undefined}
                         disabled={!canCreateProject}
                         title={!canCreateProject ? t('projects.errors.noPrimaryEmail') : t('projects.newProject')}
-                        className={`bg-${accentColor}-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-${accentColor}-500 transition-colors flex items-center gap-2 shadow-lg shadow-${accentColor}-900/20 active:translate-y-0.5 hover:-translate-y-0.5 ${!canCreateProject ? 'opacity-50 cursor-not-allowed saturate-0' : ''}`}
+                        className={`bg-${accentColor}-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-${accentColor}-500 transition-colors flex items-center gap-2 shadow-lg shadow-${accentColor}-900/20 active:translate-y-0.5 hover:-translate-y-0.5 relative ${!canCreateProject ? 'opacity-50 cursor-not-allowed saturate-0' : ''}`}
                     >
                         <Plus size={16} />
                         {t('projects.createProject')}
+                        {showCreateProjectPulse && (
+                            <div className="absolute -top-1 -right-1 onboarding-hotspot" />
+                        )}
                     </button>
                 </div>
             </div>
