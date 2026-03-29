@@ -65,7 +65,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             if (timeRange === '90d') startDate = subDays(now, 90);
 
             // Parallel requests:
-            const [statsResult, eventsResult, timelineResult, failureDistResult] = await Promise.all([
+            const [statsResult, eventsResult, timelineResult, failureDistResult, hiddenGemsResult] = await Promise.all([
                 supabase
                     .from('candidates')
                     .select('id, candidate_name, match_score, recruiter_override_score, uploaded_at, uploaded_by, email_sent_at, size, status, is_hidden_gem')
@@ -110,7 +110,15 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const qualified = data.filter(c => c.match_score != null && c.match_score >= 50).length;
             const rejected = data.filter(c => c.status === 'rejected').length;
             const contacted = data.filter(c => c.email_sent_at != null).length;
-            const hiddenGemCount = data.filter(c => !!c.is_hidden_gem).length;
+            const hiddenGemCount = Number(hiddenGemsResult.data || 0);
+
+            // Risk Count: High quality candidates (score >= 80) not yet contacted
+            const riskCount = data.filter(c => 
+                c.match_score != null && 
+                c.match_score >= 80 && 
+                !c.email_sent_at && 
+                c.status !== 'rejected'
+            ).length;
 
             const scores = data
                 .filter(c => c.match_score != null)
@@ -250,8 +258,8 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 contributionData,
                 topCandidates,
                 recentFailures,
-                riskCount: 0,
-                hiddenGemCount: hiddenGemCount
+                riskCount,
+                hiddenGemCount
             };
         }
     });
