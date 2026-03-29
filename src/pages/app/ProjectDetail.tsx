@@ -454,6 +454,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack, deduct
                     <ActivityTab
                         project={project}
                         riskCount={analytics.riskCount}
+                        hiddenGemCount={analytics.hiddenGemCount}
                         contributionData={contributionData}
                         canUseAntiGhosting={canUseAntiGhosting}
                         onMarkContacted={handleMarkContacted}

@@ -47,6 +47,7 @@ interface ProjectAnalytics {
     // Health
     recentFailures: number;
     riskCount: number;
+    hiddenGemCount: number;
 }
 
 export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'ALL') => {
@@ -71,7 +72,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const [statsResult, eventsResult, timelineResult, failureDistResult] = await Promise.all([
                 supabase
                     .from('candidates')
-                    .select('id, candidate_name, match_score, recruiter_override_score, uploaded_at, uploaded_by, email_sent_at, size, status')
+                    .select('id, candidate_name, match_score, recruiter_override_score, uploaded_at, uploaded_by, email_sent_at, size, status, is_hidden_gem')
                     .eq('project_id', projectId),
                 supabase
                     .from('analytics_events')
@@ -299,7 +300,8 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 contributionData,
                 topCandidates,
                 recentFailures,
-                riskCount: 0
+                riskCount: 0,
+                hiddenGemCount: data.filter(c => !!c.is_hidden_gem).length
             };
         }
     });

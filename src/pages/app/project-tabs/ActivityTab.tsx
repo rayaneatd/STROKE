@@ -7,7 +7,7 @@ import {
     User as UserIcon, Search, Filter, SortAsc, SortDesc, Download, Loader2, Check, X,
     MailCheck, Mail, FileCheck, Eye, EyeOff, UserX,
     CheckSquare, Square, Send, PenTool, Zap, MessageSquare, Code, FileText,
-    Star, ThumbsDown
+    Star, ThumbsDown, Sparkles
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ComingSoonProvider, useComingSoon } from '../../../context/ComingSoonContext';
@@ -18,6 +18,7 @@ import { supabase } from '../../../lib/supabase';
 interface ActivityTabProps {
     project: Project;
     riskCount: number;
+    hiddenGemCount: number;
     contributionData: { userId: string; scans: number }[];
     canUseAntiGhosting: boolean;
     onMarkContacted?: (fileId: string) => void;
@@ -36,6 +37,7 @@ const ITEM_HEIGHT = 72;
 const ActivityTab: React.FC<ActivityTabProps> = ({
     project,
     riskCount,
+    hiddenGemCount,
     contributionData,
     canUseAntiGhosting,
     onMarkContacted,
@@ -353,7 +355,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
     return (
         <div className="relative h-[calc(100vh-220px)] min-h-[600px] animate-fade-in flex flex-col gap-6">
             {/* Header Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
                 <div className={`${cardBg} p-4 rounded-2xl border transition-all shadow-sm flex items-center gap-4`}>
                     <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
                         <Activity size={20} />
@@ -361,6 +363,15 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                     <div>
                         <div className={`text-2xl font-bold ${textPrimary}`}>{totalScans}</div>
                         <div className={`text-xs ${textSecondary} font-medium uppercase tracking-wide`}>Total Scans Logged</div>
+                    </div>
+                </div>
+                <div className={`${cardBg} p-4 rounded-2xl border transition-all shadow-sm flex items-center gap-4`}>
+                    <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl border border-amber-500/20">
+                        <Sparkles size={20} />
+                    </div>
+                    <div>
+                        <div className={`text-2xl font-bold ${textPrimary}`}>{hiddenGemCount}</div>
+                        <div className={`text-xs ${textSecondary} font-medium uppercase tracking-wide`}>{t('candidateDrawer.analysis.hiddenGemTitle', 'Hidden Gems')}</div>
                     </div>
                 </div>
                 <div className={`${cardBg} p-4 rounded-2xl border transition-all shadow-sm flex items-center gap-4`}>
