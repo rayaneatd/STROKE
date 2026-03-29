@@ -118,6 +118,8 @@ export const useCandidates = ({
                 careerTrajectory: row.career_trajectory,
                 socialLinks: row.social_links,
                 originalResumeName: row.original_resume_name,
+                is_hidden_gem: !!row.is_hidden_gem,
+                hidden_gem_reason: row.hidden_gem_reason,
 
                 // AI Act Compliance
                 aiModelUsed: row.ai_model_used,
