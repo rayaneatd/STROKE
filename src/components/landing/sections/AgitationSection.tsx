@@ -78,15 +78,15 @@ const AgitationSection: React.FC = () => {
                             variants={itemVariants}
                             className="text-blue-500 font-mono text-[10px] tracking-[0.6em] uppercase mb-4 block"
                         >
-                            The invisible attrition
+                            The cost of inefficiency
                         </motion.span>
 
                         <motion.h2
                             variants={itemVariants}
                             className="text-4xl md:text-7xl font-black mb-8 leading-[0.95] text-slate-100 italic"
                         >
-                            The Hidden Cost of the <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 not-italic">Invisible Top 1%</span>.
+                            Don't miss out on the <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400 not-italic">Top 1% of talents.</span>
                         </motion.h2>
 
                         <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -100,8 +100,8 @@ const AgitationSection: React.FC = () => {
                                 variants={itemVariants}
                                 className="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl border-l border-white/5 pl-8"
                             >
-                                Legacy ATS systems scan for characters, not context. They miss the trajectory.
-                                <span className="text-slate-200 block mt-4 font-bold"> 68% of elite talent is discarded </span> by algorithms that can't read between the lines.
+                                Legacy systems scan for keywords, not skills. They ignore context and progression.
+                                <span className="text-slate-200 block mt-4 font-bold"> Over 60% of qualified profiles </span> are discarded by obsolete algorithms that can't read between the lines.
                             </motion.p>
                         </div>
                     </div>
@@ -126,12 +126,12 @@ const AgitationSection: React.FC = () => {
                             {/* Base Layer: Legacy Content */}
                             <div className="absolute inset-0 bg-[#0a0a0c] flex flex-col justify-center px-10 md:px-24 grayscale opacity-30">
                                 <div className="max-w-xl text-left">
-                                    <h3 className="text-3xl font-black text-slate-700 mb-6 uppercase tracking-[0.3em]">Legacy Logic</h3>
+                                    <h3 className="text-3xl font-black text-slate-700 mb-6 uppercase tracking-[0.3em]">Legacy Methods</h3>
                                     <ul className="space-y-4 font-mono text-slate-600 text-sm">
-                                        <li>[SYSTEM] Manual Filtering: ~10m / resume</li>
-                                        <li>[SYSTEM] Work Silos: No real-time collab</li>
-                                        <li>[SYSTEM] Ghosting Rate: 72% (unmanaged)</li>
-                                        <li>[STATUS] Outcome: Extreme Processing Latency</li>
+                                        <li>[PROCESS] Manual Filtering: ~10 min / resume</li>
+                                        <li>[SILOS] No real-time collaboration</li>
+                                        <li>[GHOSTING] High candidate dropout rate</li>
+                                        <li>[STATUS] Outcome: Latency and talent loss</li>
                                     </ul>
                                 </div>
                             </div>
@@ -145,19 +145,19 @@ const AgitationSection: React.FC = () => {
                                 }}
                             >
                                 <div className="max-w-xl text-left">
-                                    <h3 className="text-3xl font-black text-blue-400 mb-6 uppercase tracking-[0.3em] shadow-blue-500/20">STROKE Insight</h3>
+                                    <h3 className="text-3xl font-black text-blue-400 mb-6 uppercase tracking-[0.3em] shadow-blue-500/20">The STROKE Experience</h3>
                                     <ul className="space-y-4 font-mono text-blue-100 italic">
                                         <li className="flex items-center gap-3">
                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                                            Smart Rating: Instant Predictive Scoring
+                                            Predictive Score: Instant Evaluation
                                         </li>
                                         <li className="flex items-center gap-3">
                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                                            Anti-Ghosting: Mass Email Automation
+                                            Anti-Ghosting: Automated Engagement
                                         </li>
                                         <li className="flex items-center gap-3">
                                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                                            Multi-Tenancy: Shared Team Workspace
+                                            Collaborative Workspace: Team Synchronization
                                         </li>
                                         <li className="flex items-center gap-3 text-blue-400 font-bold not-italic mt-6 bg-blue-500/10 w-fit px-4 py-1 rounded-sm">
                                             STATUS: 12x FASTER / SMARTER / LIGHTER
@@ -185,7 +185,7 @@ const AgitationSection: React.FC = () => {
                             </motion.div>
 
                             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-mono text-slate-500 uppercase tracking-[0.5em] opacity-30 group-hover:opacity-60 transition-opacity">
-                                drag focus to uncover reality
+                                Hover to reveal reality
                             </div>
                         </div>
 
@@ -195,7 +195,7 @@ const AgitationSection: React.FC = () => {
                             className="absolute -bottom-16 left-0 right-0 flex justify-between items-center text-[10px] font-mono tracking-[0.3em] text-slate-600 uppercase"
                         >
                             <span className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-full">
-                                <Settings size={12} className="animate-spin-slow" /> Passive Scanning
+                                <Settings size={12} className="animate-spin-slow" /> Classic Analysis
                             </span>
                             <span className="flex items-center gap-4 text-blue-400 bg-blue-500/5 px-4 py-2 rounded-full border border-blue-500/10">
                                 Active Contextual Analysis <Ghost size={12} className="animate-pulse" />

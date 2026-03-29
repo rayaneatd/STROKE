@@ -80,30 +80,37 @@ const FortressSection: React.FC = () => {
                                     className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8 backdrop-blur-xl shadow-[0_4px_20px_rgba(59,130,246,0.15)]"
                                 >
                                     <ShieldCheck size={16} className="text-blue-400 animate-pulse" />
-                                    <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Hardened Intelligence</span>
+                                    <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Responsible Intelligence</span>
                                 </motion.div>
 
                                 <motion.h2
                                     variants={itemVariants}
                                     className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] text-slate-100 mb-8 italic select-none"
                                 >
-                                    Enterprise <br />
-                                    <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Fortification.</span>
+                                    A Transparent <br />
+                                    <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">AI.</span>
                                 </motion.h2>
 
                                 <motion.p
                                     variants={itemVariants}
                                     className="text-lg text-slate-400 max-w-lg mb-8 leading-relaxed font-light border-l-2 border-slate-800 pl-8"
                                 >
-                                    We don't "trust" AI. We govern it. STROKE is a fortified processing engine engineered on Google Cloud's most secure <span className="text-slate-200 font-bold">EU infrastructure</span>.
+                                    Trust isn't declared, it's proven. STROKE is designed to meet the strictest requirements of the <span className="text-slate-200 font-bold">EU AI Act</span> and GDPR.
                                 </motion.p>
 
-                                <motion.div variants={itemVariants}>
+                                <motion.div variants={itemVariants} className="flex flex-col gap-4 pl-8 mb-12">
+                                    <Link
+                                        to="/transparency"
+                                        className="flex items-center gap-3 text-emerald-400 font-mono text-[10px] tracking-[0.3em] uppercase hover:text-emerald-300 transition-colors group"
+                                    >
+                                        [ Consult Transparency Register ]
+                                        <div className="h-[1px] w-0 bg-emerald-400 group-hover:w-8 transition-all duration-300"></div>
+                                    </Link>
                                     <Link
                                         to="/privacy-policy"
-                                        className="flex items-center gap-3 text-blue-400 font-mono text-[10px] tracking-[0.3em] uppercase mb-12 hover:text-blue-300 transition-colors pl-8 group"
+                                        className="flex items-center gap-3 text-blue-400 font-mono text-[10px] tracking-[0.3em] uppercase hover:text-blue-300 transition-colors group"
                                     >
-                                        [ Read Privacy Policy ]
+                                        [ Privacy Policy ]
                                         <div className="h-[1px] w-0 bg-blue-400 group-hover:w-8 transition-all duration-300"></div>
                                     </Link>
                                 </motion.div>
@@ -119,8 +126,8 @@ const FortressSection: React.FC = () => {
                                             <Server size={22} className="text-blue-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">Vertex AI (europe-west9)</h4>
-                                            <p className="text-slate-500 text-sm leading-snug">Data residency locked in Paris. Zero data egress from the European Union.</p>
+                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">Sovereign Hosting</h4>
+                                            <p className="text-slate-500 text-sm leading-snug">Data residency locked in Paris (europe-west9). Zero data egress from the European Union.</p>
                                         </div>
                                     </motion.div>
 
@@ -134,8 +141,8 @@ const FortressSection: React.FC = () => {
                                             <Lock size={22} className="text-emerald-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">RGPD-Native</h4>
-                                            <p className="text-slate-500 text-sm leading-snug">Automated PII anonymization. Zero model training on proprietary candidate intelligence.</p>
+                                            <h4 className="text-slate-100 font-bold font-mono tracking-wide text-sm mb-2">GDPR-Native</h4>
+                                            <p className="text-slate-500 text-sm leading-snug">Automated PII anonymization. Your data is never used to train public models.</p>
                                         </div>
                                     </motion.div>
                                 </div>

@@ -60,22 +60,22 @@ const TheGapSection: React.FC = () => {
                             className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8 backdrop-blur-xl"
                         >
                             <ScanSearch size={16} className="text-blue-400 animate-pulse" />
-                            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Contextual Extraction</span>
+                            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-blue-300">Contextual Analysis</span>
                         </motion.div>
 
                         <motion.h2
                             variants={itemVariants}
                             className="text-4xl md:text-7xl font-black tracking-tighter leading-[0.85] text-slate-100 mb-8 italic select-none"
                         >
-                            Read the <br />
-                            <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 underline decoration-blue-500/20 underline-offset-8">Matrix.</span>
+                            Understand the <br />
+                            <span className="not-italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 underline decoration-blue-500/20 underline-offset-8">Potential.</span>
                         </motion.h2>
 
                         <motion.p
                             variants={itemVariants}
                             className="text-lg md:text-xl text-slate-400 max-w-lg mb-12 leading-relaxed font-light border-l-2 border-blue-500/20 pl-8 italic"
                         >
-                            See past the PDF formatting. STROKE extracts the underlying <span className="text-slate-100 font-bold not-italic">JSON data graph</span>, instantly highlighting temporal gaps and pattern anomalies.
+                            Don't just scan keywords. STROKE analyzes the <span className="text-slate-100 font-bold not-italic">real trajectory</span> of your candidates, identifying transferable skills and invisible soft skills.
                         </motion.p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
@@ -89,8 +89,8 @@ const TheGapSection: React.FC = () => {
                                     <Star size={24} className="text-blue-400" />
                                 </div>
                                 <div>
-                                    <h4 className="text-slate-100 font-bold font-mono tracking-widest text-sm mb-2 uppercase">Smart Rating</h4>
-                                    <p className="text-slate-500 text-xs leading-relaxed">Predictive scoring that ranks candidates by cultural and technical trajectory, not just keywords.</p>
+                                    <h4 className="text-slate-100 font-bold font-mono tracking-widest text-sm mb-2 uppercase">Predictive Score</h4>
+                                    <p className="text-slate-500 text-xs leading-relaxed">Intelligent ranking based on cultural and technical fit, not just resume formatting.</p>
                                 </div>
                             </motion.div>
 
@@ -104,8 +104,8 @@ const TheGapSection: React.FC = () => {
                                     <Users size={24} className="text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h4 className="text-slate-100 font-bold font-mono tracking-widest text-sm mb-2 uppercase">Multi-Tenancy</h4>
-                                    <p className="text-slate-500 text-xs leading-relaxed">Collaborative workspaces for the whole team. Move from isolation to synchronized hiring cycles.</p>
+                                    <h4 className="text-slate-100 font-bold font-mono tracking-widest text-sm mb-2 uppercase">Collaboration</h4>
+                                    <p className="text-slate-500 text-xs leading-relaxed">Shared workspaces for the entire team. Sync your hiring cycles instantly.</p>
                                 </div>
                             </motion.div>
 
@@ -115,12 +115,12 @@ const TheGapSection: React.FC = () => {
                                 whileHover={{ y: -5, backgroundColor: 'rgba(168, 85, 247, 0.05)', borderColor: 'rgba(168, 85, 247, 0.4)' }}
                                 className="p-6 flex flex-col items-start gap-4 border border-white/5 bg-white/[0.02] backdrop-blur-xl shadow-2xl transition-all duration-500 group cursor-default rounded-2xl"
                             >
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(168, 85, 247, 0.2)]">
                                     <Mail size={24} className="text-purple-400" />
                                 </div>
                                 <div>
                                     <h4 className="text-slate-100 font-bold font-mono tracking-widest text-sm mb-2 uppercase">Anti-Ghosting</h4>
-                                    <p className="text-slate-500 text-xs leading-relaxed">Mass email automation protocol designed to keep candidates in the loop with zero manual effort.</p>
+                                    <p className="text-slate-500 text-xs leading-relaxed">Personalized automation to keep every candidate informed, with zero extra manual effort.</p>
                                 </div>
                             </motion.div>
 
@@ -134,8 +134,8 @@ const TheGapSection: React.FC = () => {
                                     <Zap size={24} className="text-rose-400" />
                                 </div>
                                 <div>
-                                    <h4 className="text-slate-100 font-bold font-mono tracking-widest text-sm mb-2 uppercase">Lighter Engine</h4>
-                                    <p className="text-slate-500 text-xs leading-relaxed">No bloat. A high-performance, responsive interface built for speed and effortless navigation.</p>
+                                    <h4 className="text-slate-100 font-bold font-mono tracking-widest text-sm mb-2 uppercase">High-Performance Interface</h4>
+                                    <p className="text-slate-500 text-xs leading-relaxed">Zero latency. A fluid platform designed for speed and frictionless navigation.</p>
                                 </div>
                             </motion.div>
                         </div>

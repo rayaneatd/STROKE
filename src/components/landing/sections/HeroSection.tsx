@@ -7,7 +7,7 @@ interface HeroSectionProps {
     isAuthenticated?: boolean;
 }
 
-const WORDS = ["Keywords", "Buzzwords", "Formatting", "Trajectory"];
+const WORDS = ["Talent", "Potential", "Context", "Trajectory"];
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => {
     const [wordIndex, setWordIndex] = useState(0);
@@ -16,7 +16,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
     useEffect(() => {
         const timeout = setTimeout(() => {
             setWordIndex((prev) => (prev + 1) % WORDS.length);
-        }, 2000);
+        }, 3000);
         return () => clearTimeout(timeout);
     }, [wordIndex]);
 
@@ -117,11 +117,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
 
                             <motion.div
                                 variants={floatVariants}
-                                className="inline-flex items-center gap-3 px-4 py-2 rounded-full mb-8 border border-white/10 bg-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl"
+                                className="inline-flex items-center gap-3 px-4 py-2 rounded-full mb-8 border border-blue-500/20 bg-blue-500/5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl"
                             >
                                 <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-300">
-                                    Live Contextual Scanning
+                                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-blue-400">
+                                    EU AI Act 🇪🇺 & GDPR Compliant
                                 </span>
                             </motion.div>
 
@@ -129,9 +129,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
                                 variants={sideEntryVariants}
                                 className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.85] text-slate-100 mb-6 select-none"
                             >
-                                <span className="block mb-2">Beyond</span>
+                                <span className="block mb-2">The AI that sees</span>
                                 <span className="relative inline-block mt-4">
-                                    Simple
+                                    your
                                     {/* Overlapping Glass accent */}
                                     <motion.div
                                         animate={{ y: [-10, 10, -10], x: [-10, 10, -10], rotate: [12, 5, 12] }}
@@ -162,11 +162,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
 
                             <div className="flex flex-col lg:flex-row items-center lg:items-center gap-8 lg:gap-16 mt-12">
                                 <motion.div variants={punchlineVariants} className="flex flex-col">
-                                    <p className="text-4xl md:text-6xl text-slate-100 font-black leading-[0.9] uppercase mb-2 tracking-tighter italic">
-                                        F**k the ATS
+                                    <p className="text-4xl md:text-5xl text-slate-100 font-black leading-[0.9] uppercase mb-2 tracking-tighter italic">
+                                        Empower your recruitment
                                     </p>
-                                    <p className="text-xl md:text-2xl text-blue-400 font-mono tracking-widest lowercase bg-blue-500/10 px-4 py-1 rounded inline-block">
-                                        Use STROKE instead
+                                    <p className="text-lg md:text-xl text-blue-400 font-mono tracking-widest lowercase bg-blue-500/10 px-4 py-1 rounded inline-block">
+                                        Go beyond keywords
                                     </p>
                                 </motion.div>
 
@@ -174,10 +174,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
                                     <button
                                         onClick={onCTA}
                                         aria-label="Start Free Scan"
-                                        className="relative z-10 px-10 py-5 text-lg font-bold tracking-tight text-white flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/20 hover:border-blue-400/50 hover:bg-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(59,130,246,0.2)] overflow-hidden rounded-full transition-all"
+                                        className="relative z-10 px-10 py-5 text-lg font-bold tracking-tight text-white flex items-center gap-4 bg-blue-600 backdrop-blur-xl border border-blue-400/30 hover:bg-blue-500 shadow-[0_20px_40px_rgba(59,130,246,0.3),0_0_20_rgba(59,130,246,0.2)] overflow-hidden rounded-full transition-all"
                                     >
                                         <span className="relative z-10">
-                                            {isAuthenticated ? 'Go to Workspace' : 'Start Free Scan'}
+                                            {isAuthenticated ? 'Go to Workspace' : 'Scan 50 Resumes for Free'}
                                         </span>
                                         <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="relative z-10">
                                             <ArrowRight />
@@ -195,7 +195,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
                             <div className="bg-white/5 p-6 border border-white/10 rounded-2xl backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent" />
                                 <div className="relative z-10">
-                                    <div className="text-[10px] font-mono text-blue-400 mb-3 uppercase tracking-tighter">Velocity Matrix.0x1</div>
+                                    <div className="text-[10px] font-mono text-blue-400 mb-3 uppercase tracking-tighter">Performance Analysis</div>
                                     <div className="flex gap-1.5 h-12 items-end">
                                         {[0.4, 0.9, 0.6, 1.2, 1.5, 0.8, 1.1].map((h, i) => (
                                             <motion.div
