@@ -370,7 +370,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({
                         <Sparkles size={20} />
                     </div>
                     <div>
-                        <div className={`text-2xl font-bold ${textPrimary}`}>{hiddenGemCount ?? 0}</div>
+                        <div className={`text-2xl font-bold ${textPrimary}`}>{hiddenGemCount}</div>
                         <div className={`text-xs ${textSecondary} font-medium uppercase tracking-wide`}>{t('candidateDrawer.analysis.hiddenGemTitle', 'Hidden Gems')}</div>
                     </div>
                 </div>
