@@ -15,7 +15,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, onNavigate, uiConfig }) => {
   const { t } = useTranslation();
-  const { showSettingsPulse, updateStatus } = useOnboarding(currentUser);
+  const { status, updateOnboarding } = useOnboarding(currentUser);
 
   const navItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: <LayoutDashboard size={18} /> },
@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
               key={item.id}
               onClick={() => {
                 onNavigate(item.id);
-                if (item.id === 'settings') updateStatus('has_visited_settings');
+                if (item.id === 'settings') updateOnboarding('has_visited_settings');
               }}
               className={`w-full flex items-center gap-3 px-3.5 ${itemPadding} rounded-xl transition-all duration-200 group border border-transparent relative ${isActive
                 ? theme.activeSimple
@@ -101,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
               <span className={`text-sm tracking-tight ${isActive ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
 
               {/* Onboarding Pulse */}
-              {item.id === 'settings' && showSettingsPulse && (
+              {item.id === 'settings' && !((status as any).has_visited_settings) && (
                 <div className="absolute top-1/2 -translate-y-1/2 right-4 onboarding-hotspot z-[99999]" />
               )}
 

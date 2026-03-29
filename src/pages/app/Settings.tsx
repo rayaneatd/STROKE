@@ -1,12 +1,11 @@
 
 import React, { useEffect } from 'react';
-import { User, SubscriptionPlan } from '../../types';
+import { User, SubscriptionPlan, BillingType } from '../../types';
 import {
-    Bell, Shield, Save, Check, Loader2,
+    Bell, Shield, Save, Check,
     Layout, AlertCircle, BrainCircuit, Wallet, Palette, Globe
 } from 'lucide-react';
 import DeleteAccountModal from '../../components/modals/DeleteAccountModal';
-import ThemedCard from '../../components/ui/ThemedCard';
 import ThemedButton from '../../components/ui/ThemedButton';
 import { useSettings } from '../../hooks/useSettings';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -29,7 +28,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => {
     const { t } = useTranslation();
-    const { showAiConfigPulse, updateStatus } = useOnboarding(user, onUpdateUser as any);
+    const { status, updateOnboarding } = useOnboarding(user, onUpdateUser as any);
     const {
         activeTab,
         setActiveTab,
@@ -54,9 +53,9 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
 
     useEffect(() => {
         if (activeTab === 'WORKFLOW') {
-            updateStatus('has_visited_settings');
+            updateOnboarding('has_visited_settings');
         }
-    }, [activeTab, updateStatus]);
+    }, [activeTab, updateOnboarding]);
 
     return (
         <div className="max-w-5xl mx-auto animate-fade-in space-y-8 pb-12 relative">
@@ -83,7 +82,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                     {[
                         { id: 'WORKFLOW', label: t('settings.tabs.workflow'), icon: <Layout size={18} /> },
                         { id: 'APPEARANCE', label: t('settings.tabs.appearance'), icon: <Palette size={18} /> },
-                        { id: 'LANGUAGE', label: t('settings.tabs.language'), icon: <Globe size={18} /> }, // Added Language Tab
+                        { id: 'LANGUAGE', label: t('settings.tabs.language'), icon: <Globe size={18} /> },
                         { id: 'NOTIFICATIONS', label: t('settings.tabs.notifications'), icon: <Bell size={18} /> },
                         { id: 'AI', label: t('settings.tabs.ai'), icon: <BrainCircuit size={18} /> },
                         { id: 'BILLING', label: t('settings.tabs.billing'), icon: <Wallet size={18} /> },
@@ -94,7 +93,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                             onClick={() => {
                                 setActiveTab(tab.id as any);
                                 if (tab.id === 'AI') {
-                                    updateStatus('has_visited_ai_config');
+                                    updateOnboarding('has_visited_ai_config');
                                 }
                             }}
                             className={`w-full text-left px-4 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all border border-transparent relative ${activeTab === tab.id
@@ -103,7 +102,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateUser, onLogout }) => 
                                 }`}
                         >
                             {tab.icon} {tab.label}
-                            {tab.id === 'AI' && showAiConfigPulse && (
+                            {tab.id === 'AI' && !((status as any).has_visited_ai_config) && (
                                 <div className="absolute top-1/2 -translate-y-1/2 -right-1 onboarding-hotspot z-[99999]" />
                             )}
                         </button>

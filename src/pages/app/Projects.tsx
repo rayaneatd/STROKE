@@ -289,8 +289,8 @@ interface ProjectsProps {
 }
 
 const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavigate, onUpdateUser }) => {
-    const { t, i18n } = useTranslation();
-    const { showCreateProjectPulse, updateStatus } = useOnboarding(currentUser, onUpdateUser);
+    const { t } = useTranslation();
+    const { status, updateOnboarding } = useOnboarding(currentUser, onUpdateUser as any);
     const {
         projects,
         searchTerm,
@@ -337,8 +337,8 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
     // Intercept project modal save to finish onboarding
     const handleProjectModalSave = async (data: any, originalOnSave?: any) => {
         const result = await originalHandleProjectModalSave(data, originalOnSave);
-        if (showCreateProjectPulse) {
-            updateStatus('has_created_first_project');
+        if (!((status as any).has_created_first_project)) {
+            updateOnboarding('has_created_first_project');
         }
         return result;
     };
@@ -402,7 +402,7 @@ const Projects: React.FC<ProjectsProps> = ({ onProjectClick, currentUser, onNavi
                     >
                         <Plus size={16} />
                         {t('projects.createProject')}
-                        {showCreateProjectPulse && (
+                        {!((status as any).has_created_first_project) && (
                             <div className="absolute -top-1 -right-1 onboarding-hotspot z-[99999]" />
                         )}
                     </button>
