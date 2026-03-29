@@ -65,7 +65,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             if (timeRange === '90d') startDate = subDays(now, 90);
 
             // Parallel requests:
-            const [statsResult, eventsResult, timelineResult, failureDistResult, hiddenGemsRes] = await Promise.all([
+            const [statsResult, eventsResult, timelineResult, failureDistResult] = await Promise.all([
                 supabase
                     .from('candidates')
                     .select('id, candidate_name, match_score, recruiter_override_score, uploaded_at, uploaded_by, email_sent_at, size, status, is_hidden_gem')
@@ -87,9 +87,8 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 })
             ]);
 
-            if (statsResult.error) throw statsResult.error;
 
-            const hiddenGemsCount = Number(hiddenGemsRes.data || 0);
+            if (statsResult.error) throw statsResult.error;
 
             // Filter by Date Range locally (Legacy stats)
             const allData = (statsResult.data || []).map((c: any) => ({
@@ -111,6 +110,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
             const qualified = data.filter(c => c.match_score != null && c.match_score >= 50).length;
             const rejected = data.filter(c => c.status === 'rejected').length;
             const contacted = data.filter(c => c.email_sent_at != null).length;
+            const hiddenGemCount = data.filter(c => !!c.is_hidden_gem).length;
 
             const scores = data
                 .filter(c => c.match_score != null)
@@ -251,7 +251,7 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                 topCandidates,
                 recentFailures,
                 riskCount: 0,
-                hiddenGemCount: hiddenGemsCount
+                hiddenGemCount: hiddenGemCount
             };
         }
     });
