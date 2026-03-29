@@ -493,10 +493,10 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             {data.career_trajectory}
           </div>
         )}
-        <h3 className={`text-xs font-bold uppercase tracking-wider mb-3 ${styles.text.tertiary}`}>
+        <h3 className={`text-[10px] font-extrabold uppercase tracking-[0.2em] mb-4 ${isLight ? 'text-slate-400' : 'text-zinc-500'}`}>
           {t('candidateDrawer.analysis.executiveSummary')}
         </h3>
-        <p className={`${styles.text.primary} leading-relaxed text-sm font-medium`}>
+        <p className={`${isLight ? 'text-slate-700' : 'text-zinc-200'} leading-relaxed text-[15px] font-medium`}>
           {data?.executive_summary || t('candidateDrawer.analysis.noSummary')}
         </p>
       </div>
@@ -507,11 +507,11 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
             <Sparkles className="w-12 h-12 text-amber-500 rotate-12" />
           </div>
           <div className="relative z-10">
-            <h3 className="flex items-center gap-2 text-xs font-black text-amber-500 uppercase tracking-[0.2em] mb-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-              {t('candidateDrawer.analysis.hiddenGemTitle', 'Exceptional Talent / Hidden Gem')}
+            <h3 className="flex items-center gap-2 text-[10px] font-black text-amber-500/80 uppercase tracking-[0.25em] mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+              {t('candidateDrawer.analysis.hiddenGemTitle', 'Exceptional Talent')}
             </h3>
-            <p className="text-amber-100/90 text-sm leading-relaxed font-bold italic border-l-2 border-amber-500/50 pl-4">
+            <p className={`${isLight ? 'text-amber-900/80' : 'text-amber-100/90'} text-[15px] leading-relaxed font-semibold italic border-l-2 border-amber-500/30 pl-6`}>
               "{data?.hidden_gem_reason || 'This profile shows exceptional atypical characteristics.'}"
             </p>
           </div>
