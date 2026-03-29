@@ -74,15 +74,15 @@ export const useProjectAnalytics = (projectId: string, timeRange: TimeRange = 'A
                     .from('analytics_events')
                     .select('*')
                     .eq('project_id', projectId),
-                supabase.rpc('get_project_activity_timeline', {
+                supabase.rpc('get_project_activity_timeline' as any, {
                     p_project_id: projectId,
                     p_start_date: startDate ? startDate.toISOString() : null
                 }),
-                supabase.rpc('get_project_failure_distribution', {
+                supabase.rpc('get_project_failure_distribution' as any, {
                     p_project_id: projectId,
                     p_start_date: startDate ? startDate.toISOString() : null
                 }),
-                supabase.rpc('get_project_hidden_gems_count', {
+                supabase.rpc('get_project_hidden_gems_count' as any, {
                     p_project_id: projectId
                 })
             ]);
