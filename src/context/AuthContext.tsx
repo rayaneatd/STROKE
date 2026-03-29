@@ -136,7 +136,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     workMails,
                     isOwner,
                     marketingConsent: !!data.marketing_consent,
-                    feedbackConsent: !!data.feedback_consent
+                    feedbackConsent: !!data.feedback_consent,
+                    onboarding_status: data.onboarding_status || {}
                 } as unknown as User;
             }
         } catch (err) {

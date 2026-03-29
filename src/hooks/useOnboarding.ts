@@ -22,10 +22,10 @@ export const useOnboarding = (user: User | null, onUpdateUser?: (updated: User) 
     // Determine if onboarding should be active
     const isEnabled = useMemo(() => {
         if (onboardingConfig === 'false') return false;
-        if (onboardingConfig === 'debug' && isAdmin) return true;
+        if (onboardingConfig === 'debug') return true;
         if (onboardingConfig === 'true') return true;
         return false;
-    }, [onboardingConfig, isAdmin]);
+    }, [onboardingConfig]);
 
     const status: OnboardingStatus = useMemo(() => {
         if (!user?.onboarding_status) return DEFAULT_STATUS;
