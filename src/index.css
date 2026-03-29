@@ -483,13 +483,12 @@
   position: absolute;
   width: 14px;
   height: 14px;
-  background-color: #8b5cf6;
-  /* Stroke Brand Violet/Indigo */
+  background-color: #ffffff;
   border-radius: 50%;
-  z-index: 1000;
+  z-index: 99999 !important;
   pointer-events: none;
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.9), 0 0 5px rgba(255, 255, 255, 0.5);
-  border: 2px solid white;
+  box-shadow: 0 0 15px #8b5cf6, 0 0 30px #8b5cf6;
+  border: 3px solid #8b5cf6;
 }
 
 .onboarding-hotspot::after {

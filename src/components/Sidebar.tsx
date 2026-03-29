@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, currentPage, o
 
               {/* Onboarding Pulse */}
               {item.id === 'settings' && showSettingsPulse && (
-                <div className="absolute top-1/2 -translate-y-1/2 right-4 onboarding-hotspot z-[9999]" />
+                <div className="absolute top-1/2 -translate-y-1/2 right-4 onboarding-hotspot z-[99999]" />
               )}
 
               {/* Active Indicator Dot */}
