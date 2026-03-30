@@ -24,7 +24,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
     const headerBgOpacity = useTransform(scrollY, [0, 100], [0, 0.3]);
     const headerBlur = useTransform(scrollY, [0, 100], [0, 12]);
     const headerBorderOpacity = useTransform(scrollY, [0, 100], [0, 0.05]);
-    const logoScale = useTransform(scrollY, [0, 200], [1, 0.7]);
+    const logoScale = useTransform(scrollY, [0, 200], [1, 0.85]);
 
     // Compose MotionValues into CSS strings – Framer Motion handles live updates
     const bgColor = useTransform(headerBgOpacity, (v) => `rgba(10, 10, 12, ${v})`);
@@ -33,7 +33,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
 
     return (
         <motion.header
-            className="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 py-3 flex items-center justify-between"
+            className="fixed top-0 left-0 right-0 z-[100] px-4 md:px-8 py-2 flex items-center justify-between"
             style={{
                 backgroundColor: bgColor,
                 borderBottom: borderColor,
@@ -52,9 +52,9 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                     repeat: Infinity,
                     ease: "linear"
                 }}
-                className="flex items-center gap-3 origin-left"
+                className="flex items-center gap-2.5 origin-left"
             >
-                <Logo variant="full" height={56} glow={false} />
+                <Logo variant="full" height={44} glow={false} />
             </motion.div>
 
 
@@ -67,7 +67,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                     repeat: Infinity,
                     ease: "easeInOut"
                 }}
-                className="flex items-center gap-6"
+                className="flex items-center gap-5"
             >
                 <AnimatePresence mode="wait">
                     {isAuthenticated ? (
@@ -77,10 +77,10 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                             exit={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
                             onClick={onCTA}
-                            className="glass-button flex items-center gap-2 group px-6 py-3 rounded-full border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-colors shadow-lg"
+                            className="glass-button flex items-center gap-2 group px-4 py-2 rounded-full border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-colors shadow-lg"
                         >
-                            <ShieldCheck size={16} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
-                            <span className="text-sm font-black tracking-widest uppercase text-slate-200">Browse App</span>
+                            <ShieldCheck size={14} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
+                            <span className="text-[11px] font-black tracking-widest uppercase text-slate-200">Browse App</span>
                         </motion.button>
                     ) : (
                         <motion.button
@@ -89,10 +89,10 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({ onCTA, isAuthenticated })
                             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                             exit={{ opacity: 0, x: 20, filter: 'blur(10px)' }}
                             onClick={onCTA}
-                            className="relative overflow-hidden bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-tighter py-3 px-10 rounded-full shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400/50 transition-all duration-300 hover:shadow-[0_0_50px_rgba(59,130,246,0.6)] flex items-center gap-3 group"
+                            className="relative overflow-hidden bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-tighter py-2 px-6 rounded-full shadow-[0_0_30px_rgba(59,130,246,0.3)] border border-blue-400/50 transition-all duration-300 hover:shadow-[0_0_50px_rgba(59,130,246,0.6)] flex items-center gap-2.5 group"
                         >
-                            <span className="relative z-10 text-sm">Join the Elite</span>
-                            <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+                            <span className="relative z-10 text-[11px]">Get Early Access</span>
+                            <ArrowRight size={16} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                             <motion.div
                                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-[150%] skew-x-[-20deg]"
                                 animate={{ translateX: ['-150%', '300%'] }}

@@ -158,9 +158,11 @@ export type Database = {
           executive_summary: string | null
           exported_by: string[] | null
           file_hash: string | null
+          hidden_gem_reason: string | null
           id: string
           interview_questions: Json | null
           is_favorite: boolean | null
+          is_hidden_gem: boolean | null
           key_skills: Json | null
           location: string | null
           match_score: number | null
@@ -197,9 +199,11 @@ export type Database = {
           executive_summary?: string | null
           exported_by?: string[] | null
           file_hash?: string | null
+          hidden_gem_reason?: string | null
           id?: string
           interview_questions?: Json | null
           is_favorite?: boolean | null
+          is_hidden_gem?: boolean | null
           key_skills?: Json | null
           location?: string | null
           match_score?: number | null
@@ -236,9 +240,11 @@ export type Database = {
           executive_summary?: string | null
           exported_by?: string[] | null
           file_hash?: string | null
+          hidden_gem_reason?: string | null
           id?: string
           interview_questions?: Json | null
           is_favorite?: boolean | null
+          is_hidden_gem?: boolean | null
           key_skills?: Json | null
           location?: string | null
           match_score?: number | null
@@ -377,6 +383,7 @@ export type Database = {
           is_owner: boolean | null
           language: string | null
           marketing_consent: boolean | null
+          onboarding_status: Json | null
           overage_cap: number | null
           preferences: Json | null
           primary_email: string | null
@@ -400,6 +407,7 @@ export type Database = {
           is_owner?: boolean | null
           language?: string | null
           marketing_consent?: boolean | null
+          onboarding_status?: Json | null
           overage_cap?: number | null
           preferences?: Json | null
           primary_email?: string | null
@@ -423,6 +431,7 @@ export type Database = {
           is_owner?: boolean | null
           language?: string | null
           marketing_consent?: boolean | null
+          onboarding_status?: Json | null
           overage_cap?: number | null
           preferences?: Json | null
           primary_email?: string | null
@@ -534,6 +543,7 @@ export type Database = {
           id: string
           investment_balance: number | null
           owner_id: string
+          scoring_config: Json | null
           settings: Json | null
           status: string | null
           title: string
@@ -546,6 +556,7 @@ export type Database = {
           id?: string
           investment_balance?: number | null
           owner_id: string
+          scoring_config?: Json | null
           settings?: Json | null
           status?: string | null
           title: string
@@ -558,6 +569,7 @@ export type Database = {
           id?: string
           investment_balance?: number | null
           owner_id?: string
+          scoring_config?: Json | null
           settings?: Json | null
           status?: string | null
           title?: string

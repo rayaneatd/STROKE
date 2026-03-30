@@ -57,7 +57,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
             id="hero"
             ref={ref}
             aria-label="Introduction"
-            className="relative min-h-screen w-full flex items-center justify-start overflow-hidden pt-32 bg-[#050505]"
+            className="relative min-h-[90vh] w-full flex items-center justify-start overflow-hidden pt-24 bg-[#050505]"
         >
             {/* LUXURY PRO 2D BACKGROUND (Replaces 3D Canvas) */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden h-[120vh]">
@@ -70,7 +70,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
                 <motion.div
                     animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
                     transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                    className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/10 blur-[120px] rounded-full"
+                    className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-600/5 blur-[120px] rounded-full"
                 />
 
                 {/* Minimalist Geometric Intersecting Rings */}
@@ -94,22 +94,22 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
             </div>
 
             <motion.div
-                className="container mx-auto px-6 lg:px-12 relative z-10 w-full text-center lg:text-left"
+                className="container mx-auto px-4 lg:px-8 relative z-10 w-full text-center lg:text-left"
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: false, amount: 0.2 }}
             >
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-12 items-center">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-10 items-center">
 
                     {/* Asymmetrical Heading Block */}
                     <div className="lg:col-span-11 lg:col-start-2 xl:col-span-10 xl:col-start-2">
                         <div className="relative">
                             {/* Decorative Magazine Vertical Tag */}
-                            <motion.div variants={floatVariants} className="absolute -left-12 lg:-left-20 top-0 hidden lg:block h-full">
-                                <div className="sticky top-40 flex flex-col items-center gap-6">
-                                    <div className="w-[1px] h-20 bg-gradient-to-t from-blue-500/50 to-transparent" />
-                                    <span className="[writing-mode:vertical-lr] rotate-180 text-[10px] font-mono tracking-[0.4em] uppercase text-slate-500 whitespace-nowrap">
+                            <motion.div variants={floatVariants} className="absolute -left-10 lg:-left-16 top-0 hidden lg:block h-full">
+                                <div className="sticky top-40 flex flex-col items-center gap-5">
+                                    <div className="w-[1px] h-16 bg-gradient-to-t from-blue-500/50 to-transparent" />
+                                    <span className="[writing-mode:vertical-lr] rotate-180 text-[9px] font-mono tracking-[0.4em] uppercase text-slate-500 whitespace-nowrap">
                                         Issue v.2.1 — Trajectory Analysis
                                     </span>
                                 </div>
@@ -117,74 +117,62 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCTA, isAuthenticated }) => 
 
                             <motion.div
                                 variants={floatVariants}
-                                className="inline-flex items-center gap-3 px-4 py-2 rounded-full mb-8 border border-blue-500/20 bg-blue-500/5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl"
+                                className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full mb-6 border border-blue-500/20 bg-blue-500/5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl"
                             >
-                                <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-blue-400">
+                                <span className="flex h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-blue-400">
                                     EU AI Act 🇪🇺 & GDPR Compliant
                                 </span>
                             </motion.div>
 
                             <motion.h1
                                 variants={sideEntryVariants}
-                                className="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.85] text-slate-100 mb-6 select-none"
+                                className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight leading-[1] text-slate-100 mb-5 select-none"
                             >
-                                <span className="block mb-2">The AI that sees</span>
-                                <span className="relative inline-block mt-4">
-                                    your
-                                    {/* Overlapping Glass accent */}
-                                    <motion.div
-                                        animate={{ y: [-10, 10, -10], x: [-10, 10, -10], rotate: [12, 5, 12] }}
-                                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                                        className="absolute -right-8 -top-8 w-16 h-16 md:w-32 md:h-32 rounded-2xl bg-white/5 border border-white/10 -z-10 backdrop-blur-md shadow-2xl"
-                                    />
-                                </span>
-                                <br />
-                                <div className="h-[1.2em] relative flex items-baseline justify-center lg:justify-start overflow-hidden">
-                                    <AnimatePresence mode="popLayout">
-                                        <motion.span
-                                            key={wordIndex}
-                                            initial={{ opacity: 0, y: 100, rotateX: -90, filter: 'blur(10px)' }}
-                                            animate={{
-                                                opacity: 1, y: 0, rotateX: 0, filter: 'blur(0px)',
-                                                color: wordIndex === WORDS.length - 1 ? '#3b82f6' : '#94a3b8'
-                                            }}
-                                            exit={{ opacity: 0, y: -100, rotateX: 90, filter: 'blur(10px)' }}
-                                            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                                            className={`inline-block origin-bottom ${wordIndex === WORDS.length - 1 ? 'drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]' : ''}`}
-                                            aria-live="polite"
-                                        >
-                                            {WORDS[wordIndex].toLowerCase()}.
-                                        </motion.span>
-                                    </AnimatePresence>
-                                </div>
+                                From 100 Resumes to a <br />
+                                <span className="text-blue-500 italic">Shortlist</span> in 10 Seconds.
+                                {/* Overlapping Glass accent */}
+                                <motion.div
+                                    animate={{ y: [-10, 10, -10], x: [-10, 10, -10], rotate: [12, 5, 12] }}
+                                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                                    className="absolute -right-4 -top-4 w-10 h-10 md:w-20 md:h-20 rounded-2xl bg-white/5 border border-white/10 -z-10 backdrop-blur-md shadow-2xl"
+                                />
                             </motion.h1>
 
-                            <div className="flex flex-col lg:flex-row items-center lg:items-center gap-8 lg:gap-16 mt-12">
-                                <motion.div variants={punchlineVariants} className="flex flex-col">
-                                    <p className="text-4xl md:text-5xl text-slate-100 font-black leading-[0.9] uppercase mb-2 tracking-tighter italic">
-                                        Empower your recruitment
-                                    </p>
-                                    <p className="text-lg md:text-xl text-blue-400 font-mono tracking-widest lowercase bg-blue-500/10 px-4 py-1 rounded inline-block">
-                                        Go beyond keywords
+                            <div className="flex flex-col gap-6 mt-6">
+                                <motion.div variants={punchlineVariants} className="max-w-lg">
+                                    <p className="text-base md:text-lg text-slate-400 leading-relaxed font-medium">
+                                        Drop your Job Description and your resumes. <span className="text-slate-100">STROKE ranks every candidate</span> with detailed scores, strengths, and red flags. 
+                                        {/*<span className="block mt-2.5 text-blue-400/80 font-mono text-[10px] tracking-wider uppercase">
+                                            No migration • No subscription • Just pure screening
+                                        </span>*/}
                                     </p>
                                 </motion.div>
 
-                                <motion.div variants={floatVariants} className="relative group shrink-0">
-                                    <button
-                                        onClick={onCTA}
-                                        aria-label="Start Free Scan"
-                                        className="relative z-10 px-10 py-5 text-lg font-bold tracking-tight text-white flex items-center gap-4 bg-blue-600 backdrop-blur-xl border border-blue-400/30 hover:bg-blue-500 shadow-[0_20px_40px_rgba(59,130,246,0.3),0_0_20_rgba(59,130,246,0.2)] overflow-hidden rounded-full transition-all"
+                                <div className="flex flex-col items-center lg:items-start gap-3.5">
+                                    <motion.div variants={floatVariants} className="relative group shrink-0">
+                                        <button
+                                            onClick={onCTA}
+                                            aria-label="Start Free Scan"
+                                            className="relative z-10 px-6 py-3 text-sm font-bold tracking-tight text-white flex items-center gap-2.5 bg-blue-600 backdrop-blur-xl border border-blue-400/30 hover:bg-blue-500 shadow-[0_15px_30px_rgba(59,130,246,0.25),0_0_15px_rgba(59,130,246,0.15)] overflow-hidden rounded-full transition-all"
+                                        >
+                                            <span className="relative z-10">
+                                                {isAuthenticated ? 'Go to Workspace' : 'Scan your first resumes for free'}
+                                            </span>
+                                            <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="relative z-10">
+                                                <ArrowRight size={16} />
+                                            </motion.div>
+                                        </button>
+                                        <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </motion.div>
+                                    
+                                    <motion.p 
+                                        variants={punchlineVariants}
+                                        className="text-[9px] font-mono text-slate-500 uppercase tracking-[0.2em] pl-3"
                                     >
-                                        <span className="relative z-10">
-                                            {isAuthenticated ? 'Go to Workspace' : 'Scan 50 Resumes for Free'}
-                                        </span>
-                                        <motion.div animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="relative z-10">
-                                            <ArrowRight />
-                                        </motion.div>
-                                    </button>
-                                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </motion.div>
+                                        Free beta access • Hosted in Europe 
+                                    </motion.p>
+                                </div>
                             </div>
                         </div>
                     </div>

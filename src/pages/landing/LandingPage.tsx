@@ -10,6 +10,7 @@ const AgitationSection = React.lazy(() => import('../../components/landing/secti
 const FortressSection = React.lazy(() => import('../../components/landing/sections/FortressSection'));
 const TheGapSection = React.lazy(() => import('../../components/landing/sections/TheGapSection'));
 const CinematicProofSection = React.lazy(() => import('../../components/landing/sections/CinematicProofSection'));
+const WishlistSection = React.lazy(() => import('../../components/landing/sections/WishlistSection'));
 
 const SectionLoader = () => (
     <div className="w-full h-80 flex items-center justify-center bg-[#0a0a0c]/50">
@@ -44,6 +45,7 @@ const LandingPage: React.FC = () => {
                     <FortressSection />
                     <TheGapSection />
                     <CinematicProofSection onCTA={handleCTA} isAuthenticated={isAuthenticated} />
+                    <WishlistSection />
                 </Suspense>
             </main>
 
