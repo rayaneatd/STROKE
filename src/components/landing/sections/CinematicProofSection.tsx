@@ -164,7 +164,7 @@ const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA, is
                             >
                                 <iframe
                                     className="w-full h-full relative z-0"
-                                    src="https://www.youtube.com/embed/cq5UKAv_zsg?rel=0&modestbranding=1&autohide=1&showinfo=0&controls=1"
+                                    src="" /*https://www.youtube.com/embed/cq5UKAv_zsg?rel=0&modestbranding=1&autohide=1&showinfo=0&controls=1*/
                                     title="STROKE Demo"
                                     frameBorder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -174,7 +174,7 @@ const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA, is
                             </motion.div>
 
                             {/* Detail overlay */}
-                            <motion.div
+                            {/*<motion.div
                                 variants={itemVariants}
                                 initial="hidden"
                                 whileInView="visible"
@@ -183,7 +183,7 @@ const CinematicProofSection: React.FC<CinematicProofSectionProps> = ({ onCTA, is
                             >
                                 <div className="text-[10px] font-mono text-blue-500/80 tracking-[0.8em] uppercase mb-2">Operation.0x3FF</div>
                                 <div className="w-24 h-[1px] bg-blue-500/20" />
-                            </motion.div>
+                            </motion.div>*/}
                         </div>
 
                     </div>

@@ -184,7 +184,7 @@ const FortressSection: React.FC = () => {
                                 >
                                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-50"></div>
                                     <ShieldCheck size={36} className="text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]" />
-                                    <div className="text-[8px] font-mono text-blue-300/80 tracking-widest uppercase">Secured Hub</div>
+                                    <div className="text-[8px] font-mono text-blue-300/80 tracking-widest uppercase">peak security</div>
 
                                     {/* Scanning Line inside Core */}
                                     <motion.div
@@ -210,7 +210,7 @@ const FortressSection: React.FC = () => {
                             </motion.div>
 
                             {/* Detail overlay */}
-                            <motion.div
+                            {/*<motion.div
                                 variants={itemVariants}
                                 initial="hidden"
                                 whileInView="visible"
@@ -219,7 +219,7 @@ const FortressSection: React.FC = () => {
                             >
                                 <div className="text-[9px] font-mono text-slate-500 tracking-[0.5em] uppercase mb-1">Structure.0x1FF</div>
                                 <div className="w-12 h-[1px] bg-slate-700" />
-                            </motion.div>
+                            </motion.div>*/}
                         </div>
 
                     </div>

@@ -209,7 +209,7 @@ const TheGapSection: React.FC = () => {
                         </motion.div>
 
                         {/* Detail overlay */}
-                        <motion.div
+                        {/*<motion.div
                             variants={itemVariants}
                             initial="hidden"
                             whileInView="visible"
@@ -218,7 +218,7 @@ const TheGapSection: React.FC = () => {
                         >
                             <div className="text-[9px] font-mono text-slate-500 tracking-[1em] uppercase mb-3">Extraction.0x2FF</div>
                             <div className="w-16 h-[1px] bg-slate-700" />
-                        </motion.div>
+                        </motion.div>*/}
                     </div>
 
                 </motion.div>
