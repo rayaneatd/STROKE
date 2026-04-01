@@ -360,10 +360,10 @@ export const useFileProcessing = (
                 successCounter++;
                 currentBatch.push(fileInfo);
 
-                // --- PROGRESSIVE UI REMOVAL ---
-                // Remove from local list as soon as it is safely in the bucket
-                // This gives the "illusion of speed" requested by USER
-                setFiles(prev => prev.filter(f => f.id !== fileInfo.id));
+                // --- PROGRESSIVE UI UPDATE ---
+                // Do not remove it. Instead, keep it in the UI tracking as 'PROCESSING'
+                // so the user knows the AI is still working on it.
+                setFiles(prev => prev.map(f => f.id === fileInfo.id ? { ...f, status: 'PROCESSING' } : f));
 
                 // Trigger dispatcher every 9 files to align with 3x3 parallel scanning ratio
                 // This avoids spawning "near-empty" instances (prevents the 3+3+3+1 problem)

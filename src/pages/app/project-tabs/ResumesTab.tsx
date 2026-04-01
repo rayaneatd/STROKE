@@ -172,7 +172,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     const [animatingOutFileIds, setAnimatingOutFileIds] = useState<Set<string>>(new Set());
 
     const pendingFiles = useMemo(() => {
-        return files.filter(f => (f.status === 'PENDING' || f.status === 'PROCESSING') && !animatingOutFileIds.has(f.id));
+        return files.filter(f => (f.status === 'SCANNING' || f.status === 'PENDING' || f.status === 'PROCESSING') && !animatingOutFileIds.has(f.id));
     }, [files, animatingOutFileIds]);
 
     const failedFiles = useMemo(() => {
@@ -292,6 +292,30 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
             }, 500); // Match animation duration
         }
     }, [files, processingFileIds]);
+
+    // Effect: Synchronize local pending files with arrived candidates
+    useEffect(() => {
+        if (!candidates || candidates.length === 0 || files.length === 0) return;
+
+        // Collect names of all candidates
+        const candidateNames = new Set(candidates.map(c => c.originalResumeName || c.candidateName));
+
+        // Find local pending files that match these names
+        const finishedFiles = files.filter(f =>
+            (f.status === 'SCANNING' || f.status === 'PENDING' || f.status === 'PROCESSING') &&
+            candidateNames.has(f.name)
+        );
+
+        if (finishedFiles.length > 0) {
+            const newIds = finishedFiles.map(f => f.id);
+            setProcessingFileIds(prev => new Set([...Array.from(prev), ...newIds]));
+
+            // Remove them from local files to trigger the animation effect
+            setTimeout(() => {
+                newIds.forEach(id => onRemoveFile(id));
+            }, 50);
+        }
+    }, [candidates, files, onRemoveFile]);
 
     // --- Handlers ---
 
