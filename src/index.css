@@ -27,55 +27,70 @@
     color: theme('colors.zinc.200');
   }
 
-  /* Universal Premium Scrollbar */
+  /* --- Premium Universal Scrollbar (Force System-wide) --- */
+  :root {
+    --scrollbar-size: 10px;
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(161, 161, 170, 0.4);
+    /* Zinc-400 */
+    --scrollbar-thumb-hover: rgba(161, 161, 170, 0.6);
+    --scrollbar-active: rgba(59, 130, 246, 0.5);
+    /* Blue-500 */
+  }
+
+  .dark {
+    --scrollbar-thumb: rgba(113, 113, 122, 0.3);
+    /* Zinc-500 */
+    --scrollbar-thumb-hover: rgba(113, 113, 122, 0.5);
+    --scrollbar-active: rgba(96, 165, 250, 0.5);
+    /* Blue-400 */
+  }
+
+  /* Universal for Firefox/Standard */
   * {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.zinc.300/50') transparent;
-    transition: all 0.3s ease;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    transition: scrollbar-color 0.3s ease;
   }
 
-  .dark * {
-    scrollbar-color: theme('colors.zinc.700/50') transparent;
+  /* Universal for Webkit (Chrome, Edge, Safari) */
+  /* This covers html, body, and all overflow elements */
+  ::-webkit-scrollbar {
+    width: var(--scrollbar-size) !important;
+    height: var(--scrollbar-size) !important;
   }
 
-  /* Webkit Universal Scrollbar */
-  *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track) !important;
+    border-radius: 10px !important;
   }
 
-  *::-webkit-scrollbar-track {
-    background: transparent;
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb) !important;
+    border-radius: 20px !important;
+    border: 3px solid transparent !important;
+    /* Space around the thumb */
+    background-clip: content-box !important;
+    /* Makes it "float" inside the track */
+    transition: background-color 0.3s ease !important;
   }
 
-  *::-webkit-scrollbar-thumb {
-    background-color: theme('colors.zinc.300/40');
-    border-radius: 20px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-    transition: background-color 0.3s ease;
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover) !important;
   }
 
-  .dark *::-webkit-scrollbar-thumb {
-    background-color: theme('colors.zinc.700/40');
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--scrollbar-active) !important;
   }
 
-  *::-webkit-scrollbar-thumb:hover {
-    background-color: theme('colors.zinc.400/70');
-    border: 1px solid transparent;
+  /* Specific handling for Root to ensure it's never generic */
+  html::-webkit-scrollbar {
+    width: var(--scrollbar-size) !important;
   }
 
-  .dark *::-webkit-scrollbar-thumb:hover {
-    background-color: theme('colors.zinc.500/70');
-    border: 1px solid transparent;
-  }
-
-  *::-webkit-scrollbar-thumb:active {
-    background-color: theme('colors.blue.500/50');
-  }
-
-  .dark *::-webkit-scrollbar-thumb:active {
-    background-color: theme('colors.blue.400/50');
+  /* Glow effect in dark mode on hover */
+  .dark ::-webkit-scrollbar-thumb:hover {
+    box-shadow: 0 0 10px var(--scrollbar-thumb-hover) !important;
   }
 
   /* Hide Numeric Steppers */
