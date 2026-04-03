@@ -171,29 +171,36 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
     const [processingFileIds, setProcessingFileIds] = useState<Set<string>>(new Set());
     const [animatingOutFileIds, setAnimatingOutFileIds] = useState<Set<string>>(new Set());
 
+    // Logic: Files that are in local processing state (Actually scanning or processing)
+    const activeProcessingFiles = useMemo(() => {
+        return files.filter(f => (f.status === 'SCANNING' || f.status === 'PROCESSING') && !animatingOutFileIds.has(f.id));
+    }, [files, animatingOutFileIds]);
+
+    // Logic: Files that are just dropped (Waiting for Ignite)
     const pendingFiles = useMemo(() => {
-        return files.filter(f => (f.status === 'SCANNING' || f.status === 'PENDING' || f.status === 'PROCESSING') && !animatingOutFileIds.has(f.id));
+        return files.filter(f => f.status === 'PENDING' && !animatingOutFileIds.has(f.id));
     }, [files, animatingOutFileIds]);
 
     const failedFiles = useMemo(() => {
         return files.filter(f => f.status === 'FAILED');
     }, [files]);
 
-    // Robust Merged List: Base Candidates + Placeholders for things not yet in DB
+    // Robust Merged List: Base Candidates + Placeholders for things ACTUALLY being analyzed
     const mergedCandidates = useMemo(() => {
         // Collect hashes of all existing candidates to avoid duplicates
         const existingHashes = new Set(candidates.map(c => c.fileHash).filter(Boolean));
 
-        // Filter pending files that are NOT yet in the candidates list
-        const uniquePending = pendingFiles.filter(f => {
+        // Filter active processing files that are NOT yet in the candidates list
+        const uniqueProcessing = activeProcessingFiles.filter(f => {
             // Find if this file (by hash) is already in the DB list
             return !existingHashes.has(f.hash || '');
         });
 
-        return [...uniquePending, ...candidates];
-    }, [pendingFiles, candidates]);
+        // Business Logic: PENDING files stay in Scan Center, ONLY activeProcessing appear in Candidate List
+        return [...uniqueProcessing, ...candidates];
+    }, [activeProcessingFiles, candidates]);
 
-    const isProcessingActive = pendingFiles.length > 0;
+    const isProcessingActive = activeProcessingFiles.length > 0;
 
     const activeFiltersCount = filterScores.length + filterActivities.length;
 
