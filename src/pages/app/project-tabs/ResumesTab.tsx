@@ -179,7 +179,21 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         return files.filter(f => f.status === 'FAILED');
     }, [files]);
 
-    const isProcessingActive = pendingFiles.some(f => f.status === 'PROCESSING');
+    // Robust Merged List: Base Candidates + Placeholders for things not yet in DB
+    const mergedCandidates = useMemo(() => {
+        // Collect hashes of all existing candidates to avoid duplicates
+        const existingHashes = new Set(candidates.map(c => c.fileHash).filter(Boolean));
+
+        // Filter pending files that are NOT yet in the candidates list
+        const uniquePending = pendingFiles.filter(f => {
+            // Find if this file (by hash) is already in the DB list
+            return !existingHashes.has(f.hash || '');
+        });
+
+        return [...uniquePending, ...candidates];
+    }, [pendingFiles, candidates]);
+
+    const isProcessingActive = pendingFiles.length > 0;
 
     const activeFiltersCount = filterScores.length + filterActivities.length;
 
@@ -293,27 +307,24 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         }
     }, [files, processingFileIds]);
 
-    // Effect: Synchronize local pending files with arrived candidates
+    // Effect: Synchronize local pending files with arrived candidates via Hash
     useEffect(() => {
         if (!candidates || candidates.length === 0 || files.length === 0) return;
 
-        // Collect names of all candidates
-        const candidateNames = new Set(candidates.map(c => c.originalResumeName || c.candidateName));
+        const candidateHashes = new Set(candidates.map(c => c.fileHash).filter(Boolean));
 
-        // Find local pending files that match these names
         const finishedFiles = files.filter(f =>
             (f.status === 'SCANNING' || f.status === 'PENDING' || f.status === 'PROCESSING') &&
-            candidateNames.has(f.name)
+            (f.hash && candidateHashes.has(f.hash))
         );
 
         if (finishedFiles.length > 0) {
             const newIds = finishedFiles.map(f => f.id);
-            setProcessingFileIds(prev => new Set([...Array.from(prev), ...newIds]));
 
             // Remove them from local files to trigger the animation effect
             setTimeout(() => {
                 newIds.forEach(id => onRemoveFile(id));
-            }, 50);
+            }, 500); // 500ms for a smoother transition
         }
     }, [candidates, files, onRemoveFile]);
 
@@ -957,7 +968,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
                 {/* Candidate List Component */}
                 <div className="flex-1 min-h-0 relative">
                     <CandidateList
-                        candidates={candidates}
+                        candidates={mergedCandidates}
                         selectedFileId={selectedFile?.id || null}
                         onSelect={handleCandidateClick}
                         currentUser={currentUser}

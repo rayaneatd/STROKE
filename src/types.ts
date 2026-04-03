@@ -32,6 +32,7 @@ export interface CandidateFileMetadata {
   fileSize: number;
   fileType: string;
   storagePath: string; // Path inside Supabase Storage
+  hash?: string;
 }
 
 export interface WebhookPayload {
@@ -341,6 +342,8 @@ export interface ProjectFile {
   totalTokensUsed?: number;
   is_hidden_gem?: boolean;
   hidden_gem_reason?: string;
+  fileHash?: string;
+  hash?: string; // For local objects
 }
 
 // --- WORKER MESSAGES ---

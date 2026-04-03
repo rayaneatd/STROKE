@@ -72,10 +72,10 @@ Deno.serve(async (req: Request) => {
                     hasMore = false;
                 } else {
                     const validBatch = files
-                        .filter(f => f.name !== '.emptyFolderPlaceholder' && f.id)
-                        .map(f => {
+                        .filter((f: any) => f.name !== '.emptyFolderPlaceholder' && f.id)
+                        .map((f: any) => {
                             // Supabase list() returns eTag wrapped in quotes like '"hash"'
-                            const cleanETag = f.metadata?.eTag ? f.metadata.eTag.replace(/"/g, '') : null;
+                            const cleanETag = f.metadata?.eTag ? (f.metadata.eTag as string).replace(/"/g, '') : null;
                             return {
                                 path: `${project_id}/${f.name}`,
                                 name: f.name,
@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
             console.warn("Impossible de vérifier les doublons:", existingError.message);
         }
 
-        const existingSet = new Set(existing?.map(c => c.resume_path) ?? []);
+        const existingSet = new Set(existing?.map((c: any) => c.resume_path) ?? []);
         const newFiles = allFilesToProcess.filter(f => !existingSet.has(f.path));
 
         console.log(`Total bucket: ${allFilesToProcess.length} | Déjà traités: ${existingSet.size} | Nouveaux: ${newFiles.length}`);
@@ -130,7 +130,32 @@ Deno.serve(async (req: Request) => {
             });
         }
 
-        // --- ÉTAPE C : Dispatch vers parse_resumes par batches via EdgeRuntime.waitUntil ---
+        // --- ÉTAPE C : Insertion précoce des candidats 'processing' pour feedback UI immédiat ---
+        const placeholders = newFiles.map(f => ({
+            project_id: project_id,
+            uploaded_by: f.scanned_by || null,
+            original_resume_name: f.original_name,
+            file_hash: f.hash,
+            resume_path: f.path,
+            size: `${(f.size / 1024 / 1024).toFixed(2)} MB`,
+            status: 'processing',
+            uploaded_at: new Date().toISOString()
+        }));
+
+        console.log(`📝 Insertion de ${placeholders.length} placeholders 'processing'...`);
+
+        const { error: placeholderError } = await supabase
+            .from('candidates')
+            .upsert(placeholders, {
+                onConflict: 'project_id,file_hash',
+                ignoreDuplicates: false
+            });
+
+        if (placeholderError) {
+            console.warn("⚠️ Erreur lors de l'insertion des placeholders (continuing anyway):", placeholderError.message);
+        }
+
+        // --- ÉTAPE D : Dispatch vers parse_resumes par batches via EdgeRuntime.waitUntil ---
         const batches: any[][] = [];
         for (let i = 0; i < newFiles.length; i += BATCH_SIZE) {
             batches.push(newFiles.slice(i, i + BATCH_SIZE));
@@ -162,7 +187,12 @@ Deno.serve(async (req: Request) => {
         };
 
         // @ts-ignore - EdgeRuntime est disponible dans le runtime Supabase
-        EdgeRuntime.waitUntil(dispatchAll());
+        if (typeof EdgeRuntime !== 'undefined') {
+            // @ts-ignore
+            EdgeRuntime.waitUntil(dispatchAll());
+        } else {
+            dispatchAll();
+        }
 
         // --- ÉTAPE D : Réponse immédiate au client ---
         return new Response(JSON.stringify({

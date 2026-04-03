@@ -110,9 +110,9 @@ const CandidateList: React.FC<CandidateListProps> = ({
             onScroll={handleScroll}
             style={{ height: containerHeight ?? '100%', position: 'relative' }}
         >
-            <div style={{ height: totalHeight + (isProcessing ? itemHeight * 2 : 0), position: 'relative' }}>
-                {/* Real-time Skeleton for new arrivals or initial load */}
-                {(isProcessing || isLoading) && (
+            <div style={{ height: totalHeight, position: 'relative' }}>
+                {/* Global loading state if absolutely no data yet */}
+                {isLoading && candidates.length === 0 && (
                     <>
                         {[0, 1, 2, 3, 4, 5].map(i => (
                             <div
@@ -144,7 +144,6 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 {visibleItems.map(({ index, offsetTop }) => {
                     const file = candidates[index];
                     if (!file) return null;
-                    const topShift = (isProcessing || isLoading) ? itemHeight * 6 : 0;
 
                     const hasScore = file.matchScore !== null && file.matchScore !== undefined;
                     const score = hasScore ? file.matchScore : 0;
@@ -203,17 +202,21 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             key={file.id}
                             style={{
                                 position: 'absolute',
-                                top: offsetTop + topShift,
+                                top: offsetTop,
                                 left: 0,
                                 width: '100%',
                                 height: itemHeight
                             }}
-                            onClick={() => onSelect(file)}
-                            className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center transition-all duration-300 cursor-pointer group ${isSelected
+                            onClick={() => file.status !== 'processing' && onSelect(file)}
+                            className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center transition-all duration-300 ${file.status === 'processing' ? 'cursor-default' : 'cursor-pointer'} group ${isSelected
                                 ? `bg-${accentColor}-500/10 border-l-4 border-l-${accentColor}-500 ${isLight ? 'border-b-slate-100' : 'border-b-white/5'}`
-                                : `border-l-4 border-l-transparent hover:bg-${accentColor}-500/5 ${isLight ? 'border-b-slate-50 hover:border-l-slate-300' : 'border-b-white/5 hover:border-l-zinc-700'}`
+                                : `border-l-4 border-l-transparent ${file.status !== 'processing' ? `hover:bg-${accentColor}-500/5 ${isLight ? 'border-b-slate-50 hover:border-l-slate-300' : 'border-b-white/5 hover:border-l-zinc-700'}` : ''}`
                                 } ${file.status === 'rejected' ? 'opacity-40 grayscale-[0.8]' : ''} ${file.is_hidden_gem ? 'hidden-gem-row' : ''}`}
                         >
+                            {/* Individual Row Loading Overlay for 'processing' status */}
+                            {file.status === 'processing' && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
+                            )}
                             {file.is_hidden_gem && <div className="glass-shard-effect" />}
                             {/* Checkbox for Bulk Actions */}
                             {showCheckboxes && (
@@ -233,7 +236,9 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
                             {/* Rank Column */}
                             <div className="col-span-1 text-center flex justify-center">
-                                {rankDisplay}
+                                {file.status === 'processing' ? (
+                                    <Loader2 className={`animate-spin ${isLight ? 'text-slate-300' : 'text-zinc-600'}`} size={18} />
+                                ) : rankDisplay}
                             </div>
                             <div className={`${showScannedBy ? 'col-span-4' : 'col-span-5'} min-w-0`}>
                                 <div className="flex items-center gap-3">
@@ -297,15 +302,28 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
                             {!showScannedBy && (
                                 <div className="col-span-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`flex-[0.8] h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
-                                            <div className={`h-full rounded-full ${file.isScoreOverridden ? 'bg-amber-400' : (isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500')}`} style={{ width: `${score}%` }}></div>
+                                    {file.status === 'processing' ? (
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-1.5 flex-1 bg-white/5 rounded-full overflow-hidden">
+                                                    <div className={`h-full bg-${accentColor}-500 animate-[loading-bar_1.5s_infinite]`} style={{ width: '40%' }}></div>
+                                                </div>
+                                            </div>
+                                            <span className={`text-[9px] uppercase tracking-widest font-black ${isLight ? 'text-slate-400' : 'text-zinc-600'} animate-pulse`}>
+                                                {t('candidateList.scanning')}...
+                                            </span>
                                         </div>
-                                        <div className="flex flex-col items-center justify-center -space-y-0.5">
-                                            <span className={`text-sm font-bold ${file.isScoreOverridden ? (isLight ? 'text-amber-600' : 'text-amber-400') : (isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary)}`}>{score}%</span>
-                                            {file.isScoreOverridden && <span className="text-[8px] font-bold text-amber-500 uppercase tracking-widest scale-90">OVR</span>}
+                                    ) : (
+                                        <div className="flex items-center gap-3">
+                                            <div className={`flex-[0.8] h-2 rounded-full overflow-hidden ${isLight ? 'bg-slate-100' : 'bg-zinc-800'}`}>
+                                                <div className={`h-full rounded-full ${file.isScoreOverridden ? 'bg-amber-400' : (isTop ? 'bg-emerald-500' : isMid ? 'bg-blue-500' : 'bg-zinc-500')}`} style={{ width: `${score}%` }}></div>
+                                            </div>
+                                            <div className="flex flex-col items-center justify-center -space-y-0.5">
+                                                <span className={`text-sm font-bold ${file.isScoreOverridden ? (isLight ? 'text-amber-600' : 'text-amber-400') : (isTop ? 'text-emerald-500' : isMid ? 'text-blue-500' : textSecondary)}`}>{score}%</span>
+                                                {file.isScoreOverridden && <span className="text-[8px] font-bold text-amber-500 uppercase tracking-widest scale-90">OVR</span>}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             )}
 
