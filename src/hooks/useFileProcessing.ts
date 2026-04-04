@@ -144,7 +144,7 @@ export const useFileProcessing = (
             projectId: projectId as any,
             name: file.name,
             size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-            status: 'SCANNING' as const, // Show spinner/progress
+            status: 'PENDING' as const, // Show straight in Upload Center
             uploadedAt: new Date().toISOString(),
             uploadedByUserId: currentUser.id
         }));
@@ -163,7 +163,7 @@ export const useFileProcessing = (
         // Processing Queue State
         let currentIndex = 0;
         const totalFiles = scanningFiles.length;
-        const pendingUpdates: { id: FileId; status: ProjectFile['status']; failureReasons?: string[] }[] = [];
+        const pendingUpdates: { id: FileId; status: ProjectFile['status']; failureReasons?: string[]; hash?: string }[] = [];
 
         // Throttled UI Updater
         const flushUpdates = () => {
@@ -180,7 +180,12 @@ export const useFileProcessing = (
                 for (let i = 0; i < next.length; i++) {
                     const update = updatesMap.get(next[i].id);
                     if (update) {
-                        next[i] = { ...next[i], status: update.status, failureReasons: update.failureReasons };
+                        next[i] = {
+                            ...next[i],
+                            status: update.status,
+                            failureReasons: update.failureReasons,
+                            ...(update.hash ? { hash: update.hash, fileHash: update.hash } : {})
+                        };
                     }
                 }
                 return next;
@@ -222,7 +227,7 @@ export const useFileProcessing = (
                                 id: item.id,
                                 metadata: result.metadata
                             });
-                            pendingUpdates.push({ id: item.id, status: 'PENDING' });
+                            pendingUpdates.push({ id: item.id, status: 'PENDING', hash: result.metadata.hash });
                         }
                     } else {
                         const reason = result.failure?.errorMessage || result.failure?.reason || 'Validation failed';
