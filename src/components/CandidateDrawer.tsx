@@ -576,9 +576,34 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
       <div className="space-y-3">
         <h3 className={`text-xs font-bold uppercase tracking-wider ${styles.text.tertiary}`}>{t('candidateDrawer.analysis.softSkills')}</h3>
         <div className={`p-5 rounded-2xl ${styles.bg.surface} border ${styles.border.base}`}>
-          <p className={`${styles.text.secondary} text-sm leading-relaxed`}>
-            {data?.soft_skills_analysis || t('candidateDrawer.analysis.noJustification')}
-          </p>
+          {(() => {
+            const ss = data?.soft_skills_analysis;
+            if (!ss) return <p className={`${styles.text.secondary} text-sm leading-relaxed`}>{t('candidateDrawer.analysis.noJustification')}</p>;
+
+            let parsedArray: string[] | null = null;
+            try {
+              const parsed = JSON.parse(ss);
+              if (Array.isArray(parsed)) parsedArray = parsed.map(String);
+            } catch { }
+
+            if (parsedArray && parsedArray.length > 0) {
+              return (
+                <div className="flex flex-wrap gap-2">
+                  {parsedArray.map((skill, idx) => (
+                    <span key={idx} className={`px-3 py-1.5 rounded-lg ${isLight ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20'} text-xs font-medium border shadow-sm`}>
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              );
+            }
+
+            return (
+              <p className={`${styles.text.secondary} text-sm leading-relaxed`}>
+                {ss}
+              </p>
+            );
+          })()}
         </div>
       </div>
 
