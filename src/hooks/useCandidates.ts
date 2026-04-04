@@ -127,7 +127,8 @@ export const useCandidates = ({
                 recruiterOverrideScore: row.recruiter_override_score,
                 recruiterNotes: row.recruiter_notes,
                 aiAnalysisVersion: row.ai_analysis_version,
-                totalTokensUsed: row.total_tokens_used
+                totalTokensUsed: row.total_tokens_used,
+                fileHash: row.file_hash
             } as ProjectFile));
 
             const totalCount = data && data.length > 0 ? Number((data[0] as any).full_count) : 0;
