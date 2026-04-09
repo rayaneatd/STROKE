@@ -30,7 +30,8 @@ export const useCandidates = ({
     // Include userId in query key to refresh if user changes (rare but good practice)
     const queryKey = ['candidates', projectId, userId, searchQuery, sortOption, filterScores, filterActivities, filterUploaders];
 
-    // Real-time Subscription
+    // Real-time Subscription — STABLE: only depends on projectId to avoid channel recreation
+    // The channel invalidates ALL candidate queries for this project, so filter changes don't need re-subscription
     useEffect(() => {
         if (!enabled || !projectId) return;
 
@@ -57,7 +58,7 @@ export const useCandidates = ({
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [projectId, queryClient, JSON.stringify(queryKey), enabled]);
+    }, [projectId, queryClient, enabled]);
 
     const {
         data,
@@ -143,7 +144,16 @@ export const useCandidates = ({
         },
         initialPageParam: 0,
         getNextPageParam: (lastPage) => lastPage.nextPage,
-        enabled: enabled && !!userId
+        enabled: enabled && !!userId,
+        // Polling fallback: if any candidate is still 'processing', refetch every 4s
+        // This catches cases where realtime events are missed (e.g., edge function upserts)
+        refetchInterval: (query) => {
+            const pages = query.state.data?.pages;
+            const hasProcessing = pages?.some(page =>
+                page.candidates.some((c: any) => c.status === 'processing' || c.status === 'PROCESSING')
+            );
+            return hasProcessing ? 4000 : false;
+        }
     });
 
     const candidates = data?.pages.flatMap(page => page.candidates) || [];

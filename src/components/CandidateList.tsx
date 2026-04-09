@@ -7,6 +7,9 @@ import {
     Medal, Eye, MailCheck, FileCheck, FileEdit, Check, Star, XCircle, ThumbsDown, RotateCcw, Sparkles
 } from 'lucide-react';
 
+// Helper: normalize status comparison (handles both 'PROCESSING' and 'processing')
+const isProcessingStatus = (status?: string) => status?.toUpperCase() === 'PROCESSING' || status?.toUpperCase() === 'SCANNING';
+
 interface CandidateListProps {
     candidates: ProjectFile[];
     selectedFileId: string | null;
@@ -207,14 +210,14 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 width: '100%',
                                 height: itemHeight
                             }}
-                            onClick={() => file.status !== 'processing' && onSelect(file)}
-                            className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center transition-all duration-300 ${file.status === 'processing' ? 'cursor-default' : 'cursor-pointer'} group ${isSelected
+                            onClick={() => !isProcessingStatus(file.status) && onSelect(file)}
+                            className={`grid ${showCheckboxes ? 'grid-cols-[40px_repeat(12,minmax(0,1fr))]' : 'grid-cols-12'} gap-4 px-6 py-3 border-b items-center transition-all duration-300 ${isProcessingStatus(file.status) ? 'cursor-default' : 'cursor-pointer'} group ${isSelected
                                 ? `bg-${accentColor}-500/10 border-l-4 border-l-${accentColor}-500 ${isLight ? 'border-b-slate-100' : 'border-b-white/5'}`
-                                : `border-l-4 border-l-transparent ${file.status !== 'processing' ? `hover:bg-${accentColor}-500/5 ${isLight ? 'border-b-slate-50 hover:border-l-slate-300' : 'border-b-white/5 hover:border-l-zinc-700'}` : ''}`
+                                : `border-l-4 border-l-transparent ${!isProcessingStatus(file.status) ? `hover:bg-${accentColor}-500/5 ${isLight ? 'border-b-slate-50 hover:border-l-slate-300' : 'border-b-white/5 hover:border-l-zinc-700'}` : ''}`
                                 } ${file.status === 'rejected' ? 'opacity-40 grayscale-[0.8]' : ''} ${file.is_hidden_gem ? 'hidden-gem-row' : ''}`}
                         >
                             {/* Individual Row Loading Overlay for 'processing' status */}
-                            {file.status === 'processing' && (
+                            {isProcessingStatus(file.status) && (
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
                             )}
                             {file.is_hidden_gem && <div className="glass-shard-effect" />}
@@ -236,7 +239,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
                             {/* Rank Column */}
                             <div className="col-span-1 text-center flex justify-center">
-                                {file.status === 'processing' ? (
+                                {isProcessingStatus(file.status) ? (
                                     <Loader2 className={`animate-spin ${isLight ? 'text-slate-300' : 'text-zinc-600'}`} size={18} />
                                 ) : rankDisplay}
                             </div>
@@ -302,7 +305,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
                             {!showScannedBy && (
                                 <div className="col-span-3">
-                                    {file.status === 'processing' ? (
+                                    {isProcessingStatus(file.status) ? (
                                         <div className="flex flex-col gap-1.5">
                                             <div className="flex items-center gap-2">
                                                 <div className="h-1.5 flex-1 bg-white/5 rounded-full overflow-hidden">

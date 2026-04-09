@@ -284,7 +284,7 @@ export interface ProjectFile {
   fileName: string;
   candidateName: string;
   size: string;
-  status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'SCANNING' | 'new' | 'screened' | 'interview' | 'rejected' | 'hired';
+  status?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'SCANNING' | 'processing' | 'failed' | 'new' | 'screened' | 'interview' | 'rejected' | 'hired';
   uploadedAt: string;
   uploadedByUserId?: UserId;
   failureReasons?: string[];

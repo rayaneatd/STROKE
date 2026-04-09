@@ -200,7 +200,7 @@ const ResumesTab: React.FC<ResumesTabProps> = ({
         return [...uniqueProcessing, ...candidates];
     }, [activeProcessingFiles, candidates]);
 
-    const isProcessingActive = activeProcessingFiles.length > 0;
+    const isProcessingActive = activeProcessingFiles.length > 0 || candidates.some(c => c.status === 'processing' || c.status === 'PROCESSING');
 
     const activeFiltersCount = filterScores.length + filterActivities.length;
 
