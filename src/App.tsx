@@ -21,6 +21,7 @@ const LandingPage = React.lazy(() => import('./pages/landing/LandingPage'));
 const Login = React.lazy(() => import('./pages/landing/Login'));
 const TermsOfService = React.lazy(() => import('./pages/landing/TermsOfService'));
 const PrivacyPolicy = React.lazy(() => import('./pages/landing/PrivacyPolicy'));
+const RefundPolicy = React.lazy(() => import('./pages/landing/RefundPolicy'));
 const DeepLogic = React.lazy(() => import('./pages/landing/DeepLogic'));
 const Pricing = React.lazy(() => import('./pages/landing/Pricing'));
 const SecurityWhitepaper = React.lazy(() => import('./pages/landing/SecurityWhitepaper'));
@@ -213,6 +214,7 @@ const AppContent: React.FC = () => {
                     <Route path="/login" element={isAuthenticated ? <Navigate to="/app" replace /> : <Login />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/refund-policy" element={<RefundPolicy />} />
                     <Route path="/deep-logic" element={<DeepLogic />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/security" element={<SecurityWhitepaper />} />

@@ -107,6 +107,7 @@ const Footer: React.FC = () => {
                             {[
                                 { name: 'Security Whitepaper', path: '#' }, // /security
                                 { name: 'GDPR & Data Residency', path: '/privacy-policy' },
+                                { name: 'Refund Policy', path: '/refund-policy' },
                                 { name: 'Transparency', path: '/transparency' }
                             ].map((item) => (
                                 <motion.li key={item.name} whileHover={{ x: 5 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
